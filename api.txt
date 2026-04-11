@@ -1,0 +1,17 @@
+Claude API: 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
+Gemini API: AIzaSyDhxkFFxMpu83I8uNOvrE7Yg81hwGgver8 
+curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent" \
+  -H 'Content-Type: application/json' \
+  -H 'X-goog-api-key: AIzaSyDhxkFFxMpu83I8uNOvrE7Yg81hwGgver8' \
+  -X POST \
+  -d '{
+    "contents": [
+      {
+        "parts": [
+          {
+            "text": "Explain how AI works in a few words"
+          }
+        ]
+      }
+    ]
+  }'
