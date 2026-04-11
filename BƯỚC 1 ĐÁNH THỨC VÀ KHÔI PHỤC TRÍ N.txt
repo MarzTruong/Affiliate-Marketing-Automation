@@ -1,0 +1,44 @@
+BƯỚC 1: ĐÁNH THỨC VÀ KHÔI PHỤC TRÍ NHỚ CHO AI
+Ngay khi mở dự án lên (trong Terminal, Cursor hoặc Windsurf), bạn đừng vội giao việc mới ngay. Hãy để AI tự đi "đọc nhật ký" của ngày hôm qua.
+
+📋 Copy & Dán Prompt này vào Claude (Dùng Sonnet 4.6):
+
+"Claude, chào ngày mới. Chúng ta chuẩn bị tiếp tục dự án.
+Trước khi nhận lệnh mới, hãy làm các bước sau:
+
+Đọc lại file CLAUDE.md để ghi nhớ các luật lệ sinh tồn của dự án.
+
+Dùng công cụ Git (qua MCP) để kiểm tra lịch sử commit (git log) và xem những file nào đã bị thay đổi gần đây nhất.
+
+Đọc file TODO.md (nếu có).
+
+Dựa vào các dữ liệu trên, hãy báo cáo ngắn gọn bằng tiếng Việt cho tôi: Hôm qua chúng ta đã hoàn thành việc gì? Đang làm dở chức năng nào?
+
+Tự động chạy các lệnh Terminal để khởi động Backend và Frontend (lấy lệnh trong CLAUDE.md), sau đó báo cho tôi biết khi nào server đã sẵn sàng."
+
+💡 Điều gì sẽ xảy ra?
+
+Claude sẽ tự động tìm hiểu xem bạn đã dừng ở đâu thông qua lịch sử Git.
+
+Nó tự động bật server cho bạn (bạn không cần nhớ lệnh uvicorn hay npm run dev nữa).
+
+Nó tóm tắt lại công việc, giúp cả bạn và AI "bắt đúng tần số" (Vibe) của ngày hôm qua.
+
+BƯỚC 2: MẸO "LƯU GAME" (SAVE GAME) TRƯỚC KHI NGHỈ
+Để Bước 1 hoạt động hoàn hảo, bạn cần tạo thói quen "Lưu Game" đúng cách trước khi kết thúc ngày làm việc. Đừng chỉ tắt máy cái rụp!
+
+Trước khi đi ngủ, hãy yêu cầu AI chốt sổ bằng câu lệnh sau:
+
+📋 Copy & Dán Prompt này trước khi nghỉ:
+
+"Claude, hôm nay làm đến đây thôi. Trước khi nghỉ, hãy làm giúp tôi 2 việc:
+
+Tạo (hoặc cập nhật) một file có tên là TODO.md ở thư mục gốc. Ghi vào đó: Tóm tắt tiến độ hôm nay, những lỗi (bugs) nào còn đang tồn đọng chưa sửa xong, và bước tiếp theo cần làm ngay vào sáng mai là gì.
+
+Dùng Git add toàn bộ file, commit với message 'Save progress: [Tóm tắt ngắn]' và Push lên GitHub để sao lưu an toàn."
+
+💡 Tại sao việc này quan trọng?
+
+File TODO.md chính là điểm neo trí nhớ (Memory Anchor). Cùng với file CLAUDE.md (Quy tắc hệ thống), TODO.md (Nhiệm vụ ngắn hạn) sẽ giúp bất kỳ AI nào (dù là phiên mới) cũng có thể đọc và hiểu ngay lập tức bối cảnh hiện tại của dự án.
+
+Việc Push code lên Git đảm bảo rằng dù ổ cứng máy tính của bạn có bị hỏng trong đêm, mã nguồn dự án vẫn an toàn trên đám mây.

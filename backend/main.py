@@ -1,0 +1,58 @@
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from backend.api.v1 import router as api_v1_router
+from backend.config import apply_db_settings, settings
+from backend.database import Base, engine
+import backend.models  # noqa: F401 - register all models
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: create tables (chỉ chạy khi không phải production)
+    if not settings.is_production:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+    # Nạp platform credentials từ DB vào settings singleton
+    await apply_db_settings()
+
+    # Khởi tạo Gemini Vision engine
+    from backend.ai_engine.gemini_engine import create_gemini_engine
+    app.state.gemini = create_gemini_engine()
+    await app.state.gemini.initialize()
+
+    # Khởi động Automation Scheduler
+    from backend.automation.scheduler import start_scheduler, stop_scheduler
+    await start_scheduler()
+
+    yield
+
+    # Shutdown
+    await stop_scheduler()
+    await engine.dispose()
+
+
+app = FastAPI(
+    title="Affiliate Marketing Automation",
+    description="AI-powered affiliate marketing automation for Vietnamese e-commerce platforms",
+    version="0.1.0",
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(api_v1_router, prefix="/api/v1")
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "app": settings.app_name}

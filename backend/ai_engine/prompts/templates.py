@@ -1,0 +1,177 @@
+"""Content Templates với Chain-of-Thought và Few-Shot Learning.
+
+Cấu trúc CoT 3 bước (nhất quán cho mọi loại content):
+  [BƯỚC 1 — PHÂN TÍCH SP]   : Hiểu sản phẩm, điểm mạnh/yếu, đối tượng mua
+  [BƯỚC 2 — XÁC ĐỊNH GÓC NHÌN]: Chọn angle/hook phù hợp platform + đối tượng
+  [BƯỚC 3 — VIẾT NỘI DUNG]  : Thực thi theo format yêu cầu
+
+Few-Shot examples được inject vào đầu prompt qua build_few_shot_prefix().
+Backward-compat: SYSTEM_PROMPT_VI vẫn được export (dùng trong client.py cũ).
+"""
+
+# Backward-compat export — client.py cũ import từ đây
+from backend.ai_engine.prompts.system import BASE_SYSTEM as SYSTEM_PROMPT_VI  # noqa: F401
+
+# ── Chain-of-Thought header (nhúng vào mọi template) ─────────────────────────
+_COT_HEADER = """\
+Trước khi viết, hãy suy nghĩ ngắn gọn qua 3 bước (đặt trong <thinking>...</thinking>):
+
+<thinking>
+[BƯỚC 1 — PHÂN TÍCH SP]
+- Sản phẩm này giải quyết vấn đề gì? Ai là người mua điển hình?
+- Điểm mạnh nổi bật nhất (giá, chất lượng, tính năng, thương hiệu)?
+- Có rủi ro/nhược điểm nhỏ nào cần thừa nhận để tăng độ tin cậy?
+
+[BƯỚC 2 — XÁC ĐỊNH GÓC NHÌN]
+- Angle phù hợp nhất cho platform {{ platform }}: giá rẻ / chất lượng / trending / giải quyết pain point?
+- Hook mở đầu nào sẽ dừng scroll / gây tò mò ngay lập tức?
+
+[BƯỚC 3 — KẾ HOẠCH VIẾT]
+- Format nào phù hợp? Tone: thân thiện / chuyên nghiệp / hài hước?
+- CTA duy nhất cần truyền tải là gì?
+</thinking>
+
+Sau khi suy nghĩ, viết nội dung theo format yêu cầu bên dưới:\
+"""
+
+
+def build_few_shot_prefix(examples: list[dict]) -> str:
+    """Tạo few-shot prefix từ danh sách ví dụ đã được approve.
+
+    Args:
+        examples: List[{"content_type": str, "product_category": str, "final_text": str}]
+                  Lấy từ bảng AITrainingData.
+
+    Returns:
+        Chuỗi few-shot examples để nhúng vào đầu prompt, hoặc "" nếu không có.
+    """
+    if not examples:
+        return ""
+
+    lines = ["--- VĂN MẪU THAM KHẢO (đã được duyệt) ---\n"]
+    for i, ex in enumerate(examples, 1):
+        category = ex.get("product_category", "")
+        text = ex.get("final_text", "").strip()
+        if text:
+            lines.append(f"Ví dụ {i} ({category}):\n{text}\n")
+    lines.append("--- KẾT THÚC VĂN MẪU ---\n\nBây giờ hãy viết nội dung mới cho sản phẩm sau:\n")
+    return "\n".join(lines)
+
+
+# ── Templates ─────────────────────────────────────────────────────────────────
+
+PRODUCT_DESCRIPTION_TEMPLATE = """\
+{{ few_shot_prefix }}\
+{{ cot_header }}
+
+**Thông tin sản phẩm:**
+- Tên: {{ product_name }}
+- Giá: {{ price }} VNĐ
+- Danh mục: {{ category }}
+- Mô tả gốc: {{ description }}
+- Sàn đăng: {{ platform }}
+
+**Yêu cầu đầu ra:**
+
+## Tiêu đề
+[Tiêu đề listing ≤ 100 ký tự, chứa từ khóa mua hàng]
+
+## Mô tả ngắn
+[150-200 từ, dùng "bạn" thân thiện, nhấn vào lợi ích thực tế]
+
+## Đặc điểm nổi bật
+- [Lợi ích 1 — cụ thể, có số liệu nếu có]
+- [Lợi ích 2]
+- [Lợi ích 3]
+- [Lợi ích 4]
+- [Lợi ích 5]
+
+## CTA
+[1 câu kêu gọi hành động, tạo urgency tự nhiên]
+
+## Từ khóa SEO
+[5-7 từ khóa phân tách bằng dấu phẩy, mix ngắn + dài]\
+"""
+
+SEO_ARTICLE_TEMPLATE = """\
+{{ few_shot_prefix }}\
+{{ cot_header }}
+
+**Thông tin sản phẩm:**
+- Tên: {{ product_name }}
+- Giá: {{ price }} VNĐ
+- Danh mục: {{ category }}
+- Mô tả gốc: {{ description }}
+- Sàn / Link affiliate: {{ platform }} — {{ affiliate_url }}
+
+**Yêu cầu đầu ra (bài 800-1200 từ):**
+
+## Meta Title
+[≤ 60 ký tự, chứa "review" hoặc "đánh giá" + tên SP]
+
+## Meta Description
+[≤ 160 ký tự, tóm tắt bài, chứa CTA ngắn]
+
+## Nội dung bài viết
+[Bài hoàn chỉnh với cấu trúc H2/H3:
+- Mở bài: đặt vấn đề người đọc đang gặp
+- Tổng quan sản phẩm
+- Ưu điểm chi tiết (dẫn chứng cụ thể)
+- Nhược điểm (1-2 điểm nhỏ — tăng độ tin cậy)
+- So sánh giá/giá trị
+- Kết luận + CTA với link affiliate]
+
+## Từ khóa SEO
+[6-8 từ khóa: mix head term + long-tail]\
+"""
+
+SOCIAL_POST_TEMPLATE = """\
+{{ few_shot_prefix }}\
+{{ cot_header }}
+
+**Thông tin sản phẩm:**
+- Tên: {{ product_name }}
+- Giá: {{ price }} VNĐ
+- Platform đăng: {{ social_platform }}
+- Link affiliate: {{ affiliate_url }}
+- Danh mục: {{ category }}
+
+**Yêu cầu đầu ra:**
+
+[Bài đăng hoàn chỉnh, sẵn sàng copy-paste — 100-200 từ]
+- Dòng đầu tiên: Hook ≤ 10 từ, đủ mạnh để dừng scroll
+- Thân bài: 2-3 điểm lợi ích ngắn, dùng emoji tự nhiên
+- Giá + link affiliate rõ ràng
+- CTA cuối: 1 hành động duy nhất (bình luận / click link / lưu bài)
+- 5-8 hashtag tiếng Việt liên quan\
+"""
+
+VIDEO_SCRIPT_TEMPLATE = """\
+{{ few_shot_prefix }}\
+{{ cot_header }}
+
+**Thông tin sản phẩm:**
+- Tên: {{ product_name }}
+- Giá: {{ price }} VNĐ
+- Đặc điểm nổi bật: {{ description }}
+- Danh mục: {{ category }}
+
+**Yêu cầu kịch bản (30-60 giây):**
+
+## Hook (0-3s)
+[Pattern interrupt — câu hỏi / tuyên bố gây sốc / demo kết quả ngay]
+
+## Giới thiệu (3-10s)
+[Tên SP + giá + 1 lý do mua ngay]
+
+## Nội dung chính (10-45s)
+[Cảnh 1 — demo tính năng chính]
+[Cảnh 2 — before/after hoặc so sánh]
+[Cảnh 3 — social proof ngắn]
+
+## CTA (45-60s)
+[1 hành động: link bio / sticker / bình luận từ khóa — không ép buộc]
+
+## Nhạc nền gợi ý
+[Trend phù hợp danh mục]\
+"""
