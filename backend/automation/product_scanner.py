@@ -59,21 +59,29 @@ class FilterCriteria:
 
 
 def _passes_filter(product: ProductInfo, criteria: FilterCriteria) -> bool:
-    """Kiểm tra sản phẩm có đạt tiêu chí không."""
-    if criteria.min_price and product.price is not None:
-        if product.price < float(criteria.min_price):
-            return False
-    if criteria.max_price and product.price is not None:
-        if product.price > float(criteria.max_price):
-            return False
+    """Kiểm tra sản phẩm có đạt tiêu chí không.
+
+    Deals/coupons từ AccessTrade có price=0 và commission_rate=0 —
+    bỏ qua price/commission filter để không lọc nhầm deals hợp lệ.
+    """
+    is_deal = not product.price or product.price == 0.0
+
+    if not is_deal:
+        if criteria.min_price and product.price is not None:
+            if product.price < float(criteria.min_price):
+                return False
+        if criteria.max_price and product.price is not None:
+            if product.price > float(criteria.max_price):
+                return False
+        if criteria.min_commission_pct and product.commission_rate is not None:
+            if product.commission_rate < float(criteria.min_commission_pct):
+                return False
+
     if criteria.min_rating and product.rating is not None:
         if product.rating < float(criteria.min_rating):
             return False
     if criteria.min_sales and product.sales_count is not None:
         if product.sales_count < criteria.min_sales:
-            return False
-    if criteria.min_commission_pct and product.commission_rate is not None:
-        if product.commission_rate < float(criteria.min_commission_pct):
             return False
     return True
 
