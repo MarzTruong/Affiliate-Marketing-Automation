@@ -23,7 +23,7 @@ class ClaudeClient:
     MAX_TOKENS = {
         "product_description": 1000,
         "seo_article": 4000,
-        "social_post": 500,
+        "social_post": 1500,  # CoT ~500 tokens + bài post ~500 + buffer
         "video_script": 2000,
     }
 
