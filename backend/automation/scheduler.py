@@ -79,6 +79,15 @@ async def start_scheduler() -> None:
         name="Tóm tắt tuần qua Telegram",
     )
 
+    # PDF báo cáo tuần — thứ 2 07:05 (sau text report 5 phút)
+    scheduler.add_job(
+        _weekly_pdf_report,
+        CronTrigger(day_of_week="mon", hour=7, minute=5, timezone="Asia/Ho_Chi_Minh"),
+        id="weekly_pdf_report",
+        replace_existing=True,
+        name="PDF báo cáo tuần qua Telegram",
+    )
+
     scheduler.start()
     logger.info("Scheduler khởi động — timezone: Asia/Ho_Chi_Minh")
 
@@ -195,3 +204,9 @@ async def _weekly_report() -> None:
     from backend.reports.telegram_reporter import send_weekly_report
     async with get_db_context() as db:
         await send_weekly_report(db)
+
+
+async def _weekly_pdf_report() -> None:
+    from backend.reports.telegram_reporter import send_weekly_pdf_report
+    async with get_db_context() as db:
+        await send_weekly_pdf_report(db)

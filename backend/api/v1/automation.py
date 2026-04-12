@@ -244,7 +244,7 @@ async def get_review_queue(
 
         body_preview = ""
         if content and content.body:
-            body_preview = content.body[:200] + ("…" if len(content.body) > 200 else "")
+            body_preview = content.body[:500] + ("…" if len(content.body) > 500 else "")
 
         items.append({
             "post_id": str(post.id),

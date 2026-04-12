@@ -24,27 +24,43 @@ const STATUS_ICONS: Record<string, string> = {
   published: "✅",
   failed: "❌",
   cancelled: "⭕",
+  pending_review: "🟠",
 };
+
+const STATUS_TABS = [
+  { key: "all", label: "Tất cả" },
+  { key: "pending_review", label: "Chờ duyệt" },
+  { key: "scheduled", label: "Đã lên lịch" },
+  { key: "published", label: "Đã đăng" },
+  { key: "failed", label: "Thất bại" },
+] as const;
+
+type StatusFilter = (typeof STATUS_TABS)[number]["key"];
 
 const DAY_NAMES = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "CN"];
 
 export default function CalendarPage() {
   const [weekOffset, setWeekOffset] = useState(0);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   const { data: calendar, isLoading } = useQuery<WeekCalendar>({
     queryKey: ["calendar-week", weekOffset],
     queryFn: () => apiFetch(`/calendar/week?week_offset=${weekOffset}`),
   });
 
-  const totalPosts = calendar
-    ? Object.values(calendar.days).reduce((s, posts) => s + posts.length, 0)
-    : 0;
+  const allPosts = calendar ? Object.values(calendar.days).flat() : [];
+  const totalPosts = allPosts.length;
+  const publishedCount = allPosts.filter(p => p.status === "published").length;
+  const pendingCount = allPosts.filter(p => p.status === "pending_review").length;
 
-  const publishedCount = calendar
-    ? Object.values(calendar.days)
-        .flat()
-        .filter(p => p.status === "published").length
-    : 0;
+  const filteredDays: Record<string, CalendarDay[]> = calendar
+    ? Object.fromEntries(
+        Object.entries(calendar.days).map(([date, posts]) => [
+          date,
+          statusFilter === "all" ? posts : posts.filter(p => p.status === statusFilter),
+        ])
+      )
+    : {};
 
   return (
     <div>
@@ -81,6 +97,25 @@ export default function CalendarPage() {
         </div>
       </div>
 
+      {/* Status Filter Tabs */}
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {STATUS_TABS.map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setStatusFilter(tab.key)}
+            className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+              statusFilter === tab.key
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+            }`}
+          >
+            {tab.key === "pending_review" && pendingCount > 0
+              ? `${tab.label} (${pendingCount})`
+              : tab.label}
+          </button>
+        ))}
+      </div>
+
       {/* Legend */}
       <div className="flex gap-3 mb-4 flex-wrap">
         {Object.entries(CHANNEL_ICONS).map(([ch, icon]) => (
@@ -89,7 +124,7 @@ export default function CalendarPage() {
           </span>
         ))}
         <span className="text-xs px-2.5 py-1 rounded-full text-slate-500 bg-slate-100">
-          🕐 lên lịch &nbsp;✅ đã đăng &nbsp;❌ thất bại
+          🕐 lên lịch &nbsp;✅ đã đăng &nbsp;🟠 chờ duyệt &nbsp;❌ thất bại
         </span>
       </div>
 
@@ -102,7 +137,7 @@ export default function CalendarPage() {
         </div>
       ) : calendar ? (
         <div className="grid grid-cols-7 gap-2">
-          {Object.entries(calendar.days).map(([date, posts], idx) => {
+          {Object.entries(filteredDays).map(([date, posts], idx) => {
             const isToday = date === new Date().toISOString().slice(0, 10);
             return (
               <div
@@ -150,9 +185,14 @@ export default function CalendarPage() {
 }
 
 function PostCard({ post }: { post: CalendarDay }) {
+  const isPending = post.status === "pending_review";
+  const baseStyle = isPending
+    ? "bg-orange-50 border-orange-300 text-orange-800"
+    : (CHANNEL_STYLES[post.channel] ?? "bg-slate-100 border-slate-200 text-slate-700");
+
   return (
     <div
-      className={`rounded-lg border px-2 py-1.5 text-xs ${CHANNEL_STYLES[post.channel] ?? "bg-slate-100 border-slate-200 text-slate-700"}`}
+      className={`rounded-lg border px-2 py-1.5 text-xs ${baseStyle}`}
       title={post.title}
     >
       <div className="flex items-center justify-between gap-1">
@@ -161,6 +201,9 @@ function PostCard({ post }: { post: CalendarDay }) {
         <span>{STATUS_ICONS[post.status] ?? "?"}</span>
       </div>
       <div className="truncate mt-0.5 opacity-80">{post.title}</div>
+      {isPending && (
+        <div className="text-orange-500 text-[10px] mt-0.5 font-medium">● Chờ duyệt</div>
+      )}
     </div>
   );
 }
