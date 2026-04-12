@@ -30,8 +30,8 @@ class GeminiConfig:
     location: str = "us-central1"
     use_vertex: bool = False
 
-    vision_model: str = "gemini-2.5-pro"   # Multimodal — ảnh + text, mạnh nhất stable
-    text_model: str = "gemini-2.5-flash"    # Text only — nhanh hơn, rẻ hơn
+    vision_model: str = "gemini-2.0-flash"  # Multimodal — free tier 1500 req/ngày, đủ dùng
+    text_model: str = "gemini-2.0-flash"    # Text only — cùng model, nhất quán
 
     temperature: float = 0.7
     max_output_tokens: int = 2048

@@ -1,6 +1,6 @@
 # TODO — Affiliate Marketing Automation
 
-> Cập nhật lần cuối: 12/04/2026 (phiên 2)
+> Cập nhật lần cuối: 13/04/2026 (phiên 3)
 
 ---
 
@@ -72,11 +72,21 @@
 ## Bước tiếp theo (Phase 3)
 
 ### Ưu tiên cao
-- [ ] **Kiểm thử thực tế với API key thật** — nhập AccessTrade key, chạy pipeline với data thật, xem Gemini phân tích ảnh thực tế
-- [ ] **Fix 3 pre-existing test failures** — test_publisher_registry, test_get_publisher_unknown, test_pick_variant_balanced
+- [ ] **Facebook Publisher** — chờ thiết bị được tin tưởng (vài ngày) → tạo Meta Developer → lấy Page Token → test đăng bài thật
+- [ ] **TikTok OAuth flow** — build `/auth/tiktok/callback` endpoint + lấy token qua Sandbox → test publish
 
 ### Ưu tiên trung bình
 - [ ] **Multi-account support** — nhiều Facebook Page, nhiều WordPress site (phức tạp: DB migration + UI + publisher routing)
+- [ ] **Gemini Vision test thật** — quota reset hàng ngày, test với ảnh thật Shopee/Tiki
+
+### Hoàn thành trong phiên 3 (13/04/2026)
+- [x] **Fix 3 pre-existing test failures** — test_publisher_registry, test_get_publisher_unknown, test_pick_variant_balanced → 78/78 passed
+- [x] **AccessTrade connector rewrite** — auth endpoint `/transactions`, mapping deals/coupons (price=0, aff_link, coupon codes)
+- [x] **Pipeline filter fix** — bỏ qua price/commission filter cho deals (is_deal check)
+- [x] **social_post max_tokens** — 500 → 1500, _strip_thinking_blocks() xử lý unclosed `<thinking>` tag
+- [x] **Settings page fix** — sensitive fields load `""` thay vì `"****"` để user gõ được
+- [x] **Gemini model downgrade** — `gemini-2.5-pro` → `gemini-2.0-flash` (quota tier thấp hơn)
+- [x] **Pipeline end-to-end thật** — AccessTrade Shopee → 50 deals → 5 lọc → 5 bài Claude Vietnamese → scheduled
 
 ### Ưu tiên thấp
 - [ ] Sync/cập nhật ECC skills & agents (hiện có 57 skills, 47 agents)
@@ -113,7 +123,7 @@ cd frontend && npm run dev
 - **Chỉ trong `.env`**: `DATABASE_URL`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`
 - **Connectors**: AccessTrade là primary source cho tất cả platform search. Rate limit 0.5s + Tenacity retry
 - **Gemini SDK**: Dùng `google-genai` (v1.70.0+) — **không** dùng `google-generativeai` (deprecated)
-- **Gemini models**: `gemini-2.5-pro` (vision), `gemini-2.5-flash` (text)
+- **Gemini models**: `gemini-2.0-flash` (vision + text) — đã đổi từ 2.5-pro do quota
 - **CoT blocks**: Claude trả về `<thinking>...</thinking>` trong output — bị strip bởi `_strip_thinking_blocks()` trước khi lưu DB
 - **Venv**: `.venv/` ở root project (không phải trong `backend/`)
 - **Log**: `backend.log` và `backend_err.log` ở root project
