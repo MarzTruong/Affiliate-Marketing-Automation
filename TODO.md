@@ -1,10 +1,10 @@
 # TODO — Affiliate Marketing Automation
 
-> Cập nhật lần cuối: 09/04/2026
+> Cập nhật lần cuối: 12/04/2026 (phiên 2)
 
 ---
 
-## Hoàn thành (08–09/04/2026)
+## Hoàn thành (08–12/04/2026)
 
 ### Server & Môi trường
 - [x] Dừng Docker cũ, chuyển sang chạy dev server trực tiếp từ source
@@ -41,6 +41,16 @@
 - [x] **Gemini wired vào pipeline** — `ContentGenerator` lazy-init Gemini, enrich description từ ảnh trước khi gọi Claude
 - [x] **pipeline.py lưu `image_urls`** — list URLs vào `metadata_json` để Gemini đọc được
 
+### Git & Hệ thống
+- [x] **Khởi tạo Git repo** — push lên GitHub `MarzTruong/Affiliate-Marketing-Automation`
+- [x] **CLAUDE.md refactor** — English, modular, BMAD approach (docs/ARCHITECTURE.md + docs/WORKFLOW.md)
+
+### Phase 2 — Hoàn thành
+- [x] **Bug Fix: Calendar** — thêm filter tabs (Tất cả / Chờ duyệt / Đã lên lịch / Đã đăng / Thất bại), badge đếm pending
+- [x] **Bug Fix: Review Queue** — tăng preview 200 → 500 ký tự + nút "Xem đầy đủ" toggle
+- [x] **Webhook Facebook** — `POST /webhooks/facebook`: verify HMAC-SHA256, parse engagement → `record_post_performance()`. 19 tests passing.
+- [x] **PDF Weekly Report** — `generate_weekly_pdf()` + `send_weekly_pdf_report()` qua Telegram `sendDocument`. Scheduled thứ 2 07:05 VN.
+
 ### Kiểm thử thực tế
 - [x] Pipeline end-to-end chạy thành công (mock data): scan → filter → Claude content → pending_review
 - [x] Approve/Reject flow hoạt động: AITrainingData được lưu đúng signal
@@ -53,26 +63,23 @@
 
 | # | Mức độ | Vấn đề | Ghi chú |
 |---|--------|--------|---------|
-| 1 | MINOR | Calendar không hiển thị bài `pending_review` | Đã có tab riêng trong Automation, không urgent |
-| 2 | MINOR | Hooks ECC cần restart Claude Code | Đường dẫn đã sửa, chưa kiểm tra sau khi restart |
-| 3 | INFO | TikTok chỉ hỗ trợ draft mode | Giới hạn của TikTok Content API |
-| 4 | INFO | Gemini mock image URLs (placeholder.com) bị block | Sẽ tự resolve khi có ảnh thật từ AccessTrade |
+| 1 | INFO | TikTok chỉ hỗ trợ draft mode | Giới hạn của TikTok Content API |
+| 2 | INFO | Gemini mock image URLs (placeholder.com) bị block | Sẽ tự resolve khi có ảnh thật từ AccessTrade |
+| 3 | PRE-EXISTING | 3 test failures trong test_publisher.py + test_sop_engine.py | Không liên quan Phase 2, cần fix riêng |
 
 ---
 
-## Bước tiếp theo (Phase 2)
+## Bước tiếp theo (Phase 3)
 
 ### Ưu tiên cao
-- [ ] **Kiểm thử thực tế với API key thật** — nhập AccessTrade key, chạy pipeline với data thật, xem Gemini phân tích ảnh Shopee thực tế
-- [ ] **Webhook Facebook** — nhận click/reach → Adaptive Scheduler học nhanh hơn
+- [ ] **Kiểm thử thực tế với API key thật** — nhập AccessTrade key, chạy pipeline với data thật, xem Gemini phân tích ảnh thực tế
+- [ ] **Fix 3 pre-existing test failures** — test_publisher_registry, test_get_publisher_unknown, test_pick_variant_balanced
 
 ### Ưu tiên trung bình
-- [ ] **Báo cáo PDF tự động** — report hàng tuần gửi qua Telegram
-- [ ] **Multi-account support** — nhiều Facebook Page, nhiều WordPress site
+- [ ] **Multi-account support** — nhiều Facebook Page, nhiều WordPress site (phức tạp: DB migration + UI + publisher routing)
 
 ### Ưu tiên thấp
-- [ ] Calendar hiển thị bài `pending_review` (hiện chỉ thấy `scheduled`)
-- [ ] Xem full content body trong Review Queue (hiện chỉ preview 200 ký tự)
+- [ ] Sync/cập nhật ECC skills & agents (hiện có 57 skills, 47 agents)
 
 ---
 
@@ -112,3 +119,5 @@ cd frontend && npm run dev
 - **Log**: `backend.log` và `backend_err.log` ở root project
 - **Server rule**: Luôn chạy 1 server duy nhất mỗi port
 - **Kill server (Windows)**: `powershell.exe -Command "Get-Process python | Stop-Process -Force"`
+- **Webhook Facebook**: `FACEBOOK_WEBHOOK_VERIFY_TOKEN=affiliate_webhook_verify` (default), `FACEBOOK_WEBHOOK_SECRET` để trống nếu chưa set
+- **PDF Report**: fpdf2 2.8.7, ASCII-safe text (không dùng font Unicode). Gửi thứ 2 07:05 VN qua Telegram sendDocument API
