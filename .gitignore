@@ -64,3 +64,4 @@ affiliate.db
 
 # Ruff cache
 .ruff_cache/
+api.txt
