@@ -166,15 +166,11 @@ async def get_running_tests(db: AsyncSession, campaign_id: uuid.UUID | None = No
 
 async def pick_variant(db: AsyncSession, test_id: uuid.UUID) -> str:
     """Pick which variant to show next (round-robin for balance)."""
-    import random
-
     test = await db.get(ABTest, test_id)
     if not test or test.status != "running":
         return "A"
 
-    # Pick the variant with fewer impressions; randomize on tie for true balance
-    if test.variant_a_impressions < test.variant_b_impressions:
-        return "A"
+    # Pick the variant with fewer impressions; prefer A on tie (deterministic round-robin)
     if test.variant_b_impressions < test.variant_a_impressions:
         return "B"
-    return random.choice(["A", "B"])
+    return "A"
