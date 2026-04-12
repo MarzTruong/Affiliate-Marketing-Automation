@@ -19,7 +19,7 @@ def test_publish_result_failure():
 
 
 def test_publisher_registry_has_all_channels():
-    expected = {"facebook", "wordpress", "telegram"}
+    expected = {"facebook", "wordpress", "telegram", "tiktok"}
     assert set(PUBLISHER_REGISTRY.keys()) == expected
 
 
@@ -40,7 +40,7 @@ def test_get_publisher_telegram():
 
 def test_get_publisher_unknown():
     with pytest.raises(ValueError, match="Unknown publish channel"):
-        get_publisher("tiktok")
+        get_publisher("instagram")
 
 
 def test_all_publishers_implement_interface():
