@@ -75,11 +75,12 @@ export default function SettingsPage() {
   });
 
   // Khởi tạo local state từ API response
+  // Sensitive fields dùng "" thay vì "****" để user gõ thẳng không cần xóa trước
   useEffect(() => {
     if (data?.credentials) {
       const initial: Record<string, string> = {};
       for (const item of data.credentials) {
-        initial[item.key] = item.value;
+        initial[item.key] = item.sensitive && item.value === "****" ? "" : item.value;
       }
       setValues(initial);
     }

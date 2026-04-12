@@ -116,7 +116,7 @@ class AccessTradeConnector(BasePlatformConnector):
 
     @_accesstrade_retry()
     async def _authenticate_request(self) -> bool:
-        data = await self._get("/user/me")
+        await self._get("/transactions")
         return True  # _get raises nếu auth fail
 
     async def authenticate(self) -> bool:
@@ -154,18 +154,35 @@ class AccessTradeConnector(BasePlatformConnector):
 
         products = []
         for offer in offers[:limit]:
+            # AccessTrade trả về deals/coupons — aff_link đã là link affiliate
+            aff_link = offer.get("aff_link", "")
+            original_link = offer.get("link", "") or aff_link
+            coupons = offer.get("coupons", [])
+            coupon_text = " | ".join(
+                f"{c.get('coupon_code','')} ({c.get('coupon_desc','')})"
+                for c in coupons if c.get("coupon_code")
+            )
+            description = offer.get("content", "")
+            if coupon_text:
+                description = f"{description}\nMã giảm giá: {coupon_text}".strip()
+
             product = ProductInfo(
                 external_id=str(offer.get("id", "")),
                 name=offer.get("name", ""),
-                price=float(offer.get("price", 0)),
-                original_url=offer.get("url", ""),
+                price=0.0,  # deals/coupons không có giá cố định
+                original_url=original_link,
+                affiliate_url=aff_link,
                 image_urls=[offer.get("image", "")] if offer.get("image") else [],
-                description=offer.get("description", ""),
-                category=offer.get("category", ""),
-                commission_rate=float(offer.get("commission", 0)),
+                description=description,
+                category=offer.get("domain", ""),
+                commission_rate=0.0,  # AccessTrade không expose commission trong search
                 metadata={
                     "merchant": offer.get("merchant", ""),
-                    "platform": offer.get("platform", ""),
+                    "domain": offer.get("domain", ""),
+                    "aff_link": aff_link,
+                    "coupons": coupons,
+                    "start_time": offer.get("start_time", ""),
+                    "end_time": offer.get("end_time", ""),
                 },
             )
             products.append(product)
@@ -180,6 +197,9 @@ class AccessTradeConnector(BasePlatformConnector):
         )
 
     async def generate_affiliate_link(self, product_url: str) -> AffiliateLink:
+        # Nếu URL đã là aff_link (go.isclix.com) thì dùng luôn, không gọi thêm API
+        if "go.isclix.com" in product_url or "accesstrade" in product_url:
+            return AffiliateLink(original_url=product_url, affiliate_url=product_url)
         try:
             data = await self._generate_link_request(product_url)
             return AffiliateLink(
