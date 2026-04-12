@@ -206,9 +206,16 @@ class ContentGenerator:
             return []
 
     def _strip_thinking_blocks(self, content: str) -> str:
-        """Xóa <thinking>...</thinking> CoT blocks khỏi output trước khi lưu."""
+        """Xóa <thinking>...</thinking> CoT blocks khỏi output trước khi lưu.
+
+        Xử lý cả trường hợp </thinking> bị thiếu (Claude bị cắt giữa chừng do max_tokens).
+        """
         import re as _re
-        return _re.sub(r"<thinking>.*?</thinking>\s*", "", content, flags=_re.DOTALL).strip()
+        # Strip complete blocks
+        content = _re.sub(r"<thinking>.*?</thinking>\s*", "", content, flags=_re.DOTALL)
+        # Strip unclosed block (từ <thinking> đến hết chuỗi nếu không có </thinking>)
+        content = _re.sub(r"<thinking>.*", "", content, flags=_re.DOTALL)
+        return content.strip()
 
     def _extract_title(self, content: str) -> str:
         for pattern in [r"## Tiêu đề\n(.+)", r"## Meta Title\n(.+)", r"^# (.+)"]:
