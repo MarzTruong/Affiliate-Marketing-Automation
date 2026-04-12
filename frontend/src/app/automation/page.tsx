@@ -18,6 +18,7 @@ interface ReviewItem {
 }
 
 type Tab = "rules" | "review" | "insights";
+type ExpandedMap = Record<string, boolean>;
 
 const PLATFORM_LABELS: Record<string, string> = {
   shopee: "Shopee",
@@ -45,6 +46,7 @@ export default function AutomationPage() {
   const [showForm, setShowForm] = useState(false);
   const [expandedRule, setExpandedRule] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [expandedPreviews, setExpandedPreviews] = useState<ExpandedMap>({});
 
   const { data: rules = [], isLoading } = useQuery<AutomationRule[]>({
     queryKey: ["automation-rules"],
@@ -414,9 +416,21 @@ export default function AutomationPage() {
                           {item.content_title && (
                             <h3 className="font-semibold text-slate-900 mb-2">{item.content_title}</h3>
                           )}
-                          <p className="text-sm text-slate-600 leading-relaxed bg-slate-50 rounded-lg p-3 border">
-                            {item.content_body_preview}
-                          </p>
+                          <div className="bg-slate-50 rounded-lg p-3 border">
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                              {expandedPreviews[item.post_id]
+                                ? item.content_body_preview
+                                : item.content_body_preview.slice(0, 200) + (item.content_body_preview.length > 200 ? "…" : "")}
+                            </p>
+                            {item.content_body_preview.length > 200 && (
+                              <button
+                                onClick={() => setExpandedPreviews(prev => ({ ...prev, [item.post_id]: !prev[item.post_id] }))}
+                                className="text-xs text-blue-600 hover:underline mt-1"
+                              >
+                                {expandedPreviews[item.post_id] ? "Thu gọn ▲" : "Xem đầy đủ ▼"}
+                              </button>
+                            )}
+                          </div>
                         </div>
                         {item.visual_url && (
                           <img

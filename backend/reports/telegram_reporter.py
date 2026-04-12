@@ -183,6 +183,190 @@ async def send_weekly_report(db) -> None:
     await _send(text)
 
 
+async def _send_document(pdf_bytes: bytes, filename: str, caption: str = "") -> bool:
+    """Gửi file PDF tới Telegram channel qua sendDocument API."""
+    if not settings.telegram_bot_token or not settings.telegram_channel_id:
+        logger.warning("Telegram chưa cấu hình — bỏ qua gửi PDF")
+        return False
+
+    url = f"{TELEGRAM_API}/bot{settings.telegram_bot_token}/sendDocument"
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.post(
+                url,
+                data={"chat_id": settings.telegram_channel_id, "caption": caption},
+                files={"document": (filename, bytes(pdf_bytes), "application/pdf")},
+            )
+            if resp.status_code != 200:
+                logger.error(f"Telegram sendDocument lỗi {resp.status_code}: {resp.text[:200]}")
+                return False
+        return True
+    except Exception as e:
+        logger.error(f"Gửi Telegram PDF thất bại: {e}")
+        return False
+
+
+def generate_weekly_pdf(
+    clicks: int,
+    conversions: int,
+    total_posts: int,
+    top_slots: list,
+    week_start: datetime,
+) -> bytearray:
+    """Tạo PDF báo cáo tuần với fpdf2 — trả về bytearray.
+
+    Cấu trúc PDF:
+    1. Header: tên hệ thống + khoảng thời gian
+    2. Bảng tóm tắt: clicks, conversions, posts, CTR
+    3. Top 3 time slots hiệu quả nhất
+    4. Footer: timestamp tạo
+    """
+    from fpdf import FPDF  # lazy import — chỉ cần khi gọi hàm này
+
+    week_end = week_start + timedelta(days=7)
+    ctr = f"{(conversions / clicks * 100):.1f}%" if clicks > 0 else "0%"
+    day_names = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
+
+    pdf = FPDF()
+    pdf.set_margins(15, 15, 15)
+    pdf.add_page()
+
+    # ── Header ────────────────────────────────────────────────────────────
+    pdf.set_font("Helvetica", "B", 18)
+    pdf.cell(0, 12, "BAO CAO TUAN - AFFILIATE MARKETING", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.set_font("Helvetica", "", 11)
+    pdf.cell(
+        0, 8,
+        f"Tu {week_start.strftime('%d/%m/%Y')} den {week_end.strftime('%d/%m/%Y')}",
+        new_x="LMARGIN", new_y="NEXT", align="C",
+    )
+    pdf.ln(8)
+
+    # ── Tóm tắt ──────────────────────────────────────────────────────────
+    pdf.set_font("Helvetica", "B", 13)
+    pdf.cell(0, 10, "TONG KET TUAN", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_draw_color(180, 180, 180)
+    pdf.line(15, pdf.get_y(), 195, pdf.get_y())
+    pdf.ln(4)
+
+    col_w = 90
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.set_fill_color(240, 240, 240)
+    pdf.cell(col_w, 9, "Chi so", border=1, fill=True, align="C")
+    pdf.cell(col_w, 9, "Gia tri", border=1, fill=True, align="C", new_x="LMARGIN", new_y="NEXT")
+
+    pdf.set_font("Helvetica", "", 11)
+    for label, value in [
+        ("Luot click", f"{clicks:,}"),
+        ("Chuyen doi", f"{conversions:,}"),
+        ("Bai da dang", str(total_posts)),
+        ("Ty le CTR", ctr),
+    ]:
+        pdf.cell(col_w, 9, label, border=1)
+        pdf.cell(col_w, 9, value, border=1, align="C", new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(8)
+
+    # ── Top time slots ────────────────────────────────────────────────────
+    pdf.set_font("Helvetica", "B", 13)
+    pdf.cell(0, 10, "GIO DANG HIEU QUA NHAT", new_x="LMARGIN", new_y="NEXT")
+    pdf.line(15, pdf.get_y(), 195, pdf.get_y())
+    pdf.ln(4)
+
+    if top_slots:
+        pdf.set_font("Helvetica", "B", 11)
+        pdf.set_fill_color(240, 240, 240)
+        for header, width in [("Thu", 30), ("Gio", 30), ("Kenh", 60), ("Avg Clicks", 60)]:
+            last = header == "Avg Clicks"
+            pdf.cell(
+                width, 9, header, border=1, fill=True, align="C",
+                new_x="LMARGIN" if last else "RIGHT",
+                new_y="NEXT" if last else "TOP",
+            )
+
+        pdf.set_font("Helvetica", "", 11)
+        for s in top_slots:
+            pdf.cell(30, 9, day_names[s.day_of_week], border=1, align="C")
+            pdf.cell(30, 9, f"{s.hour:02d}:00", border=1, align="C")
+            pdf.cell(60, 9, s.channel, border=1, align="C")
+            pdf.cell(
+                60, 9, f"{float(s.avg_clicks):.1f}", border=1, align="C",
+                new_x="LMARGIN", new_y="NEXT",
+            )
+    else:
+        pdf.set_font("Helvetica", "I", 11)
+        pdf.cell(0, 9, "Chua co du lieu time slot.", new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(8)
+
+    # ── Footer ────────────────────────────────────────────────────────────
+    pdf.set_font("Helvetica", "I", 9)
+    pdf.set_text_color(120, 120, 120)
+    pdf.cell(
+        0, 8,
+        f"Tao luc: {datetime.now().strftime('%H:%M %d/%m/%Y')} | He thong Affiliate Marketing Automation",
+        new_x="LMARGIN", new_y="NEXT", align="C",
+    )
+
+    return pdf.output()
+
+
+async def send_weekly_pdf_report(db) -> None:
+    """Tạo PDF báo cáo tuần và gửi qua Telegram (thứ 2 07:05 VN)."""
+    from sqlalchemy import func, select
+    from backend.models.analytics import AnalyticsEvent
+    from backend.models.automation import ScheduledPost, TimeSlotPerformance
+
+    week_start = datetime.now(timezone.utc) - timedelta(days=7)
+
+    clicks_r = await db.execute(
+        select(func.count()).where(
+            AnalyticsEvent.event_type == "click",
+            AnalyticsEvent.created_at >= week_start,
+        )
+    )
+    clicks = clicks_r.scalar() or 0
+
+    conv_r = await db.execute(
+        select(func.count()).where(
+            AnalyticsEvent.event_type == "conversion",
+            AnalyticsEvent.created_at >= week_start,
+        )
+    )
+    conversions = conv_r.scalar() or 0
+
+    posts_r = await db.execute(
+        select(func.count()).where(
+            ScheduledPost.status == "published",
+            ScheduledPost.published_at >= week_start,
+        )
+    )
+    total_posts = posts_r.scalar() or 0
+
+    slots_r = await db.execute(
+        select(TimeSlotPerformance)
+        .order_by(TimeSlotPerformance.performance_score.desc())
+        .limit(3)
+    )
+    top_slots = slots_r.scalars().all()
+
+    try:
+        pdf_bytes = generate_weekly_pdf(
+            clicks=clicks,
+            conversions=conversions,
+            total_posts=total_posts,
+            top_slots=top_slots,
+            week_start=week_start,
+        )
+        week_end = week_start + timedelta(days=7)
+        filename = f"bao_cao_tuan_{week_end.strftime('%d%m%Y')}.pdf"
+        caption = f"Bao cao tuan {week_start.strftime('%d/%m')} - {week_end.strftime('%d/%m/%Y')}"
+        await _send_document(pdf_bytes, filename, caption)
+        logger.info(f"[PDF] Gửi báo cáo tuần thành công: {filename}")
+    except Exception as e:
+        logger.error(f"[PDF] Lỗi tạo PDF báo cáo tuần: {e}", exc_info=True)
+
+
 async def send_pipeline_report(run) -> None:
     """Thông báo kết quả pipeline vừa chạy xong."""
     status_icon = "✅" if run.status == "completed" else "❌"

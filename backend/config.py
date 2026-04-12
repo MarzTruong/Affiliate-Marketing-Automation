@@ -57,6 +57,8 @@ class Settings(BaseSettings):
     # Facebook
     facebook_page_id: str = ""
     facebook_access_token: str = ""
+    facebook_webhook_secret: str = ""       # HMAC secret để verify webhook signature
+    facebook_webhook_verify_token: str = "affiliate_webhook_verify"  # Token xác minh khi đăng ký webhook
 
     # WordPress
     wordpress_site_url: str = ""

@@ -12,6 +12,7 @@ from backend.api.v1.publisher import router as publisher_router
 from backend.api.v1.sop import router as sop_router
 from backend.api.v1.settings import router as settings_router
 from backend.api.v1.system import router as system_router
+from backend.api.v1.webhooks import router as webhooks_router
 
 router = APIRouter()
 
@@ -27,3 +28,4 @@ router.include_router(automation_router, prefix="/automation", tags=["automation
 router.include_router(calendar_router, prefix="/calendar", tags=["calendar"])
 router.include_router(chat_router, prefix="/chat", tags=["chat"])
 router.include_router(settings_router, prefix="/settings", tags=["settings"])
+router.include_router(webhooks_router, prefix="/webhooks", tags=["webhooks"])
