@@ -28,13 +28,12 @@ const CH_LABELS: Record<string, string> = {
   tiktok: "🎵 TikTok",
 };
 
-const VARIANT_PLATFORMS = ["tiktok", "facebook", "telegram"] as const;
+const VARIANT_PLATFORMS = ["tiktok", "facebook"] as const;
 type VariantPlatform = (typeof VARIANT_PLATFORMS)[number];
 
 const VARIANT_LABELS: Record<VariantPlatform, string> = {
   tiktok: "🎵 TikTok",
   facebook: "📘 Facebook",
-  telegram: "✈️ Telegram",
 };
 
 interface ContentWithVariants extends ContentPiece {
@@ -362,7 +361,7 @@ export default function PublisherPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Kênh đăng bài</label>
               <div className="flex flex-wrap gap-2">
-                {channels?.channels.map((ch) => (
+                {channels?.channels.filter((ch) => ch !== "telegram").map((ch) => (
                   <button
                     key={ch}
                     onClick={() => toggleChannel(ch)}
