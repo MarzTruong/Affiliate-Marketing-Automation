@@ -1,8 +1,10 @@
 """Publisher API endpoints for auto-posting content."""
 
+from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.config import settings
@@ -12,6 +14,20 @@ from backend.publisher.scheduler import schedule_publication
 from backend.schemas.publisher import PublishRequest, ScheduleRequest, PublicationResponse
 
 router = APIRouter()
+
+
+class MarkPublishedRequest(BaseModel):
+    content_id: UUID
+    platform: str
+    note: str | None = None
+
+
+class MarkPublishedResponse(BaseModel):
+    id: UUID
+    content_id: UUID
+    platform: str
+    published_at: datetime
+    note: str | None
 
 # Credential fields required per channel
 _CHANNEL_CREDENTIALS: dict[str, list[str]] = {
@@ -89,3 +105,62 @@ async def list_publications(
 async def list_channels():
     """Danh sách các kênh đăng bài có sẵn."""
     return {"channels": list(PUBLISHER_REGISTRY.keys())}
+
+
+@router.post("/mark-published", response_model=MarkPublishedResponse)
+async def mark_published(req: MarkPublishedRequest, db: AsyncSession = Depends(get_db)):
+    """Ghi nhận đã đăng bài thủ công lên một platform."""
+    from backend.models.content import ContentPiece
+    from backend.models.manual_publish_log import ManualPublishLog
+
+    content = await db.get(ContentPiece, req.content_id)
+    if not content:
+        raise HTTPException(404, f"Content {req.content_id} không tồn tại")
+
+    valid_platforms = {"tiktok", "facebook", "telegram", "wordpress"}
+    if req.platform not in valid_platforms:
+        raise HTTPException(422, f"Platform không hợp lệ: {req.platform}. Hợp lệ: {valid_platforms}")
+
+    log = ManualPublishLog(
+        content_id=req.content_id,
+        platform=req.platform,
+        published_at=datetime.now(timezone.utc),
+        note=req.note,
+    )
+    db.add(log)
+    await db.commit()
+    await db.refresh(log)
+
+    return MarkPublishedResponse(
+        id=log.id,
+        content_id=log.content_id,
+        platform=log.platform,
+        published_at=log.published_at,
+        note=log.note,
+    )
+
+
+@router.get("/manual-logs")
+async def list_manual_logs(
+    content_id: UUID | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """Lịch sử đăng bài thủ công."""
+    from sqlalchemy import select
+    from backend.models.manual_publish_log import ManualPublishLog
+
+    stmt = select(ManualPublishLog).order_by(ManualPublishLog.published_at.desc())
+    if content_id:
+        stmt = stmt.where(ManualPublishLog.content_id == content_id)
+    result = await db.execute(stmt)
+    logs = result.scalars().all()
+    return [
+        {
+            "id": str(log.id),
+            "content_id": str(log.content_id),
+            "platform": log.platform,
+            "published_at": log.published_at.isoformat(),
+            "note": log.note,
+        }
+        for log in logs
+    ]

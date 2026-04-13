@@ -3,7 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, Text, func
-from backend.compat import GUID, StringArrayType
+from backend.compat import GUID, JSONType, StringArrayType
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.database import Base
@@ -31,6 +31,7 @@ class ContentPiece(Base):
     token_cost_input: Mapped[int | None] = mapped_column(Integer, nullable=True)
     token_cost_output: Mapped[int | None] = mapped_column(Integer, nullable=True)
     estimated_cost_usd: Mapped[Decimal | None] = mapped_column(Numeric(8, 4), nullable=True)
+    platform_variants: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="draft")
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -11,9 +11,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.ai_engine.client import ClaudeClient
 from backend.ai_engine.prompts.templates import (
+    FACEBOOK_VARIANT_TEMPLATE,
     PRODUCT_DESCRIPTION_TEMPLATE,
     SEO_ARTICLE_TEMPLATE,
     SOCIAL_POST_TEMPLATE,
+    TELEGRAM_VARIANT_TEMPLATE,
+    TIKTOK_VARIANT_TEMPLATE,
     VIDEO_SCRIPT_TEMPLATE,
     _COT_HEADER,
     build_few_shot_prefix,
@@ -129,6 +132,13 @@ class ContentGenerator:
         await db.flush()
         await db.refresh(content_piece)
 
+        # Generate 3 platform variants — non-blocking, graceful fallback
+        try:
+            variants = await self._generate_variants(variables)
+            content_piece.platform_variants = variants
+        except Exception as e:
+            logger.warning(f"[ContentGenerator] Variant generation failed (ignored): {e}")
+
         if template_id:
             template = await db.get(SOPTemplate, template_id)
             if template:
@@ -204,6 +214,37 @@ class ContentGenerator:
         except Exception:
             # Bảng chưa tồn tại hoặc lỗi DB — không block content generation
             return []
+
+    async def _generate_variants(self, variables: dict) -> dict:
+        """Generate 3 platform-optimized variants song song bằng Haiku (cost thấp).
+
+        Returns:
+            {"tiktok": "...", "facebook": "...", "telegram": "..."}
+        """
+        import asyncio
+
+        async def _call(template: str, platform_label: str) -> str:
+            text, _ = await self.claude.generate(
+                content_type="social_post",
+                variables=variables,
+                template=template,
+                model_override="claude-haiku-4-5-20251001",
+            )
+            return self._strip_thinking_blocks(text)
+
+        tiktok_task = asyncio.create_task(_call(TIKTOK_VARIANT_TEMPLATE, "tiktok"))
+        facebook_task = asyncio.create_task(_call(FACEBOOK_VARIANT_TEMPLATE, "facebook"))
+        telegram_task = asyncio.create_task(_call(TELEGRAM_VARIANT_TEMPLATE, "telegram"))
+
+        tiktok, facebook, telegram = await asyncio.gather(
+            tiktok_task, facebook_task, telegram_task, return_exceptions=True
+        )
+
+        return {
+            "tiktok": tiktok if isinstance(tiktok, str) else "",
+            "facebook": facebook if isinstance(facebook, str) else "",
+            "telegram": telegram if isinstance(telegram, str) else "",
+        }
 
     def _strip_thinking_blocks(self, content: str) -> str:
         """Xóa <thinking>...</thinking> CoT blocks khỏi output trước khi lưu.
