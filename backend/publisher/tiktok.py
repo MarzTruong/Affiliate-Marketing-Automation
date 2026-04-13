@@ -94,7 +94,14 @@ class TikTokPublisher(BasePublisher):
                 return PublishResult(success=False, error=str(e))
 
     async def _create_draft(self, caption: str, privacy_level: str) -> PublishResult:
-        """Create an inbox draft (no video required — for manual upload later)."""
+        """Khởi tạo inbox draft trên TikTok với caption đã tạo.
+
+        TikTok Content Posting API yêu cầu video thật — endpoint này init draft
+        và trả về publish_id + upload_url để client upload video sau.
+        Trong sandbox, dùng để xác nhận token và API call hoạt động đúng.
+        """
+        # Dùng 1 byte placeholder để TikTok trả về publish_id hợp lệ
+        # Client cần upload video thật vào upload_url để hoàn tất
         payload = {
             "post_info": {
                 "title": caption,
@@ -103,9 +110,9 @@ class TikTokPublisher(BasePublisher):
             },
             "source_info": {
                 "source": "FILE_UPLOAD",
-                "video_size": 0,
-                "chunk_size": 0,
-                "total_chunk_count": 0,
+                "video_size": 1,
+                "chunk_size": 1,
+                "total_chunk_count": 1,
             },
             "post_mode": "INBOX",
         }
@@ -121,10 +128,11 @@ class TikTokPublisher(BasePublisher):
                 data = resp.json()
                 if data.get("error", {}).get("code") == "ok":
                     publish_id = data.get("data", {}).get("publish_id", "draft")
+                    upload_url = data.get("data", {}).get("upload_url", "")
                     return PublishResult(
                         success=True,
                         external_post_id=publish_id,
-                        url="https://www.tiktok.com/creator#inbox",
+                        url=upload_url or "https://www.tiktok.com/creator#inbox",
                     )
                 err = data.get("error", {}).get("message", "Unknown TikTok error")
                 return PublishResult(success=False, error=err)

@@ -30,6 +30,37 @@ REDIRECT_URI = "https://colony-ideally-epilepsy.ngrok-free.dev/api/v1/auth/tikto
 _oauth_states: dict[str, datetime] = {}
 
 
+@router.get("/tiktok/me")
+async def tiktok_me():
+    """Kiểm tra token còn sống + lấy thông tin user TikTok."""
+    if not settings.tiktok_access_token:
+        raise HTTPException(422, "Chưa có TikTok access token. Vào /auth/tiktok để kết nối trước.")
+
+    async with httpx.AsyncClient(timeout=10) as client:
+        try:
+            resp = await client.get(
+                "https://open.tiktokapis.com/v2/user/info/",
+                headers={"Authorization": f"Bearer {settings.tiktok_access_token}"},
+                params={"fields": "open_id,display_name"},
+            )
+            data = resp.json()
+            err = data.get("error", {})
+            if err.get("code") != "ok":
+                raise HTTPException(502, f"TikTok API lỗi: {err.get('message', 'Unknown')}")
+            user = data.get("data", {}).get("user", {})
+            return {
+                "ok": True,
+                "open_id": user.get("open_id", ""),
+                "display_name": user.get("display_name", ""),
+                "avatar_url": user.get("avatar_url", ""),
+
+            }
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(500, f"Lỗi kết nối TikTok: {str(e)}")
+
+
 @router.get("/tiktok")
 async def tiktok_auth_start():
     """Bắt đầu TikTok OAuth — redirect user đến trang xác thực TikTok."""
@@ -139,10 +170,11 @@ async def _save_tiktok_token(db: AsyncSession, access_token: str, open_id: str, 
     """Lưu TikTok token vào bảng system_settings."""
     from sqlalchemy import select, text
 
+    # Keys phải viết hoa để apply_db_settings() load được vào settings singleton
     entries = {
-        "tiktok_access_token": access_token,
-        "tiktok_open_id": open_id,
-        "tiktok_scope": scope,
+        "TIKTOK_ACCESS_TOKEN": access_token,
+        "TIKTOK_OPEN_ID": open_id,
+        "TIKTOK_SCOPE": scope,
     }
 
     for key, value in entries.items():
