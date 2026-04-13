@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from backend.api.v1.analytics import router as analytics_router
+from backend.api.v1.auth import router as auth_router
 from backend.api.v1.automation import router as automation_router
 from backend.api.v1.calendar import router as calendar_router
 from backend.api.v1.campaigns import router as campaigns_router
@@ -16,6 +17,7 @@ from backend.api.v1.webhooks import router as webhooks_router
 
 router = APIRouter()
 
+router.include_router(auth_router, prefix="/auth", tags=["auth"])
 router.include_router(campaigns_router, prefix="/campaigns", tags=["campaigns"])
 router.include_router(content_router, prefix="/content", tags=["content"])
 router.include_router(analytics_router, prefix="/analytics", tags=["analytics"])
