@@ -4,6 +4,8 @@
 
 > **Communication:** This file is English (token efficiency). Claude MUST ALWAYS speak to the owner in **Vietnamese** (simple, Non-Dev friendly).
 
+> **Owner profile:** Non-developer. For any terminal/shell command Claude CAN run itself → just run it and report result. Only ask owner to run commands that require their interactive input (e.g. entering passwords, navigating GUI apps).
+
 > **Modular docs:** Architecture → [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · Workflow & commands → [`docs/WORKFLOW.md`](docs/WORKFLOW.md)
 
 ---

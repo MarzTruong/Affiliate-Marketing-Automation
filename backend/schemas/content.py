@@ -29,7 +29,8 @@ class ContentResponse(BaseModel):
     token_cost_output: int | None
     estimated_cost_usd: Decimal | None
     status: str
+    platform_variants: dict | None = None
     published_at: datetime | None
     created_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = {"from_attributes": True}  # noqa
