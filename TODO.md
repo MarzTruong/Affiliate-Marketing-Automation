@@ -73,11 +73,30 @@
 
 ### Ưu tiên cao
 - [ ] **Facebook Publisher** — chờ thiết bị được tin tưởng (vài ngày) → tạo Meta Developer → lấy Page Token → test đăng bài thật
-- [ ] **TikTok OAuth flow** — build `/auth/tiktok/callback` endpoint + lấy token qua Sandbox → test publish
+- [x] **TikTok OAuth flow** — HOÀN THÀNH: OAuth sandbox, token lưu DB, `/auth/tiktok/me`, `/publisher/health`, publish draft thành công
+- [ ] **TikTok video upload** — để post thật cần upload video MP4 vào `upload_url`. Cân nhắc tạo slide video từ ảnh sản phẩm.
 
 ### Ưu tiên trung bình
 - [ ] **Multi-account support** — nhiều Facebook Page, nhiều WordPress site (phức tạp: DB migration + UI + publisher routing)
 - [ ] **Gemini Vision test thật** — quota reset hàng ngày, test với ảnh thật Shopee/Tiki
+
+### Hoàn thành trong phiên 4 (13-14/04/2026)
+- [x] **TikTok Sandbox setup** — App Key/Secret, Redirect URI, Direct Post ON, scopes (user.info.basic + video.publish + video.upload)
+- [x] **TikTok OAuth 2.0 hoàn chỉnh** — `/auth/tiktok` → TikTok → `/auth/tiktok/callback` → token lưu DB
+- [x] **Fix bug DB key case** — OAuth callback lưu lowercase, `apply_db_settings()` tìm uppercase → đã fix sang UPPERCASE
+- [x] **`GET /auth/tiktok/me`** — test token + lấy user info (open_id, display_name)
+- [x] **`GET /publisher/health`** — check tất cả platforms, TikTok: ok, Telegram: ok
+- [x] **TikTok publisher fix** — `video_size: 0` → `1` để TikTok trả publish_id + upload_url hợp lệ
+- [x] **Publish end-to-end** — `POST /publisher/publish` → TikTok → `status: published`, `publish_id` thật từ TikTok API
+
+### Ghi chú cho phiên tiếp theo
+> **TikTok giới hạn:** API chỉ nhận VIDEO, không có text-only post. Draft hiện tại có `publish_id` và `upload_url` hợp lệ từ TikTok. Để post thật cần upload file video MP4 vào `upload_url` đó. Hướng đi: tạo slide video từ ảnh sản phẩm (ffmpeg hoặc moviepy).
+>
+> **Ngrok:** Token TikTok hết hạn sau 24h. Cần re-auth qua `/auth/tiktok` mỗi ngày khi dùng sandbox. Khi production sẽ có refresh_token.
+>
+> **Bước tiếp theo ưu tiên:**
+> 1. TikTok video: tạo slide MP4 từ ảnh sản phẩm → upload vào `upload_url` → post thật
+> 2. Facebook Publisher: nếu thiết bị đã được trust → tạo Meta Developer App → lấy Page Token
 
 ### Hoàn thành trong phiên 3 (13/04/2026)
 - [x] **Fix 3 pre-existing test failures** — test_publisher_registry, test_get_publisher_unknown, test_pick_variant_balanced → 78/78 passed

@@ -107,6 +107,27 @@ async def list_channels():
     return {"channels": list(PUBLISHER_REGISTRY.keys())}
 
 
+@router.get("/health")
+async def publisher_health():
+    """Kiểm tra kết nối tất cả các publisher đã cấu hình."""
+    import asyncio
+
+    async def _check(channel: str) -> dict:
+        creds = _CHANNEL_CREDENTIALS.get(channel, [])
+        configured = all(getattr(settings, f, "") for f in creds)
+        if not configured:
+            return {"channel": channel, "status": "not_configured"}
+        try:
+            publisher = PUBLISHER_REGISTRY[channel]()
+            ok = await publisher.health_check()
+            return {"channel": channel, "status": "ok" if ok else "error"}
+        except Exception as e:
+            return {"channel": channel, "status": "error", "detail": str(e)}
+
+    results = await asyncio.gather(*[_check(ch) for ch in PUBLISHER_REGISTRY])
+    return {"platforms": list(results)}
+
+
 @router.post("/mark-published", response_model=MarkPublishedResponse)
 async def mark_published(req: MarkPublishedRequest, db: AsyncSession = Depends(get_db)):
     """Ghi nhận đã đăng bài thủ công lên một platform."""
