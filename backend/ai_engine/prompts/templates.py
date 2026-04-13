@@ -146,6 +146,63 @@ SOCIAL_POST_TEMPLATE = """\
 - 5-8 hashtag tiếng Việt liên quan\
 """
 
+# ── Platform Variant Templates (One-Click Copy) ───────────────────────────────
+
+TIKTOK_VARIANT_TEMPLATE = """\
+Viết caption TikTok affiliate cho sản phẩm sau. CHỈ trả về caption, không giải thích.
+
+**Sản phẩm:** {{ product_name }}
+**Giá:** {{ price }} VNĐ
+**Danh mục:** {{ category }}
+**Mô tả:** {{ description }}
+**Link affiliate:** {{ affiliate_url }}
+
+**Yêu cầu TikTok (NGHIÊM NGẶT):**
+- Tổng độ dài: 100-150 ký tự (không kể hashtag)
+- Dòng 1: Hook gây tò mò ≤ 10 từ, dùng emoji mạnh (😱🔥💥)
+- Dòng 2-3: 1-2 lợi ích ngắn + giá rõ ràng
+- Dòng 4: Link affiliate ({{ affiliate_url }})
+- Dòng 5: 5-6 hashtag trending tiếng Việt (#reviewsanpham #muasamonline #deal...)\
+"""
+
+FACEBOOK_VARIANT_TEMPLATE = """\
+Viết bài đăng Facebook affiliate cho sản phẩm sau. CHỈ trả về bài đăng, không giải thích.
+
+**Sản phẩm:** {{ product_name }}
+**Giá:** {{ price }} VNĐ
+**Danh mục:** {{ category }}
+**Mô tả:** {{ description }}
+**Link affiliate:** {{ affiliate_url }}
+
+**Yêu cầu Facebook:**
+- Độ dài: 200-300 ký tự
+- Dòng 1: Hook storytelling hoặc câu hỏi gợi mở
+- Thân bài: 2-3 lợi ích chính, dùng emoji vừa phải (không quá 5 emoji)
+- Giá và link affiliate rõ ràng ở cuối
+- CTA: 1 hành động cụ thể (bình luận "GIÁ" / nhấn link)
+- 3-5 hashtag ngắn\
+"""
+
+TELEGRAM_VARIANT_TEMPLATE = """\
+Viết bài đăng Telegram channel affiliate cho sản phẩm sau. CHỈ trả về bài đăng, không giải thích.
+
+**Sản phẩm:** {{ product_name }}
+**Giá:** {{ price }} VNĐ
+**Danh mục:** {{ category }}
+**Mô tả:** {{ description }}
+**Link affiliate:** {{ affiliate_url }}
+
+**Yêu cầu Telegram:**
+- Độ dài: 300-500 ký tự
+- Tiêu đề in đậm: **Tên sản phẩm**
+- Mô tả chi tiết: 3-4 điểm lợi ích với emoji bullet (✅ 🔹 ⭐)
+- Giá gốc vs giá sale (nếu có) — nếu không có giá sale thì bỏ qua
+- Link affiliate nổi bật
+- CTA rõ ràng
+- Không cần hashtag (Telegram không dùng hashtag nhiều)\
+"""
+
+
 VIDEO_SCRIPT_TEMPLATE = """\
 {{ few_shot_prefix }}\
 {{ cot_header }}
