@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, Text, func
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, Numeric, String, Text, func
 from backend.compat import GUID, JSONType, StringArrayType
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -35,6 +35,11 @@ class ContentPiece(Base):
     status: Mapped[str] = mapped_column(String(20), default="draft")
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    # Audio — sinh bởi ElevenLabs TTS (chỉ có với content_type="tiktok_script")
+    audio_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    audio_voice_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    audio_duration_s: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     product: Mapped["Product | None"] = relationship(back_populates="content_pieces")
     campaign: Mapped["Campaign"] = relationship(back_populates="content_pieces")

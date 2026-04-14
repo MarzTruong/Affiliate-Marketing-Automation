@@ -28,6 +28,8 @@ PLATFORM_SETTING_KEYS = {
     "ACCESSTRADE_SITE_ID",
     "BANNERBEAR_API_KEY",
     "BANNERBEAR_DEFAULT_TEMPLATE_ID",
+    "ELEVENLABS_API_KEY",
+    "ELEVENLABS_VOICE_ID",
 }
 
 
@@ -91,6 +93,10 @@ class Settings(BaseSettings):
     # Bannerbear
     bannerbear_api_key: str = ""
     bannerbear_default_template_id: str = ""
+
+    # ElevenLabs
+    elevenlabs_api_key: str = ""
+    elevenlabs_voice_id: str = ""  # Voice ID sau khi clone giọng trên ElevenLabs
 
     @property
     def is_production(self) -> bool:

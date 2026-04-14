@@ -44,6 +44,9 @@ class ContentGenerator:
         from backend.ai_engine.gemini_engine import create_gemini_engine
         self._gemini = create_gemini_engine()
         self._gemini_ready = False
+        from backend.ai_engine.elevenlabs_engine import create_elevenlabs_engine
+        self._elevenlabs = create_elevenlabs_engine()
+        self._elevenlabs_ready = False
 
     async def _ensure_gemini_initialized(self) -> bool:
         """Lazy init Gemini — chỉ init một lần, không block nếu unavailable."""
@@ -51,6 +54,13 @@ class ContentGenerator:
             await self._gemini.initialize()
             self._gemini_ready = True
         return self._gemini.is_available()
+
+    async def _ensure_elevenlabs_initialized(self) -> bool:
+        """Lazy init ElevenLabs — chỉ init một lần, không block nếu unavailable."""
+        if not self._elevenlabs_ready:
+            await self._elevenlabs.initialize()
+            self._elevenlabs_ready = True
+        return self._elevenlabs.is_available()
 
     async def generate(
         self,
@@ -139,12 +149,64 @@ class ContentGenerator:
         except Exception as e:
             logger.warning(f"[ContentGenerator] Variant generation failed (ignored): {e}")
 
+        # ElevenLabs TTS — chỉ chạy với tiktok_script, non-blocking
+        if content_type == "tiktok_script":
+            await self._generate_tiktok_audio(content_piece, product)
+
         if template_id:
             template = await db.get(SOPTemplate, template_id)
             if template:
                 template.usage_count += 1
 
         return content_piece
+
+    async def _generate_tiktok_audio(self, content_piece: ContentPiece, product) -> None:
+        """Tổng hợp audio narration từ cột VOICE của TikTok script.
+
+        Non-blocking: lỗi ElevenLabs chỉ log warning, không crash pipeline.
+        Kết quả lưu thẳng vào content_piece (audio_url, audio_voice_id, audio_duration_s).
+        """
+        try:
+            if not await self._ensure_elevenlabs_initialized():
+                logger.info(
+                    "[ContentGenerator] ElevenLabs không khả dụng — bỏ qua bước tạo audio."
+                )
+                return
+
+            from backend.ai_engine.elevenlabs_engine import (
+                ElevenLabsRateLimitError,
+                extract_voice_text,
+            )
+
+            voice_text = extract_voice_text(content_piece.body)
+            if not voice_text:
+                logger.warning(
+                    "[ContentGenerator] Không extract được VOICE text — bỏ qua audio."
+                )
+                return
+
+            prefix = f"tiktok_{product.name[:20].replace(' ', '_')}" if product else "tiktok"
+            result = await self._elevenlabs.generate_audio(
+                text=voice_text,
+                filename_prefix=prefix,
+            )
+
+            content_piece.audio_url = result.audio_url
+            content_piece.audio_voice_id = result.voice_id
+            content_piece.audio_duration_s = result.duration_s
+
+            logger.info(
+                "[ContentGenerator] ElevenLabs audio OK — url=%s, duration=%.1fs",
+                result.audio_url,
+                result.duration_s,
+            )
+
+        except ElevenLabsRateLimitError as e:
+            logger.error("[ContentGenerator] %s", e)
+        except Exception as e:
+            logger.warning(
+                "[ContentGenerator] ElevenLabs audio failed (ignored): %s", e
+            )
 
     async def _get_template(
         self, content_type: str, template_id: UUID | None, db: AsyncSession

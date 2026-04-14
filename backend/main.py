@@ -1,12 +1,17 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from backend.api.v1 import router as api_v1_router
 from backend.config import apply_db_settings, settings
 from backend.database import Base, engine
 import backend.models  # noqa: F401 - register all models
+
+# Thư mục serve audio files
+_AUDIO_DIR = Path(__file__).resolve().parent / "static" / "audio"
 
 
 @asynccontextmanager
@@ -23,6 +28,11 @@ async def lifespan(app: FastAPI):
     from backend.ai_engine.gemini_engine import create_gemini_engine
     app.state.gemini = create_gemini_engine()
     await app.state.gemini.initialize()
+
+    # Khởi tạo ElevenLabs Audio engine
+    from backend.ai_engine.elevenlabs_engine import create_elevenlabs_engine
+    app.state.elevenlabs = create_elevenlabs_engine()
+    await app.state.elevenlabs.initialize()
 
     # Khởi động Automation Scheduler
     from backend.automation.scheduler import start_scheduler, stop_scheduler
@@ -49,6 +59,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve audio files tại /static/audio/{filename}.mp3
+_AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/static/audio", StaticFiles(directory=str(_AUDIO_DIR)), name="audio")
 
 app.include_router(api_v1_router, prefix="/api/v1")
 

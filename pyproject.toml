@@ -28,6 +28,7 @@ dependencies = [
     "tenacity>=8.0.0",
     "google-genai>=1.0.0",
     "fpdf2>=2.7.9",
+    "elevenlabs>=1.0.0",
 ]
 
 [project.optional-dependencies]
