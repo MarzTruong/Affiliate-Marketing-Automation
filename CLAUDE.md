@@ -6,7 +6,7 @@
 
 > **Owner profile:** Non-developer. For any terminal/shell command Claude CAN run itself → just run it and report result. Only ask owner to run commands that require their interactive input (e.g. entering passwords, navigating GUI apps).
 
-> **Modular docs:** Architecture → [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · Workflow & commands → [`docs/WORKFLOW.md`](docs/WORKFLOW.md)
+> **Modular docs:** Architecture → [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · Workflow & commands → [`docs/WORKFLOW.md`](docs/WORKFLOW.md) · Long-term memory → [`docs/MEMORY.md`](docs/MEMORY.md)
 
 ---
 
@@ -64,8 +64,23 @@
 
 ### 3.3 Auto Memory
 
-- **MAY auto-update:** Dev commands (§4 below), `TODO.md`, `memory/` files
+- **MAY auto-update:** Dev commands (§4 below), `TODO.md`, `docs/MEMORY.md`
 - **MUST NOT auto-update:** Survival rules (§1-3), architecture docs, `.env`, `docker-compose.yml`
+
+### 3.3a Auto-Memorize (Global Rule)
+
+Whenever ANY of the following occurs, AI **MUST** autonomously append a summary to `docs/MEMORY.md` — do NOT wait for owner to ask:
+
+- A new **architectural principle** or **design decision** is agreed upon
+- A complex or unusual **bug is resolved** (edge case, unexpected behavior)
+- A new **workflow rule** or **coding convention** is established for this project
+- A **recurring mistake** is identified and corrected
+
+**Format to append:**
+```
+- **[YYYY-MM-DD] Short title:** One-sentence explanation of what was decided/fixed and why.
+```
+Place under the correct section: `Quirks & Custom Rules`, `Resolved Edge Cases`, or `Architecture Decisions`.
 
 ### 3.4 Skill Files (Meta Prompting)
 
@@ -90,9 +105,9 @@
 
 ### 3.7 Session Management
 
-**"Bắt đầu" (Start Game):** Read TODO.md + CLAUDE.md + memory/ → git status + git log -5 → health checks → Vietnamese status report → "Sẵn sàng nhận lệnh."
+**"Bắt đầu" (Start Game):** Read TODO.md + CLAUDE.md + **docs/MEMORY.md** (silently load all quirks, rules, resolved cases) → git status + git log -5 → health checks → Vietnamese status report → "Sẵn sàng nhận lệnh."
 
-**"Nghỉ thôi" (Save Game):** Update TODO.md + memory/ → run linter + tests → git add + commit + push → Vietnamese closing report (done/remaining/notes).
+**"Nghỉ thôi" (Save Game):** Update TODO.md + **docs/MEMORY.md** (append any new decisions/bugs from this session) → run linter + tests → git add + commit + push → Vietnamese closing report (done/remaining/notes).
 
 ---
 
