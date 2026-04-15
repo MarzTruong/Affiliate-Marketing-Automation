@@ -18,7 +18,7 @@ from tenacity import (
 )
 
 from backend.config import settings
-from backend.connectors.base import AffiliateLink, BasePlatformConnector, ProductInfo
+from backend.affiliate.connectors.base import AffiliateLink, BasePlatformConnector, ProductInfo
 
 logger = logging.getLogger(__name__)
 

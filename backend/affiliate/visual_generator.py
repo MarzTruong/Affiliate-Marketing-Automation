@@ -21,7 +21,7 @@ from pathlib import Path
 import httpx
 
 from backend.config import settings
-from backend.connectors.base import ProductInfo
+from backend.affiliate.connectors.base import ProductInfo
 
 logger = logging.getLogger(__name__)
 

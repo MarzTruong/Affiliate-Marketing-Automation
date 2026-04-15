@@ -3,7 +3,7 @@
 import httpx
 
 from backend.config import settings
-from backend.publisher.base import BasePublisher, PublishResult
+from backend.affiliate.publishers.base import BasePublisher, PublishResult
 
 
 class TelegramPublisher(BasePublisher):

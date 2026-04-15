@@ -9,11 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.models.content import ContentPiece
 from backend.models.publication import Publication
-from backend.publisher.base import BasePublisher, PublishResult
-from backend.publisher.facebook import FacebookPublisher
-from backend.publisher.wordpress import WordPressPublisher
-from backend.publisher.telegram import TelegramPublisher
-from backend.publisher.tiktok import TikTokPublisher
+from backend.affiliate.publishers.base import BasePublisher, PublishResult
+from backend.affiliate.publishers.facebook import FacebookPublisher
+from backend.affiliate.publishers.wordpress import WordPressPublisher
+from backend.affiliate.publishers.telegram import TelegramPublisher
+from backend.tiktok.publisher import TikTokPublisher
 
 logger = logging.getLogger(__name__)
 

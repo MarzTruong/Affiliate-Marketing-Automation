@@ -7,7 +7,7 @@ from datetime import date, datetime
 import httpx
 
 from backend.config import settings
-from backend.connectors.base import AffiliateLink, BasePlatformConnector, ProductInfo
+from backend.affiliate.connectors.base import AffiliateLink, BasePlatformConnector, ProductInfo
 
 
 class TikTokShopConnector(BasePlatformConnector):

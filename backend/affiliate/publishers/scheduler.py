@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.database import get_db_context
 from backend.models.publication import Publication
-from backend.publisher.posting_service import publish_content
+from backend.affiliate.publishers.posting_service import publish_content
 
 logger = logging.getLogger(__name__)
 

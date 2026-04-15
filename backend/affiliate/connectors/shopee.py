@@ -15,7 +15,7 @@ import time
 from datetime import date
 
 from backend.config import settings
-from backend.connectors.base import AffiliateLink, BasePlatformConnector, ProductInfo
+from backend.affiliate.connectors.base import AffiliateLink, BasePlatformConnector, ProductInfo
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class ShopeeConnector(BasePlatformConnector):
 
     def _get_accesstrade(self):
         if self._accesstrade is None:
-            from backend.connectors.accesstrade import AccessTradeConnector
+            from backend.affiliate.connectors.accesstrade import AccessTradeConnector
             self._accesstrade = AccessTradeConnector()
         return self._accesstrade
 

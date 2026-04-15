@@ -16,7 +16,7 @@ import logging
 from dataclasses import dataclass
 from decimal import Decimal
 
-from backend.connectors.base import ProductInfo
+from backend.affiliate.connectors.base import ProductInfo
 from backend.models.automation import AutomationRule
 
 logger = logging.getLogger(__name__)
@@ -98,7 +98,7 @@ async def scan_products(rule: AutomationRule) -> tuple[list[ProductInfo], int]:
     criteria = FilterCriteria.from_rule(rule)
 
     # ── Kiểm tra AccessTrade credentials ─────────────────────────────────────
-    from backend.connectors.accesstrade import AccessTradeConnector, AuthError
+    from backend.affiliate.connectors.accesstrade import AccessTradeConnector, AuthError
 
     connector = AccessTradeConnector()
 
@@ -120,7 +120,7 @@ async def scan_products(rule: AutomationRule) -> tuple[list[ProductInfo], int]:
     all_products: list[ProductInfo] = []
     seen_ids: set[str] = set()
 
-    from backend.connectors.accesstrade import ConnectorNetworkError, RateLimitError
+    from backend.affiliate.connectors.accesstrade import ConnectorNetworkError, RateLimitError
     from tenacity import RetryError
 
     for i, keyword in enumerate(criteria.keywords[:3]):

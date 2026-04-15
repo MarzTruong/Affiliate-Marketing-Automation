@@ -102,7 +102,7 @@ async def stop_scheduler() -> None:
 
 async def trigger_rule_now(rule_id: str) -> None:
     """Trigger thủ công 1 rule ngay lập tức (từ API hoặc CBD chat)."""
-    from backend.automation.pipeline import run_pipeline
+    from backend.affiliate.pipeline import run_pipeline
 
     async with get_db_context() as db:
         from backend.models.automation import AutomationRule
@@ -119,7 +119,7 @@ async def trigger_rule_now(rule_id: str) -> None:
 
 async def _publish_due_posts() -> None:
     """Đăng tất cả ScheduledPost đã đến giờ."""
-    from backend.automation.publisher import publish_scheduled_post
+    from backend.affiliate.publisher import publish_scheduled_post
     from backend.models.automation import ScheduledPost
 
     async with get_db_context() as db:
@@ -145,7 +145,7 @@ async def _publish_due_posts() -> None:
 async def _check_and_run_pipelines() -> None:
     """Kiểm tra AutomationRule nào cần chạy dựa trên cron expression."""
     from croniter import croniter  # type: ignore[import-untyped]
-    from backend.automation.pipeline import run_pipeline
+    from backend.affiliate.pipeline import run_pipeline
     from backend.models.automation import AutomationRule, PipelineRun
 
     async with get_db_context() as db:
@@ -178,7 +178,7 @@ async def _check_and_run_pipelines() -> None:
 
 async def _weekly_schedule_update() -> None:
     """Cập nhật cron expression cho tất cả rules dựa trên Adaptive Scheduler."""
-    from backend.automation.adaptive_scheduler import update_rule_schedule
+    from backend.affiliate.adaptive_scheduler import update_rule_schedule
     from backend.models.automation import AutomationRule
 
     async with get_db_context() as db:

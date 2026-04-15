@@ -36,7 +36,7 @@ async def run_pipeline(db: AsyncSession, rule: AutomationRule) -> PipelineRun:
 
     try:
         # ── Step 1: Scan + Filter sản phẩm ─────────────────────────────
-        from backend.automation.product_scanner import scan_products
+        from backend.affiliate.product_scanner import scan_products
         products, total_found = await scan_products(rule)
 
         run.products_found = total_found
@@ -59,7 +59,7 @@ async def run_pipeline(db: AsyncSession, rule: AutomationRule) -> PipelineRun:
         visual_urls: dict[str, str] = {}
 
         from backend.ai_engine.content_generator import ContentGenerator
-        from backend.automation.visual_generator import generate_visual
+        from backend.affiliate.visual_generator import generate_visual
         from backend.models.product import Product as DBProduct
 
         generator = ContentGenerator()
@@ -121,7 +121,7 @@ async def run_pipeline(db: AsyncSession, rule: AutomationRule) -> PipelineRun:
         })
 
         # ── Step 4: Lên lịch đăng bài ───────────────────────────────────
-        from backend.automation.adaptive_scheduler import get_best_slots, next_scheduled_time
+        from backend.affiliate.adaptive_scheduler import get_best_slots, next_scheduled_time
         channels = _get_enabled_channels(rule)
 
         for content_id in content_ids:
