@@ -1,6 +1,6 @@
 # TODO — Affiliate Marketing Automation
 
-> Cập nhật lần cuối: 13/04/2026 (phiên 3)
+> Cập nhật lần cuối: 14/04/2026 (phiên 5)
 
 ---
 
@@ -89,6 +89,16 @@
 - [x] **TikTok publisher fix** — `video_size: 0` → `1` để TikTok trả publish_id + upload_url hợp lệ
 - [x] **Publish end-to-end** — `POST /publisher/publish` → TikTok → `status: published`, `publish_id` thật từ TikTok API
 
+### Hoàn thành trong phiên 5 (14/04/2026)
+- [x] **docs/MEMORY.md** — Long-term Memory Bank: tự động cập nhật qua phiên
+- [x] **CLAUDE.md cập nhật** — Auto-Memorize rule §3.3a + Start/Save Game đọc/ghi MEMORY.md
+- [x] **TikTok Skill SOP** — `docs/skills/tiktok_faceless_affiliate.md`: script faceless review 45–60s, bảng VOICE|VISUAL, checklist 10 điểm
+- [x] **ElevenLabs Engine** — `backend/ai_engine/elevenlabs_engine.py`: TTS async, voice clone, extract_voice_text(), lưu MP3 vào /static/audio/, 18 tests
+- [x] **HeyGen Engine** — `backend/ai_engine/heygen_engine.py`: submit clip → async poll → ClipResult, hook + CTA song song, 22 tests
+- [x] **ContentPiece model mở rộng** — audio_url, audio_voice_id, audio_duration_s, heygen_hook_url, heygen_cta_url
+- [x] **Alembic migrations** — c3d4e5f6a7b8 (audio fields) + d4e5f6a7b8c9 (heygen fields)
+- [x] **Pipeline wired** — ContentGenerator tự động gọi ElevenLabs + HeyGen sau khi tạo tiktok_script (non-blocking)
+
 ### Ghi chú cho phiên tiếp theo
 > **TikTok giới hạn:** API chỉ nhận VIDEO, không có text-only post. Draft hiện tại có `publish_id` và `upload_url` hợp lệ từ TikTok. Để post thật cần upload file video MP4 vào `upload_url` đó. Hướng đi: tạo slide video từ ảnh sản phẩm (ffmpeg hoặc moviepy).
 >
@@ -109,6 +119,13 @@
 
 ### Ưu tiên thấp
 - [ ] Sync/cập nhật ECC skills & agents (hiện có 57 skills, 47 agents)
+
+### Bước tiếp theo (Phase 3 — Content Production)
+- [ ] **ElevenLabs setup thật** — clone giọng bạn (upload 1-2 phút audio sạch) → lấy Voice ID → điền Settings
+- [ ] **HeyGen setup thật** — tạo Photo Avatar / Digital Twin → lấy Avatar ID + Voice ID → điền Settings
+- [ ] **Test end-to-end** — chạy pipeline với tiktok_script → nhận Telegram thông báo link MP3 + MP4 clips
+- [ ] **Facebook Publisher** — activate khi Meta Developer App được duyệt
+- [ ] **TikTok video upload** — sau khi bạn edit xong trong CapCut, upload lên TikTok qua web UI
 
 ---
 

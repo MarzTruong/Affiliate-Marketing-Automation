@@ -30,6 +30,9 @@ PLATFORM_SETTING_KEYS = {
     "BANNERBEAR_DEFAULT_TEMPLATE_ID",
     "ELEVENLABS_API_KEY",
     "ELEVENLABS_VOICE_ID",
+    "HEYGEN_API_KEY",
+    "HEYGEN_AVATAR_ID",
+    "HEYGEN_VOICE_ID",
 }
 
 
@@ -97,6 +100,11 @@ class Settings(BaseSettings):
     # ElevenLabs
     elevenlabs_api_key: str = ""
     elevenlabs_voice_id: str = ""  # Voice ID sau khi clone giọng trên ElevenLabs
+
+    # HeyGen
+    heygen_api_key: str = ""
+    heygen_avatar_id: str = ""   # Avatar ID trên HeyGen (Photo Avatar / Digital Twin)
+    heygen_voice_id: str = ""    # Voice ID trên HeyGen để sync môi avatar
 
     @property
     def is_production(self) -> bool:

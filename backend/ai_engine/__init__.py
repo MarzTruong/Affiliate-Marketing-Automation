@@ -9,8 +9,23 @@ from backend.ai_engine.elevenlabs_engine import (
     create_elevenlabs_engine,
     extract_voice_text,
 )
+from backend.ai_engine.heygen_engine import (
+    ClipJob,
+    ClipResult,
+    HeyGenAuthError,
+    HeyGenConfig,
+    HeyGenError,
+    HeyGenRateLimitError,
+    HeyGenRenderError,
+    HeyGenScriptParts,
+    HeyGenTimeoutError,
+    HeyGenVideoGenerator,
+    create_heygen_engine,
+    extract_script_parts,
+)
 
 __all__ = [
+    # ElevenLabs
     "AudioResult",
     "ElevenLabsAudioGenerator",
     "ElevenLabsAuthError",
@@ -20,4 +35,17 @@ __all__ = [
     "ElevenLabsTimeoutError",
     "create_elevenlabs_engine",
     "extract_voice_text",
+    # HeyGen
+    "ClipJob",
+    "ClipResult",
+    "HeyGenAuthError",
+    "HeyGenConfig",
+    "HeyGenError",
+    "HeyGenRateLimitError",
+    "HeyGenRenderError",
+    "HeyGenScriptParts",
+    "HeyGenTimeoutError",
+    "HeyGenVideoGenerator",
+    "create_heygen_engine",
+    "extract_script_parts",
 ]

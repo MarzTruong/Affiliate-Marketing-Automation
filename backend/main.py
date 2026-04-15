@@ -34,6 +34,11 @@ async def lifespan(app: FastAPI):
     app.state.elevenlabs = create_elevenlabs_engine()
     await app.state.elevenlabs.initialize()
 
+    # Khởi tạo HeyGen Video engine
+    from backend.ai_engine.heygen_engine import create_heygen_engine
+    app.state.heygen = create_heygen_engine()
+    await app.state.heygen.initialize()
+
     # Khởi động Automation Scheduler
     from backend.automation.scheduler import start_scheduler, stop_scheduler
     await start_scheduler()

@@ -47,6 +47,9 @@ class ContentGenerator:
         from backend.ai_engine.elevenlabs_engine import create_elevenlabs_engine
         self._elevenlabs = create_elevenlabs_engine()
         self._elevenlabs_ready = False
+        from backend.ai_engine.heygen_engine import create_heygen_engine
+        self._heygen = create_heygen_engine()
+        self._heygen_ready = False
 
     async def _ensure_gemini_initialized(self) -> bool:
         """Lazy init Gemini — chỉ init một lần, không block nếu unavailable."""
@@ -61,6 +64,13 @@ class ContentGenerator:
             await self._elevenlabs.initialize()
             self._elevenlabs_ready = True
         return self._elevenlabs.is_available()
+
+    async def _ensure_heygen_initialized(self) -> bool:
+        """Lazy init HeyGen — chỉ init một lần, không block nếu unavailable."""
+        if not self._heygen_ready:
+            await self._heygen.initialize()
+            self._heygen_ready = True
+        return self._heygen.is_available()
 
     async def generate(
         self,
@@ -149,9 +159,10 @@ class ContentGenerator:
         except Exception as e:
             logger.warning(f"[ContentGenerator] Variant generation failed (ignored): {e}")
 
-        # ElevenLabs TTS — chỉ chạy với tiktok_script, non-blocking
+        # ElevenLabs TTS + HeyGen clips — chỉ chạy với tiktok_script, non-blocking
         if content_type == "tiktok_script":
             await self._generate_tiktok_audio(content_piece, product)
+            await self._generate_heygen_clips(content_piece)
 
         if template_id:
             template = await db.get(SOPTemplate, template_id)
@@ -159,6 +170,42 @@ class ContentGenerator:
                 template.usage_count += 1
 
         return content_piece
+
+    async def _generate_heygen_clips(self, content_piece: ContentPiece) -> None:
+        """Tạo hook clip và CTA clip bằng HeyGen API.
+
+        Non-blocking: lỗi chỉ log warning, không crash pipeline.
+        Kết quả lưu vào content_piece.heygen_hook_url / heygen_cta_url.
+        """
+        try:
+            if not await self._ensure_heygen_initialized():
+                logger.info(
+                    "[ContentGenerator] HeyGen không khả dụng — bỏ qua bước tạo video clips."
+                )
+                return
+
+            from backend.ai_engine.heygen_engine import HeyGenRateLimitError
+
+            clips = await self._heygen.generate_clips(content_piece.body)
+
+            for clip in clips:
+                if clip.clip_type == "hook":
+                    content_piece.heygen_hook_url = clip.video_url
+                elif clip.clip_type == "cta":
+                    content_piece.heygen_cta_url = clip.video_url
+
+            if clips:
+                logger.info(
+                    "[ContentGenerator] HeyGen OK — %d clips generated (hook=%s, cta=%s)",
+                    len(clips),
+                    content_piece.heygen_hook_url or "none",
+                    content_piece.heygen_cta_url or "none",
+                )
+
+        except HeyGenRateLimitError as e:
+            logger.error("[ContentGenerator] %s", e)
+        except Exception as e:
+            logger.warning("[ContentGenerator] HeyGen clips failed (ignored): %s", e)
 
     async def _generate_tiktok_audio(self, content_piece: ContentPiece, product) -> None:
         """Tổng hợp audio narration từ cột VOICE của TikTok script.

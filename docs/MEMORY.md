@@ -3,7 +3,7 @@
 > Note: This file is autonomously updated by the AI to preserve context across sessions. Do not delete.
 
 **Repo:** `MarzTruong/Affiliate-Marketing-Automation`
-**Last updated:** 2026-04-14
+**Last updated:** 2026-04-14 (phiên 5)
 
 ---
 
@@ -41,6 +41,9 @@
 
 ## Architecture Decisions
 
+- **[2026-04-14] HeyGen async polling pattern:** HeyGen render video bất đồng bộ (~1-3 phút). Pattern: submit job → nhận video_id → poll GET /v1/video/{id} mỗi 10s → completed/failed. Timeout mặc định 600s. 2 clips (hook + CTA) submit và poll song song bằng asyncio.gather.
+- **[2026-04-14] ElevenLabs VoiceSettings import ở module level:** Import `VoiceSettings` và `AsyncElevenLabs` bằng try/except ở module level (không phải bên trong method) để unit test có thể patch được bằng `patch("backend.ai_engine.elevenlabs_engine.VoiceSettings")`.
+- **[2026-04-14] TikTok channel strategy — content only, no direct affiliate links:** TikTok = kênh nội dung (faceless review video) + "link in bio". Facebook = kênh affiliate link trực tiếp. Không đặt link TMĐT trong caption TikTok.
 - **[2026-04-14] Không dùng Make/n8n:** Hệ thống đã có APScheduler + custom pipeline + webhook — thêm Make/n8n tạo ra 2 layer chồng chéo không cần thiết. Quyết định: giữ custom backend, mở rộng bằng cách thêm engine mới (ElevenLabs, HeyGen) theo pattern `GeminiEngine`.
 
 - **[2026-04-14] TikTok strategy: Content channel, NOT affiliate link channel:** TikTok nghiêm ngặt về link affiliate từ sàn TMĐT ngoài. Quyết định: TikTok = kênh nội dung (faceless review video) → CTA về "link in bio" → landing page. Facebook = kênh phân phối affiliate link trực tiếp.

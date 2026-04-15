@@ -41,6 +41,10 @@ class ContentPiece(Base):
     audio_voice_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     audio_duration_s: Mapped[float | None] = mapped_column(Float, nullable=True)
 
+    # Video clips — sinh bởi HeyGen (chỉ có với content_type="tiktok_script")
+    heygen_hook_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    heygen_cta_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+
     product: Mapped["Product | None"] = relationship(back_populates="content_pieces")
     campaign: Mapped["Campaign"] = relationship(back_populates="content_pieces")
 
