@@ -92,6 +92,9 @@ class ReviewItemOut(BaseModel):
     scheduled_at: datetime
     visual_url: str | None
     rule_name: str | None
+    audio_url: str | None = None
+    heygen_hook_url: str | None = None
+    heygen_cta_url: str | None = None
 
 
 class ReviewDecision(BaseModel):
@@ -256,6 +259,9 @@ async def get_review_queue(
             "scheduled_at": post.scheduled_at,
             "visual_url": post.visual_url,
             "rule_name": rule_name,
+            "audio_url": content.audio_url if content else None,
+            "heygen_hook_url": content.heygen_hook_url if content else None,
+            "heygen_cta_url": content.heygen_cta_url if content else None,
         })
     return items
 

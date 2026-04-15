@@ -15,6 +15,9 @@ interface ReviewItem {
   scheduled_at: string;
   visual_url: string | null;
   rule_name: string | null;
+  audio_url: string | null;
+  heygen_hook_url: string | null;
+  heygen_cta_url: string | null;
 }
 
 type Tab = "rules" | "review" | "insights";
@@ -264,6 +267,7 @@ export default function AutomationPage() {
                   ["product_description", "📦 Mô tả SP"],
                   ["seo_article", "📰 Bài SEO"],
                   ["video_script", "🎬 Kịch bản video"],
+                  ["tiktok_script", "🎵 Script TikTok"],
                 ].map(([v, l]) => (
                   <label key={v} className="flex items-center gap-2 mb-1.5 text-sm cursor-pointer">
                     <input type="checkbox" name="content_types" value={v} defaultChecked={v === "social_post"} />
@@ -441,7 +445,7 @@ export default function AutomationPage() {
                         )}
                       </div>
                     </div>
-                    <div className="border-t bg-slate-50 px-5 py-3 flex items-center gap-3">
+                    <div className="border-t bg-slate-50 px-5 py-3 flex items-center gap-3 flex-wrap">
                       <button
                         onClick={() => approveMutation.mutate(item.post_id)}
                         disabled={approveMutation.isPending}
@@ -459,6 +463,34 @@ export default function AutomationPage() {
                       <a href="/content" className="px-4 py-1.5 text-slate-500 text-sm hover:text-slate-700 transition-colors">
                         Xem toàn bộ →
                       </a>
+                      {/* TikTok asset download buttons */}
+                      {item.audio_url && (
+                        <a
+                          href={item.audio_url}
+                          download
+                          className="px-3 py-1.5 bg-purple-50 text-purple-700 text-xs font-medium rounded-lg hover:bg-purple-100 transition-colors border border-purple-200"
+                        >
+                          🎙 Tải MP3
+                        </a>
+                      )}
+                      {item.heygen_hook_url && (
+                        <a
+                          href={item.heygen_hook_url}
+                          download
+                          className="px-3 py-1.5 bg-pink-50 text-pink-700 text-xs font-medium rounded-lg hover:bg-pink-100 transition-colors border border-pink-200"
+                        >
+                          🎬 Hook clip
+                        </a>
+                      )}
+                      {item.heygen_cta_url && (
+                        <a
+                          href={item.heygen_cta_url}
+                          download
+                          className="px-3 py-1.5 bg-pink-50 text-pink-700 text-xs font-medium rounded-lg hover:bg-pink-100 transition-colors border border-pink-200"
+                        >
+                          🎬 CTA clip
+                        </a>
+                      )}
                     </div>
                   </div>
                 );

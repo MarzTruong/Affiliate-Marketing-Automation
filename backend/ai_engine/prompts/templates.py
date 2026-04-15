@@ -232,3 +232,35 @@ VIDEO_SCRIPT_TEMPLATE = """\
 ## Nhạc nền gợi ý
 [Trend phù hợp danh mục]\
 """
+
+
+TIKTOK_SCRIPT_TEMPLATE = """\
+{{ few_shot_prefix }}\
+{{ cot_header }}
+
+**Thông tin sản phẩm:**
+- Tên: {{ product_name }}
+- Giá: {{ price }} VNĐ
+- Danh mục: {{ category }}
+- Mô tả: {{ description }}
+- Sàn: {{ platform }}
+
+**NHIỆM VỤ:** Viết kịch bản TikTok faceless review 45–60 giây cho sản phẩm trên.
+
+**QUY TẮC BẮT BUỘC:**
+1. Đại từ: dùng "mình" — KHÔNG dùng "tôi", "bạn", "chúng ta"
+2. Từ CẤM: siêu phẩm, hoàn hảo, tuyệt vời, số 1, tốt nhất, không thể thiếu
+3. CTA cuối: luôn kết thúc bằng "nhấn giỏ vàng góc trái nhé" hoặc tương đương
+4. KHÔNG đặt link affiliate — dùng "giỏ vàng góc trái" hoặc "link in bio"
+5. Chỉ đề cập ĐÚNG 2 tính năng cụ thể trong body (4–35s)
+6. Hook (0–3s): tình huống đau/vấn đề thực tế — không giới thiệu sản phẩm ngay
+
+**FORMAT ĐẦU RA — CHỈ trả về bảng markdown dưới đây, không thêm text nào khác:**
+
+| ⏱ Thời gian | 🎙 VOICE (Text-to-Speech) | 📹 VISUAL |
+|-------------|--------------------------|-----------|
+| 0–3s | *"[Hook: tình huống đau/vấn đề, 10–15 từ, dùng "mình"]"* | [Cảnh mở — thể hiện vấn đề] |
+| 4–15s | *"[Tính năng 1: mô tả cụ thể, có số liệu, dùng "mình"]"* | [Close-up demo tính năng 1] |
+| 16–35s | *"[Tính năng 2: mô tả cụ thể, có số liệu, dùng "mình"]"* | [Demo tính năng 2 hoặc before/after] |
+| 36–45s | *"[CTA: kết quả ngắn gọn + nhấn giỏ vàng góc trái nhé]"* | [Product shot + giỏ vàng overlay] |\
+"""

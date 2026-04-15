@@ -16,6 +16,7 @@ from backend.ai_engine.prompts.templates import (
     SEO_ARTICLE_TEMPLATE,
     SOCIAL_POST_TEMPLATE,
     TELEGRAM_VARIANT_TEMPLATE,
+    TIKTOK_SCRIPT_TEMPLATE,
     TIKTOK_VARIANT_TEMPLATE,
     VIDEO_SCRIPT_TEMPLATE,
     _COT_HEADER,
@@ -33,6 +34,7 @@ TEMPLATE_MAP = {
     "seo_article": SEO_ARTICLE_TEMPLATE,
     "social_post": SOCIAL_POST_TEMPLATE,
     "video_script": VIDEO_SCRIPT_TEMPLATE,
+    "tiktok_script": TIKTOK_SCRIPT_TEMPLATE,
 }
 
 

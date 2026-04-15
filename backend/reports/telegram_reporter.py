@@ -406,16 +406,36 @@ async def send_fraud_alert(event_data: dict) -> None:
     await _send(text)
 
 
-async def send_tiktok_draft_alert(content, visual_url: str | None) -> None:
-    """Nhắc user đăng TikTok thủ công."""
+async def send_tiktok_draft_alert(
+    content,
+    visual_url: str | None,
+    audio_url: str | None = None,
+    heygen_hook_url: str | None = None,
+    heygen_cta_url: str | None = None,
+) -> None:
+    """Nhắc user đăng TikTok thủ công. Kèm link tải assets nếu có."""
     title = content.title or content.body[:50]
+
+    # Build asset section
+    asset_lines: list[str] = []
+    if audio_url:
+        asset_lines.append(f"🎙 <b>Audio MP3:</b> <a href=\"{audio_url}\">Tải về</a>")
+    if heygen_hook_url:
+        asset_lines.append(f"🎬 <b>Hook clip:</b> <a href=\"{heygen_hook_url}\">Tải Hook (0–3s)</a>")
+    if heygen_cta_url:
+        asset_lines.append(f"🎬 <b>CTA clip:</b> <a href=\"{heygen_cta_url}\">Tải CTA (36–45s)</a>")
+    if visual_url:
+        asset_lines.append(f"🖼️ <b>Ảnh:</b> {visual_url}")
+
+    asset_block = ("\n\n📦 <b>Assets sẵn sàng:</b>\n" + "\n".join(asset_lines)) if asset_lines else ""
+
     text = (
-        f"🎵 <b>TikTok Draft sẵn sàng</b>\n"
+        f"🎵 <b>TikTok Script sẵn sàng</b>\n"
         f"{'─' * 25}\n\n"
         f"📝 Bài: <b>{title}</b>\n\n"
-        f"Caption đề xuất:\n<code>{content.body[:300]}</code>\n\n"
-        f"{'🖼️ Ảnh: ' + visual_url if visual_url else ''}\n\n"
-        f"👉 <i>Vào TikTok Creator Studio, upload video và dùng caption trên.</i>"
+        f"Kịch bản:\n<code>{content.body[:400]}</code>\n"
+        f"{asset_block}\n\n"
+        f"👉 <i>Dùng audio MP3 + B-roll tự quay → dựng trong CapCut → upload TikTok.</i>"
     )
     await _send(text)
 
