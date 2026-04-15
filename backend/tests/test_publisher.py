@@ -2,8 +2,8 @@
 
 import pytest
 
-from backend.publisher.base import BasePublisher, PublishResult
-from backend.publisher.posting_service import get_publisher, PUBLISHER_REGISTRY
+from backend.affiliate.publishers.base import BasePublisher, PublishResult
+from backend.affiliate.publishers.posting_service import get_publisher, PUBLISHER_REGISTRY
 
 
 def test_publish_result_success():

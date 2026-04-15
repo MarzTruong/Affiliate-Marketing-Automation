@@ -177,7 +177,7 @@ async def trigger_pipeline(rule_id: str, db: AsyncSession = Depends(get_db)):
     if not rule:
         raise HTTPException(404, "Rule không tồn tại")
 
-    from backend.automation.pipeline import run_pipeline
+    from backend.affiliate.pipeline import run_pipeline
     run = await run_pipeline(db, rule)
     return _run_to_out(run)
 
@@ -216,7 +216,7 @@ async def get_scheduled_posts(
 
 @router.get("/schedule-insights")
 async def get_schedule_insights(db: AsyncSession = Depends(get_db)):
-    from backend.automation.adaptive_scheduler import get_schedule_insights
+    from backend.affiliate.adaptive_scheduler import get_schedule_insights
     return await get_schedule_insights(db)
 
 

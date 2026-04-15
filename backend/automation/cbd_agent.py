@@ -323,7 +323,7 @@ class CBDAgent:
     async def _tool_trigger_pipeline(self, inp: dict) -> dict:
         from sqlalchemy import select, or_
         from backend.models.automation import AutomationRule
-        from backend.automation.pipeline import run_pipeline
+        from backend.affiliate.pipeline import run_pipeline
 
         name_or_id = inp["rule_name_or_id"]
         result = await self.db.execute(
@@ -380,7 +380,7 @@ class CBDAgent:
 
     async def _tool_schedule_post(self, inp: dict) -> dict:
         from datetime import datetime, timedelta
-        from backend.automation.adaptive_scheduler import get_best_slots, next_scheduled_time
+        from backend.affiliate.adaptive_scheduler import get_best_slots, next_scheduled_time
         from backend.models.automation import ScheduledPost
         import uuid
 
@@ -447,7 +447,7 @@ class CBDAgent:
         }
 
     async def _tool_schedule_insights(self) -> dict:
-        from backend.automation.adaptive_scheduler import get_schedule_insights
+        from backend.affiliate.adaptive_scheduler import get_schedule_insights
         return await get_schedule_insights(self.db)
 
     async def _tool_list_rules(self, inp: dict) -> dict:
@@ -502,5 +502,5 @@ def _parse_scheduled_time(time_str: str):
         return result
 
     # Default: giờ cao điểm tiếp theo
-    from backend.automation.adaptive_scheduler import _default_peak_hours, next_scheduled_time
+    from backend.affiliate.adaptive_scheduler import _default_peak_hours, next_scheduled_time
     return next_scheduled_time(_default_peak_hours())

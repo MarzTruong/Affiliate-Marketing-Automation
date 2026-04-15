@@ -42,7 +42,7 @@ async def test_platform_connection(platform_id: UUID, db: AsyncSession = Depends
     if not account:
         raise HTTPException(status_code=404, detail="Platform account not found")
 
-    from backend.connectors import get_connector
+    from backend.affiliate.connectors import get_connector
 
     connector = get_connector(account.platform)
     try:

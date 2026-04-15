@@ -17,7 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.automation.adaptive_scheduler import record_post_performance
+from backend.affiliate.adaptive_scheduler import record_post_performance
 from backend.config import settings
 from backend.database import get_db
 from backend.models.automation import ScheduledPost

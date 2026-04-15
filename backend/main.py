@@ -40,7 +40,7 @@ async def lifespan(app: FastAPI):
     await app.state.heygen.initialize()
 
     # Khởi động Automation Scheduler
-    from backend.automation.scheduler import start_scheduler, stop_scheduler
+    from backend.affiliate.scheduler import start_scheduler, stop_scheduler
     await start_scheduler()
 
     yield

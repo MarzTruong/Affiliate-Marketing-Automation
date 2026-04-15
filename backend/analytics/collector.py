@@ -4,7 +4,7 @@ from datetime import date, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.connectors import get_connector
+from backend.affiliate.connectors import get_connector
 from backend.database import get_db_context
 from backend.models.analytics import AnalyticsEvent
 from backend.models.campaign import Campaign

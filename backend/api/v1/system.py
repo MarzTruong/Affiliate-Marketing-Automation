@@ -123,7 +123,7 @@ async def trigger_evolve_templates(db: AsyncSession = Depends(get_db)):
 @router.post("/tasks/process-scheduled")
 async def trigger_process_scheduled():
     """Chạy thủ công: xử lý bài đăng đã lên lịch."""
-    from backend.publisher.scheduler import process_scheduled_publications
+    from backend.affiliate.publishers.scheduler import process_scheduled_publications
     await process_scheduled_publications()
     return {"status": "done"}
 

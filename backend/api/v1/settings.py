@@ -139,7 +139,7 @@ async def test_connection(platform: str):
 
     if platform in affiliate_platforms:
         try:
-            from backend.connectors import get_connector
+            from backend.affiliate.connectors import get_connector
             connector = get_connector(platform)
             is_connected = await connector.authenticate()
             status = "connected" if is_connected else "failed"
@@ -149,7 +149,7 @@ async def test_connection(platform: str):
 
     if platform in publisher_platforms:
         try:
-            from backend.publisher.posting_service import get_publisher
+            from backend.affiliate.publishers.posting_service import get_publisher
             publisher = get_publisher(platform)
             _ = publisher
             return {"status": "connected", "platform": platform}

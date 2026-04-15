@@ -9,8 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.config import settings
 from backend.database import get_db
-from backend.publisher.posting_service import publish_content, get_publications, PUBLISHER_REGISTRY
-from backend.publisher.scheduler import schedule_publication
+from backend.affiliate.publishers.posting_service import publish_content, get_publications, PUBLISHER_REGISTRY
+from backend.affiliate.publishers.scheduler import schedule_publication
 from backend.schemas.publisher import PublishRequest, ScheduleRequest, PublicationResponse
 
 router = APIRouter()

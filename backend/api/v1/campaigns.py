@@ -87,7 +87,7 @@ async def search_products_on_platform(
         raise HTTPException(status_code=404, detail="Campaign not found")
 
     # Import connector dynamically based on campaign platform
-    from backend.connectors import get_connector
+    from backend.affiliate.connectors import get_connector
 
     connector = get_connector(campaign.platform)
     products = await connector.search_products(

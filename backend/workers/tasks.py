@@ -11,7 +11,7 @@ from arq.cron import cron
 from backend.database import get_db_context
 from backend.sop_engine.scorer import score_all_templates
 from backend.sop_engine.prompt_evolution import auto_evolve_top_templates
-from backend.publisher.scheduler import process_scheduled_publications
+from backend.affiliate.publishers.scheduler import process_scheduled_publications
 from backend.analytics.fraud_detector import FraudDetector
 
 logger = logging.getLogger(__name__)
