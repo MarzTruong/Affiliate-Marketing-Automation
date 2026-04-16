@@ -3,7 +3,7 @@
 > Note: This file is autonomously updated by the AI to preserve context across sessions. Do not delete.
 
 **Repo:** `MarzTruong/Affiliate-Marketing-Automation`
-**Last updated:** 2026-04-16 (phiên 7 — Security Audit)
+**Last updated:** 2026-04-16 (phiên 7 — Security Audit + P1-P3 Fixes)
 
 ---
 
@@ -44,6 +44,12 @@
 ---
 
 ## Architecture Decisions
+
+- **[2026-04-16] Pipeline Fail Loud pattern — non-critical per-item failures:** Visual + content generation lỗi 1 sản phẩm không nên kill toàn pipeline (sản phẩm khác vẫn chạy). Pattern: `try/except` với `logger.error(exc_info=True)` + increment counter (`visual_failures`, `content_failures`) + expose vào `run_details`. Cảnh báo thêm nếu `content_failures > 0 and content_created == 0`. KHÔNG `raise` per-item nhưng vẫn fail loud qua log + metric.
+
+- **[2026-04-16] Fail Loud PostToolUse hook pattern:** `scripts/check_fail_loud.py` đọc tool_input JSON từ stdin, quét `.py` trong `backend/` cho pattern `except.*: pass|return None|return`. Warn qua stderr, không block (exit 0) để tránh false positive phá workflow. Đăng ký trong `.claude/settings.local.json` qua PostToolUse matcher `Edit|Write`.
+
+- **[2026-04-16] Docker Compose dev bind 127.0.0.1:** Bind explicit `127.0.0.1:5432:5432` và `127.0.0.1:6379:6379` thay vì default `5432:5432` (bind `0.0.0.0`). Tránh expose Postgres/Redis ra mạng local/VPN. Production dùng docker network internal (không expose port).
 
 - **[2026-04-16] Git history rewrite protocol:** Khi cần xóa secret/file khỏi git history: (1) backup bằng `git bundle create --all`, (2) stash pending work, (3) dùng `git-filter-repo --invert-paths --path FILE --force` (Python package, cài qua `.venv/Scripts/pip install git-filter-repo`), (4) re-add origin với URL sạch (không token), (5) `git stash pop`, (6) commit fixes, (7) `git push --force origin main`. Filter-repo tự strip remote để tránh accidental push — phải re-add. Cần owner confirm `TÔI XÁC NHẬN XÓA LỊCH SỬ`.
 
