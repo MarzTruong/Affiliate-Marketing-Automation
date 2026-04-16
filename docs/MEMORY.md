@@ -3,7 +3,7 @@
 > Note: This file is autonomously updated by the AI to preserve context across sessions. Do not delete.
 
 **Repo:** `MarzTruong/Affiliate-Marketing-Automation`
-**Last updated:** 2026-04-16 (phiên 6)
+**Last updated:** 2026-04-16 (phiên 7 — Security Audit)
 
 ---
 
@@ -25,6 +25,10 @@
 
 ## Resolved Edge Cases
 
+- **[2026-04-16] SECURITY AUDIT — 3 P0 vulnerabilities fixed:** (1) `.env.prod` committed to GitHub với ANTHROPIC_API_KEY + POSTGRES_PASSWORD thật → scrubbed via `git filter-repo`. (2) `api.txt` trong git history chứa Claude + Gemini keys → scrubbed cùng `.env.prod`. (3) GitHub PAT `ghp_3KCT...` lộ trong `.git/config` remote URL → owner revoke thủ công, remote URL thay bằng clean HTTPS (Windows Credential Manager handle auth). Force push ghi đè `origin/main` từ e4001d4 → 9880fca.
+
+- **[2026-04-16] `.gitignore` pattern upgrade:** Đổi từ `.env` + `.env.local` sang `.env.*` + `!.env.example` → chặn mọi biến thể `.env.prod/.env.dev/.env.staging`. Chỉ cho phép `.env.example` làm template.
+
 - **[2026-04-13] OAuth callback DB key case mismatch:** TikTok OAuth callback lưu key lowercase (`tiktok_access_token`) nhưng `apply_db_settings()` tìm UPPERCASE (`TIKTOK_ACCESS_TOKEN`). Fix: chuẩn hóa lưu sang UPPERCASE trong callback.
 
 - **[2026-04-13] TikTok `video_size: 0` rejected:** API TikTok từ chối payload khi `video_size = 0`. Fix: đặt `video_size: 1` để nhận `publish_id` và `upload_url` hợp lệ từ TikTok.
@@ -41,9 +45,13 @@
 
 ## Architecture Decisions
 
-- **[2026-04-14] HeyGen async polling pattern:** HeyGen render video bất đồng bộ (~1-3 phút). Pattern: submit job → nhận video_id → poll GET /v1/video/{id} mỗi 10s → completed/failed. Timeout mặc định 600s. 2 clips (hook + CTA) submit và poll song song bằng asyncio.gather.
+- **[2026-04-16] Git history rewrite protocol:** Khi cần xóa secret/file khỏi git history: (1) backup bằng `git bundle create --all`, (2) stash pending work, (3) dùng `git-filter-repo --invert-paths --path FILE --force` (Python package, cài qua `.venv/Scripts/pip install git-filter-repo`), (4) re-add origin với URL sạch (không token), (5) `git stash pop`, (6) commit fixes, (7) `git push --force origin main`. Filter-repo tự strip remote để tránh accidental push — phải re-add. Cần owner confirm `TÔI XÁC NHẬN XÓA LỊCH SỬ`.
+
+- **[2026-04-16] HeyGen async polling pattern:** HeyGen render video bất đồng bộ (~1-3 phút). Pattern: submit job → nhận video_id → poll GET /v1/video/{id} mỗi 10s → completed/failed. Timeout mặc định 600s. 2 clips (hook + CTA) submit và poll song song bằng asyncio.gather.
 - **[2026-04-14] ElevenLabs VoiceSettings import ở module level:** Import `VoiceSettings` và `AsyncElevenLabs` bằng try/except ở module level (không phải bên trong method) để unit test có thể patch được bằng `patch("backend.ai_engine.elevenlabs_engine.VoiceSettings")`.
 - **[2026-04-16] Cách đề xuất phương án kỹ thuật:** Luôn dùng bảng cụ thể (file nào đổi, dòng nào sửa) thay vì giải thích chung chung — owner cần thông tin cụ thể để ra quyết định, không phải lý thuyết.
+
+- **[2026-04-16] Secrets KHÔNG BAO GIỜ commit dưới bất kỳ hình thức nào:** Kể cả `.env.prod`, `api.txt`, comment tạm thời. Mọi API key (Claude, Gemini, GitHub PAT, platform tokens) phải ở (a) `.env` gitignored hoặc (b) DB table `system_settings`. Quy trình rotate khẩn cấp: revoke ngay trên provider console TRƯỚC khi rewrite git history (bot scan GitHub có thể đã cache key).
 
 - **[2026-04-16] SQLAlchemy `mapped_column(default=...)` chỉ áp dụng khi INSERT:** `default=` trong `mapped_column` không set giá trị ở Python object level khi `__init__`. Phải truyền tường minh hoặc dùng `server_default` (DB-level). Tests nên tránh assert Python-level defaults nếu không truyền vào constructor.
 
