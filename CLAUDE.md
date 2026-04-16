@@ -100,7 +100,9 @@ Place under the correct section: `Quirks & Custom Rules`, `Resolved Edge Cases`,
 - **Repo:** `https://github.com/MarzTruong/Affiliate-Marketing-Automation.git`
 - Commits: English, conventional (`feat:`, `fix:`, `refactor:`)
 - Push: only on owner request or Save Game
+- Commit attribution: disabled per global settings — commits chỉ mang tên owner
 - `git reset --hard` on `main` → BANNED unless `TÔI XÁC NHẬN RESET`
+- `git filter-repo` rewrite history → BANNED unless `TÔI XÁC NHẬN XÓA LỊCH SỬ`
 - Destructive ops → list consequences, wait for confirmation
 
 ### 3.7 Session Management

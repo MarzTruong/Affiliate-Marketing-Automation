@@ -1,6 +1,6 @@
 # TODO — Affiliate Marketing Automation
 
-> Cập nhật lần cuối: 16/04/2026 (phiên 6)
+> Cập nhật lần cuối: 16/04/2026 (phiên 7 — Security Audit)
 
 ---
 
@@ -69,70 +69,76 @@
 
 ---
 
-## Bước tiếp theo (Phase 3)
+## Bước tiếp theo (Phase 3 — Content Production)
 
 ### Ưu tiên cao
-- [ ] **Facebook Publisher** — chờ thiết bị được tin tưởng (vài ngày) → tạo Meta Developer → lấy Page Token → test đăng bài thật
-- [x] **TikTok OAuth flow** — HOÀN THÀNH: OAuth sandbox, token lưu DB, `/auth/tiktok/me`, `/publisher/health`, publish draft thành công
-- [ ] **TikTok video upload** — để post thật cần upload video MP4 vào `upload_url`. Cân nhắc tạo slide video từ ảnh sản phẩm.
+- [ ] **Frontend TikTok Studio** — `sidebar.tsx` (2 sections mới), `/tiktok-studio` (Kanban board), `/tiktok-studio/new` (3-step wizard), `/tiktok-studio/[id]` (4 tabs: Kịch bản, Assets, Checklist, Timeline)
+- [ ] **ElevenLabs setup thật** — clone giọng bạn (upload 1-2 phút audio sạch) → Voice ID → điền Settings
+- [ ] **HeyGen setup thật** — tạo Photo Avatar / Digital Twin → Avatar ID + Voice ID → điền Settings
+- [ ] **Test end-to-end** — chạy pipeline với `tiktok_script` → nhận Telegram thông báo link MP3 + MP4 clips
+- [ ] **Facebook Publisher** — chờ thiết bị được tin tưởng → tạo Meta Developer App → Page Token → test đăng bài thật
+- [ ] **TikTok video upload** — tạo slide MP4 từ ảnh sản phẩm → upload vào `upload_url` → post thật (hoặc edit CapCut + upload web UI)
 
 ### Ưu tiên trung bình
 - [ ] **Multi-account support** — nhiều Facebook Page, nhiều WordPress site (phức tạp: DB migration + UI + publisher routing)
 - [ ] **Gemini Vision test thật** — quota reset hàng ngày, test với ảnh thật Shopee/Tiki
 
-### Hoàn thành trong phiên 4 (13-14/04/2026)
-- [x] **TikTok Sandbox setup** — App Key/Secret, Redirect URI, Direct Post ON, scopes (user.info.basic + video.publish + video.upload)
-- [x] **TikTok OAuth 2.0 hoàn chỉnh** — `/auth/tiktok` → TikTok → `/auth/tiktok/callback` → token lưu DB
-- [x] **Fix bug DB key case** — OAuth callback lưu lowercase, `apply_db_settings()` tìm uppercase → đã fix sang UPPERCASE
-- [x] **`GET /auth/tiktok/me`** — test token + lấy user info (open_id, display_name)
-- [x] **`GET /publisher/health`** — check tất cả platforms, TikTok: ok, Telegram: ok
-- [x] **TikTok publisher fix** — `video_size: 0` → `1` để TikTok trả publish_id + upload_url hợp lệ
-- [x] **Publish end-to-end** — `POST /publisher/publish` → TikTok → `status: published`, `publish_id` thật từ TikTok API
-
-### Hoàn thành trong phiên 5 (14/04/2026)
-- [x] **docs/MEMORY.md** — Long-term Memory Bank: tự động cập nhật qua phiên
-- [x] **CLAUDE.md cập nhật** — Auto-Memorize rule §3.3a + Start/Save Game đọc/ghi MEMORY.md
-- [x] **TikTok Skill SOP** — `docs/skills/tiktok_faceless_affiliate.md`: script faceless review 45–60s, bảng VOICE|VISUAL, checklist 10 điểm
-- [x] **ElevenLabs Engine** — `backend/ai_engine/elevenlabs_engine.py`: TTS async, voice clone, extract_voice_text(), lưu MP3 vào /static/audio/, 18 tests
-- [x] **HeyGen Engine** — `backend/ai_engine/heygen_engine.py`: submit clip → async poll → ClipResult, hook + CTA song song, 22 tests
-- [x] **ContentPiece model mở rộng** — audio_url, audio_voice_id, audio_duration_s, heygen_hook_url, heygen_cta_url
-- [x] **Alembic migrations** — c3d4e5f6a7b8 (audio fields) + d4e5f6a7b8c9 (heygen fields)
-- [x] **Pipeline wired** — ContentGenerator tự động gọi ElevenLabs + HeyGen sau khi tạo tiktok_script (non-blocking)
-
-### Ghi chú cho phiên tiếp theo
-> **TikTok giới hạn:** API chỉ nhận VIDEO, không có text-only post. Draft hiện tại có `publish_id` và `upload_url` hợp lệ từ TikTok. Để post thật cần upload file video MP4 vào `upload_url` đó. Hướng đi: tạo slide video từ ảnh sản phẩm (ffmpeg hoặc moviepy).
->
-> **Ngrok:** Token TikTok hết hạn sau 24h. Cần re-auth qua `/auth/tiktok` mỗi ngày khi dùng sandbox. Khi production sẽ có refresh_token.
->
-> **Bước tiếp theo ưu tiên:**
-> 1. TikTok video: tạo slide MP4 từ ảnh sản phẩm → upload vào `upload_url` → post thật
-> 2. Facebook Publisher: nếu thiết bị đã được trust → tạo Meta Developer App → lấy Page Token
-
-### Hoàn thành trong phiên 3 (13/04/2026)
-- [x] **Fix 3 pre-existing test failures** — test_publisher_registry, test_get_publisher_unknown, test_pick_variant_balanced → 78/78 passed
-- [x] **AccessTrade connector rewrite** — auth endpoint `/transactions`, mapping deals/coupons (price=0, aff_link, coupon codes)
-- [x] **Pipeline filter fix** — bỏ qua price/commission filter cho deals (is_deal check)
-- [x] **social_post max_tokens** — 500 → 1500, _strip_thinking_blocks() xử lý unclosed `<thinking>` tag
-- [x] **Settings page fix** — sensitive fields load `""` thay vì `"****"` để user gõ được
-- [x] **Gemini model downgrade** — `gemini-2.5-pro` → `gemini-2.0-flash` (quota tier thấp hơn)
-- [x] **Pipeline end-to-end thật** — AccessTrade Shopee → 50 deals → 5 lọc → 5 bài Claude Vietnamese → scheduled
-
 ### Ưu tiên thấp
 - [ ] Sync/cập nhật ECC skills & agents (hiện có 57 skills, 47 agents)
 
-### Hoàn thành trong phiên 6 (16/04/2026)
+### Ghi chú còn tồn từ các phiên trước
+> **TikTok giới hạn:** API chỉ nhận VIDEO, không có text-only post. Draft hiện tại có `publish_id` và `upload_url` hợp lệ từ TikTok. Để post thật cần upload file video MP4 vào `upload_url` đó.
+>
+> **Ngrok/Sandbox:** Token TikTok sandbox hết hạn sau 24h. Cần re-auth qua `/auth/tiktok` mỗi ngày. Production sẽ có refresh_token.
+
+---
+
+## Lịch sử hoàn thành (mới → cũ)
+
+### Phiên 7 (16/04/2026) — Security Audit + P1-P3 Fixes
+- [x] **Security audit toàn diện** — phát hiện 3 P0 (`.env.prod` + `api.txt` commit public GitHub, GitHub PAT lộ trong `.git/config`) + 10 lỗi P1-P3
+- [x] **Rotate keys** — Claude + Gemini + GitHub PAT đã revoke trên provider console
+- [x] **Git history rewrite** — `git-filter-repo` scrub `.env.prod` + `api.txt` khỏi 27 commits, force push (e4001d4 → 9880fca)
+- [x] **.gitignore hardening** — `.env.*` + `!.env.example`, chặn `backend/static/visuals/*.png`, dev leftovers
+- [x] **docker-compose.yml** — bind `127.0.0.1:5432/6379` (không expose ra mạng ngoài)
+- [x] **pipeline.py Fail Loud** — thêm `visual_failures` + `content_failures` counter vào `details`, `exc_info=True`
+- [x] **Dọn root** — xóa `test_ai_quick.py`, `openapi_check.json`; `build_guide_pdf.py` → `scripts/`
+- [x] **CLAUDE.md §3.6** — thêm rule `TÔI XÁC NHẬN XÓA LỊCH SỬ` cho filter-repo + attribution disabled note
+- [x] **.claude/settings.local.json** — xóa dòng allow PAT cũ
+
+### Phiên 6 (16/04/2026) — Backend Module Split + TikTok Studio
 - [x] **Refactor backend** — tách thành 2 module: `backend/tiktok/` (TikTok Studio) và `backend/affiliate/` (Affiliate Hub). Git mv giữ nguyên history. 140/140 tests pass sau refactor.
 - [x] **TikTokProject model** — `backend/models/tiktok_project.py`: 8-stage timeline (script_pending → script_ready → audio_ready → clips_ready → b_roll_filmed → editing → uploaded → live), migration `e5f6a7b8c9d0`
 - [x] **TikTok Studio backend** — `backend/tiktok/studio.py` (CRUD), `backend/tiktok/production.py` (pipeline 3 bước: Claude script → ElevenLabs → HeyGen), `backend/tiktok/router.py` (7 endpoints `/api/v1/tiktok-studio/`). 158/158 tests pass.
 - [x] **Merge về main** — nhánh `claude/start-new-session-5CEGY` đã merge vào main, push thành công.
 
-### Bước tiếp theo (Phase 3 — Content Production)
-- [ ] **Session 3: Frontend TikTok Studio** — `sidebar.tsx` (2 sections mới), `/tiktok-studio` (Kanban board), `/tiktok-studio/new` (3-step wizard), `/tiktok-studio/[id]` (4 tabs: Kịch bản, Assets, Checklist, Timeline)
-- [ ] **ElevenLabs setup thật** — clone giọng bạn (upload 1-2 phút audio sạch) → lấy Voice ID → điền Settings
-- [ ] **HeyGen setup thật** — tạo Photo Avatar / Digital Twin → lấy Avatar ID + Voice ID → điền Settings
-- [ ] **Test end-to-end** — chạy pipeline với tiktok_script → nhận Telegram thông báo link MP3 + MP4 clips
-- [ ] **Facebook Publisher** — activate khi Meta Developer App được duyệt
-- [ ] **TikTok video upload** — sau khi bạn edit xong trong CapCut, upload lên TikTok qua web UI
+### Phiên 5 (14/04/2026) — AI Engines (ElevenLabs + HeyGen)
+- [x] **docs/MEMORY.md** — Long-term Memory Bank: tự động cập nhật qua phiên
+- [x] **CLAUDE.md cập nhật** — Auto-Memorize rule §3.3a + Start/Save Game đọc/ghi MEMORY.md
+- [x] **TikTok Skill SOP** — `docs/skills/tiktok_faceless_affiliate.md`: script faceless review 45–60s, bảng VOICE|VISUAL, checklist 10 điểm
+- [x] **ElevenLabs Engine** — `backend/ai_engine/elevenlabs_engine.py`: TTS async, voice clone, `extract_voice_text()`, lưu MP3 vào `/static/audio/`, 18 tests
+- [x] **HeyGen Engine** — `backend/ai_engine/heygen_engine.py`: submit clip → async poll → `ClipResult`, hook + CTA song song, 22 tests
+- [x] **ContentPiece model mở rộng** — `audio_url`, `audio_voice_id`, `audio_duration_s`, `heygen_hook_url`, `heygen_cta_url`
+- [x] **Alembic migrations** — `c3d4e5f6a7b8` (audio) + `d4e5f6a7b8c9` (heygen)
+- [x] **Pipeline wired** — ContentGenerator tự động gọi ElevenLabs + HeyGen sau khi tạo `tiktok_script` (non-blocking)
+
+### Phiên 4 (13-14/04/2026) — TikTok OAuth End-to-End
+- [x] **TikTok Sandbox setup** — App Key/Secret, Redirect URI, Direct Post ON, scopes (user.info.basic + video.publish + video.upload)
+- [x] **TikTok OAuth 2.0 hoàn chỉnh** — `/auth/tiktok` → TikTok → `/auth/tiktok/callback` → token lưu DB
+- [x] **Fix bug DB key case** — OAuth callback lưu lowercase, `apply_db_settings()` tìm uppercase → đã fix sang UPPERCASE
+- [x] **`GET /auth/tiktok/me`** — test token + lấy user info (open_id, display_name)
+- [x] **`GET /publisher/health`** — check tất cả platforms, TikTok: ok, Telegram: ok
+- [x] **TikTok publisher fix** — `video_size: 0` → `1` để TikTok trả `publish_id` + `upload_url` hợp lệ
+- [x] **Publish end-to-end** — `POST /publisher/publish` → TikTok → `status: published`, `publish_id` thật từ TikTok API
+
+### Phiên 3 (13/04/2026) — AccessTrade + Gemini Pipeline
+- [x] **Fix 3 pre-existing test failures** — test_publisher_registry, test_get_publisher_unknown, test_pick_variant_balanced → 78/78 passed
+- [x] **AccessTrade connector rewrite** — auth endpoint `/transactions`, mapping deals/coupons (price=0, aff_link, coupon codes)
+- [x] **Pipeline filter fix** — bỏ qua price/commission filter cho deals (`is_deal` check)
+- [x] **social_post max_tokens** — 500 → 1500, `_strip_thinking_blocks()` xử lý unclosed `<thinking>` tag
+- [x] **Settings page fix** — sensitive fields load `""` thay vì `"****"` để user gõ được
+- [x] **Gemini model downgrade** — `gemini-2.5-pro` → `gemini-2.0-flash` (quota tier thấp hơn)
+- [x] **Pipeline end-to-end thật** — AccessTrade Shopee → 50 deals → 5 lọc → 5 bài Claude Vietnamese → scheduled
 
 ---
 

@@ -57,6 +57,8 @@ async def run_pipeline(db: AsyncSession, rule: AutomationRule) -> PipelineRun:
         # ── Step 3: Tạo DB Products + AI Content + Visuals ─────────────
         content_ids: list[uuid.UUID] = []
         visual_urls: dict[str, str] = {}
+        visual_failures: int = 0
+        content_failures: int = 0
 
         from backend.affiliate.visual_generator import generate_visual
         from backend.ai_engine.content_generator import ContentGenerator
@@ -89,7 +91,7 @@ async def run_pipeline(db: AsyncSession, rule: AutomationRule) -> PipelineRun:
             db.add(db_product)
             await db.flush()
 
-            # Tạo Visual
+            # Tạo Visual — non-critical, track failures để báo cáo
             if rule.generate_visual:
                 try:
                     vis_url = await generate_visual(prod_info, rule.bannerbear_template_id)
@@ -97,9 +99,13 @@ async def run_pipeline(db: AsyncSession, rule: AutomationRule) -> PipelineRun:
                         visual_urls[str(db_product.id)] = vis_url
                         run.visuals_created += 1
                 except Exception as e:
-                    logger.warning(f"Tạo visual thất bại cho {prod_info.name}: {e}")
+                    visual_failures += 1
+                    logger.error(
+                        f"[Pipeline:{rule.name}] Tạo visual thất bại cho {prod_info.name}: {e}",
+                        exc_info=True,
+                    )
 
-            # Tạo AI Content cho mỗi loại
+            # Tạo AI Content cho mỗi loại — non-critical per-item, track failures
             for ct in content_types:
                 try:
                     piece = await generator.generate(
@@ -111,15 +117,29 @@ async def run_pipeline(db: AsyncSession, rule: AutomationRule) -> PipelineRun:
                     content_ids.append(piece.id)
                     run.content_created += 1
                 except Exception as e:
-                    logger.error(f"Tạo content {ct} thất bại cho {prod_info.name}: {e}")
+                    content_failures += 1
+                    logger.error(
+                        f"[Pipeline:{rule.name}] Tạo content {ct} thất bại cho "
+                        f"{prod_info.name}: {e}",
+                        exc_info=True,
+                    )
 
         details["steps"].append(
             {
                 "step": "content",
                 "content_created": run.content_created,
+                "content_failures": content_failures,
                 "visuals_created": run.visuals_created,
+                "visual_failures": visual_failures,
             }
         )
+
+        # Cảnh báo nếu tỷ lệ fail cao — không block pipeline nhưng surface ra report
+        if content_failures > 0 and run.content_created == 0:
+            logger.error(
+                f"[Pipeline:{rule.name}] Tất cả {content_failures} content generation fail — "
+                "pipeline sẽ không có bài nào để đăng"
+            )
 
         # ── Step 4: Lên lịch đăng bài ───────────────────────────────────
         from backend.affiliate.adaptive_scheduler import get_best_slots, next_scheduled_time

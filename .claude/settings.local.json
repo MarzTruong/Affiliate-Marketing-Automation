@@ -1,4 +1,17 @@
 {
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".venv/Scripts/python.exe scripts/check_fail_loud.py"
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Bash(npm --version)",
@@ -95,7 +108,9 @@
       "Bash(CLV2_PYTHON_CMD=python bash \"E:/.claude/.claude/scripts/hooks/run-with-flags-shell.sh\" \"post:observe\" \"skills/continuous-learning-v2/hooks/observe.sh\" \"standard,strict\")",
       "Bash(_CLV2_HOMUNCULUS_DIR=E:/.claude/.claude/homunculus CLV2_PYTHON_CMD=python bash \"E:/.claude/.claude/scripts/hooks/run-with-flags-shell.sh\" \"post:observe\" \"skills/continuous-learning-v2/hooks/observe.sh\" \"standard,strict\")",
       "Bash(npm run:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(git -C \"E:/.claude/Affiliate Marketing Automation\" remote -v)",
+      "Bash(docker-compose up *)"
     ]
   }
 }
