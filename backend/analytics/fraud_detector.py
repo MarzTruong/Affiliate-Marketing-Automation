@@ -124,9 +124,7 @@ class FraudDetector:
     async def scan_recent(self, db: AsyncSession, hours: int = 1) -> list[FraudEvent]:
         """Scan recent analytics events for fraud and persist alerts."""
         since = datetime.now(timezone.utc) - timedelta(hours=hours)
-        result = await db.execute(
-            select(AnalyticsEvent).where(AnalyticsEvent.event_time >= since)
-        )
+        result = await db.execute(select(AnalyticsEvent).where(AnalyticsEvent.event_time >= since))
         events = list(result.scalars().all())
 
         if not events:

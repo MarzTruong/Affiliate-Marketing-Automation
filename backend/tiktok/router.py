@@ -16,9 +16,10 @@ router = APIRouter()
 
 # ── Schemas ────────────────────────────────────────────────────────────────
 
+
 class ProjectCreate(BaseModel):
     product_name: str
-    angle: str                        # pain_point | feature | social_proof
+    angle: str  # pain_point | feature | social_proof
     product_id: str | None = None
     product_ref_url: str | None = None
     notes: str | None = None
@@ -55,7 +56,7 @@ class ProjectOut(BaseModel):
 
 
 class StatusUpdate(BaseModel):
-    status: str   # b_roll_filmed | editing_done | uploaded
+    status: str  # b_roll_filmed | editing_done | uploaded
 
 
 class PerformanceUpdate(BaseModel):
@@ -68,6 +69,7 @@ class PerformanceUpdate(BaseModel):
 
 
 # ── Endpoints ──────────────────────────────────────────────────────────────
+
 
 @router.get("", response_model=list[ProjectOut])
 async def list_projects(
@@ -123,7 +125,7 @@ async def generate_project(
         raise HTTPException(
             400,
             f"Chỉ trigger được khi status là script_pending hoặc script_ready "
-            f"(hiện: {project.status})"
+            f"(hiện: {project.status})",
         )
 
     background_tasks.add_task(_run_production_bg, project_id)
@@ -174,6 +176,7 @@ async def delete_project(project_id: str, db: AsyncSession = Depends(get_db)):
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────
+
 
 async def _get_or_404(db: AsyncSession, project_id: str) -> TikTokProject:
     try:
@@ -229,6 +232,7 @@ async def _run_production_bg(project_id: str) -> None:
                 await run_production(db, project)
         except Exception as e:
             import logging
+
             logging.getLogger(__name__).error(
                 f"[BackgroundProduction:{project_id}] Lỗi: {e}", exc_info=True
             )

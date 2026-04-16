@@ -20,8 +20,8 @@ from pathlib import Path
 
 import httpx
 
-from backend.config import settings
 from backend.affiliate.connectors.base import ProductInfo
+from backend.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +81,9 @@ async def _bannerbear_generate(
             {"name": "discount_badge", "text": discount_pct},
             {
                 "name": "commission",
-                "text": f"Hoa hồng {product.commission_rate:.1f}%" if product.commission_rate else "",
+                "text": f"Hoa hồng {product.commission_rate:.1f}%"
+                if product.commission_rate
+                else "",
             },
             {"name": "platform_logo", "text": product.platform.upper()},
             {
@@ -147,8 +149,9 @@ async def _pillow_generate(product: ProductInfo) -> str | None:
     └─────────────────────────────┘
     """
     try:
-        from PIL import Image, ImageDraw, ImageFont
         import asyncio
+
+        from PIL import Image, ImageDraw, ImageFont
 
         loop = asyncio.get_event_loop()
         img_bytes = await loop.run_in_executor(None, _draw_card, product)
@@ -208,6 +211,7 @@ def _draw_card(product: ProductInfo) -> bytes | None:
     if product.image_url:
         try:
             import urllib.request
+
             with urllib.request.urlopen(product.image_url, timeout=5) as r:
                 pimg = Image.open(io.BytesIO(r.read())).convert("RGBA")
                 pimg = pimg.resize((380, product_img_h), Image.LANCZOS)
@@ -217,7 +221,10 @@ def _draw_card(product: ProductInfo) -> bytes | None:
         except Exception:
             # Placeholder màu nhạt
             draw.rectangle(
-                [(IMAGE_W // 2 - 190, product_img_y), (IMAGE_W // 2 + 190, product_img_y + product_img_h)],
+                [
+                    (IMAGE_W // 2 - 190, product_img_y),
+                    (IMAGE_W // 2 + 190, product_img_y + product_img_h),
+                ],
                 fill="#F0F0F0",
             )
             draw.text(
@@ -229,7 +236,10 @@ def _draw_card(product: ProductInfo) -> bytes | None:
             )
     else:
         draw.rectangle(
-            [(IMAGE_W // 2 - 190, product_img_y), (IMAGE_W // 2 + 190, product_img_y + product_img_h)],
+            [
+                (IMAGE_W // 2 - 190, product_img_y),
+                (IMAGE_W // 2 + 190, product_img_y + product_img_h),
+            ],
             fill="#F5F5F5",
         )
 
@@ -242,7 +252,9 @@ def _draw_card(product: ProductInfo) -> bytes | None:
             radius=8,
             fill="#EE4D2D",
         )
-        draw.text((badge_x + 60, badge_y + 25), f"-{pct}%", font=font_medium, fill="white", anchor="mm")
+        draw.text(
+            (badge_x + 60, badge_y + 25), f"-{pct}%", font=font_medium, fill="white", anchor="mm"
+        )
 
     # Tên sản phẩm
     name_y = product_img_y + product_img_h + 30
@@ -262,7 +274,9 @@ def _draw_card(product: ProductInfo) -> bytes | None:
         lines.append(" ".join(line))
 
     for i, ln in enumerate(lines[:2]):
-        draw.text((IMAGE_W // 2, name_y + i * 45), ln, font=font_medium, fill="#1A1A1A", anchor="mm")
+        draw.text(
+            (IMAGE_W // 2, name_y + i * 45), ln, font=font_medium, fill="#1A1A1A", anchor="mm"
+        )
 
     text_y = name_y + len(lines[:2]) * 45 + 20
 
@@ -279,7 +293,9 @@ def _draw_card(product: ProductInfo) -> bytes | None:
         draw.text((orig_x, text_y), orig_text, font=font_small, fill="#999999", anchor="mm")
         orig_w = draw.textlength(orig_text, font=font_small)
         mid_y = text_y + 14
-        draw.line([(orig_x - orig_w // 2, mid_y), (orig_x + orig_w // 2, mid_y)], fill="#999999", width=2)
+        draw.line(
+            [(orig_x - orig_w // 2, mid_y), (orig_x + orig_w // 2, mid_y)], fill="#999999", width=2
+        )
         text_y += 45
 
     # Rating + lượt bán
@@ -290,7 +306,13 @@ def _draw_card(product: ProductInfo) -> bytes | None:
         cnt = product.sales_count
         meta_parts.append(f"{'%dk' % (cnt // 1000) if cnt >= 1000 else str(cnt)} đã bán")
     if meta_parts:
-        draw.text((IMAGE_W // 2, text_y), "  |  ".join(meta_parts), font=font_small, fill="#555555", anchor="mm")
+        draw.text(
+            (IMAGE_W // 2, text_y),
+            "  |  ".join(meta_parts),
+            font=font_small,
+            fill="#555555",
+            anchor="mm",
+        )
         text_y += 40
 
     # Hoa hồng
@@ -309,7 +331,13 @@ def _draw_card(product: ProductInfo) -> bytes | None:
     draw.text((IMAGE_W // 2, btn_y + 30), "Mua ngay →", font=font_medium, fill="white", anchor="mm")
 
     # Footer
-    draw.text((IMAGE_W // 2, IMAGE_H - 30), "Affiliate Marketing Automation", font=font_small, fill="#CCCCCC", anchor="mm")
+    draw.text(
+        (IMAGE_W // 2, IMAGE_H - 30),
+        "Affiliate Marketing Automation",
+        font=font_small,
+        fill="#CCCCCC",
+        anchor="mm",
+    )
 
     buf = io.BytesIO()
     img.save(buf, format="PNG", optimize=True)
@@ -318,4 +346,4 @@ def _draw_card(product: ProductInfo) -> bytes | None:
 
 def _hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
     h = hex_color.lstrip("#")
-    return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))  # type: ignore
+    return tuple(int(h[i : i + 2], 16) for i in (0, 2, 4))  # type: ignore

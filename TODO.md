@@ -1,6 +1,6 @@
 # TODO — Affiliate Marketing Automation
 
-> Cập nhật lần cuối: 14/04/2026 (phiên 5)
+> Cập nhật lần cuối: 16/04/2026 (phiên 6)
 
 ---
 
@@ -120,7 +120,14 @@
 ### Ưu tiên thấp
 - [ ] Sync/cập nhật ECC skills & agents (hiện có 57 skills, 47 agents)
 
+### Hoàn thành trong phiên 6 (16/04/2026)
+- [x] **Refactor backend** — tách thành 2 module: `backend/tiktok/` (TikTok Studio) và `backend/affiliate/` (Affiliate Hub). Git mv giữ nguyên history. 140/140 tests pass sau refactor.
+- [x] **TikTokProject model** — `backend/models/tiktok_project.py`: 8-stage timeline (script_pending → script_ready → audio_ready → clips_ready → b_roll_filmed → editing → uploaded → live), migration `e5f6a7b8c9d0`
+- [x] **TikTok Studio backend** — `backend/tiktok/studio.py` (CRUD), `backend/tiktok/production.py` (pipeline 3 bước: Claude script → ElevenLabs → HeyGen), `backend/tiktok/router.py` (7 endpoints `/api/v1/tiktok-studio/`). 158/158 tests pass.
+- [x] **Merge về main** — nhánh `claude/start-new-session-5CEGY` đã merge vào main, push thành công.
+
 ### Bước tiếp theo (Phase 3 — Content Production)
+- [ ] **Session 3: Frontend TikTok Studio** — `sidebar.tsx` (2 sections mới), `/tiktok-studio` (Kanban board), `/tiktok-studio/new` (3-step wizard), `/tiktok-studio/[id]` (4 tabs: Kịch bản, Assets, Checklist, Timeline)
 - [ ] **ElevenLabs setup thật** — clone giọng bạn (upload 1-2 phút audio sạch) → lấy Voice ID → điền Settings
 - [ ] **HeyGen setup thật** — tạo Photo Avatar / Digital Twin → lấy Avatar ID + Voice ID → điền Settings
 - [ ] **Test end-to-end** — chạy pipeline với tiktok_script → nhận Telegram thông báo link MP3 + MP4 clips

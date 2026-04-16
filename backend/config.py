@@ -62,8 +62,10 @@ class Settings(BaseSettings):
     # Facebook
     facebook_page_id: str = ""
     facebook_access_token: str = ""
-    facebook_webhook_secret: str = ""       # HMAC secret để verify webhook signature
-    facebook_webhook_verify_token: str = "affiliate_webhook_verify"  # Token xác minh khi đăng ký webhook
+    facebook_webhook_secret: str = ""  # HMAC secret để verify webhook signature
+    facebook_webhook_verify_token: str = (
+        "affiliate_webhook_verify"  # Token xác minh khi đăng ký webhook
+    )
 
     # WordPress
     wordpress_site_url: str = ""
@@ -103,8 +105,8 @@ class Settings(BaseSettings):
 
     # HeyGen
     heygen_api_key: str = ""
-    heygen_avatar_id: str = ""   # Avatar ID trên HeyGen (Photo Avatar / Digital Twin)
-    heygen_voice_id: str = ""    # Voice ID trên HeyGen để sync môi avatar
+    heygen_avatar_id: str = ""  # Avatar ID trên HeyGen (Photo Avatar / Digital Twin)
+    heygen_voice_id: str = ""  # Voice ID trên HeyGen để sync môi avatar
 
     @property
     def is_production(self) -> bool:
@@ -123,9 +125,10 @@ async def apply_db_settings() -> None:
     Gọi một lần trong app lifespan sau khi DB sẵn sàng.
     Chỉ override các platform keys — không chạm DATABASE_URL và ANTHROPIC_API_KEY.
     """
+    from sqlalchemy import select
+
     from backend.database import async_session
     from backend.models.system_settings import SystemSettings
-    from sqlalchemy import select
 
     try:
         async with async_session() as db:

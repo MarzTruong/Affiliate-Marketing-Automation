@@ -12,7 +12,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Literal
 
 import httpx
@@ -20,11 +20,12 @@ import httpx
 logger = logging.getLogger(__name__)
 
 _API_BASE = "https://api.heygen.com"
-_POLL_INTERVAL_S = 10       # Poll status mỗi 10 giây
-_DEFAULT_TIMEOUT_S = 600    # Tối đa 10 phút chờ render
+_POLL_INTERVAL_S = 10  # Poll status mỗi 10 giây
+_DEFAULT_TIMEOUT_S = 600  # Tối đa 10 phút chờ render
 
 
 # ── Custom Exceptions ──────────────────────────────────────────────────────────
+
 
 class HeyGenRateLimitError(Exception):
     """429 — Vượt quá request limit của HeyGen."""
@@ -48,13 +49,14 @@ class HeyGenError(Exception):
 
 # ── Config ─────────────────────────────────────────────────────────────────────
 
+
 @dataclass(frozen=True)
 class HeyGenConfig:
     """Cấu hình kết nối HeyGen API."""
 
     api_key: str = ""
-    avatar_id: str = ""      # ID avatar đã tạo trên HeyGen (Photo/Digital Twin)
-    voice_id: str = ""       # Voice ID trên HeyGen (dùng cho lip sync)
+    avatar_id: str = ""  # ID avatar đã tạo trên HeyGen (Photo/Digital Twin)
+    voice_id: str = ""  # Voice ID trên HeyGen (dùng cho lip sync)
 
     # Kích thước video TikTok portrait
     width: int = 1080
@@ -72,9 +74,11 @@ class HeyGenConfig:
 
 # ── Result DTOs ────────────────────────────────────────────────────────────────
 
+
 @dataclass
 class ClipJob:
     """Job đã submit lên HeyGen, đang chờ render."""
+
     video_id: str
     clip_type: str  # "hook" | "cta"
 
@@ -82,20 +86,23 @@ class ClipJob:
 @dataclass
 class ClipResult:
     """Kết quả render clip từ HeyGen."""
+
     video_id: str
     video_url: str
-    clip_type: str        # "hook" | "cta"
+    clip_type: str  # "hook" | "cta"
     duration_hint_s: int  # Ước tính thời lượng (giây)
 
 
 @dataclass
 class HeyGenScriptParts:
     """Nội dung VOICE được tách cho từng loại clip."""
-    hook_text: str = ""   # Text cho clip 0–3s
-    cta_text: str = ""    # Text cho clip 36–45s
+
+    hook_text: str = ""  # Text cho clip 0–3s
+    cta_text: str = ""  # Text cho clip 36–45s
 
 
 # ── Engine ────────────────────────────────────────────────────────────────────
+
 
 class HeyGenVideoGenerator:
     """Tạo avatar video clips từ script TikTok bằng HeyGen API.
@@ -216,13 +223,9 @@ class HeyGenVideoGenerator:
             video_id = data.get("video_id") or resp.json().get("video_id")
 
             if not video_id:
-                raise HeyGenError(
-                    f"HeyGen không trả về video_id. Response: {resp.text[:200]}"
-                )
+                raise HeyGenError(f"HeyGen không trả về video_id. Response: {resp.text[:200]}")
 
-            logger.info(
-                "[HeyGenEngine] Submitted clip '%s' — video_id=%s", clip_type, video_id
-            )
+            logger.info("[HeyGenEngine] Submitted clip '%s' — video_id=%s", clip_type, video_id)
             return ClipJob(video_id=video_id, clip_type=clip_type)
 
         except (HeyGenAuthError, HeyGenRateLimitError, HeyGenError):
@@ -255,7 +258,9 @@ class HeyGenVideoGenerator:
         elapsed = 0
         logger.info(
             "[HeyGenEngine] Polling '%s' (video_id=%s, max=%ds)...",
-            job.clip_type, job.video_id, max_wait_s,
+            job.clip_type,
+            job.video_id,
+            max_wait_s,
         )
 
         while elapsed < max_wait_s:
@@ -280,7 +285,9 @@ class HeyGenVideoGenerator:
                         )
                     logger.info(
                         "[HeyGenEngine] Clip '%s' done in %ds — %s",
-                        job.clip_type, elapsed, video_url,
+                        job.clip_type,
+                        elapsed,
+                        video_url,
                     )
                     return ClipResult(
                         video_id=job.video_id,
@@ -297,15 +304,15 @@ class HeyGenVideoGenerator:
 
                 logger.debug(
                     "[HeyGenEngine] Clip '%s' status=%s, elapsed=%ds",
-                    job.clip_type, status, elapsed,
+                    job.clip_type,
+                    status,
+                    elapsed,
                 )
 
             except (HeyGenRenderError, HeyGenAuthError):
                 raise
             except Exception as e:
-                logger.warning(
-                    "[HeyGenEngine] Poll error (will retry): %s", e
-                )
+                logger.warning("[HeyGenEngine] Poll error (will retry): %s", e)
 
         raise HeyGenTimeoutError(
             f"Clip '{job.clip_type}' (video_id={job.video_id}) "
@@ -329,9 +336,7 @@ class HeyGenVideoGenerator:
         Clips nào lỗi sẽ bị bỏ qua — trả về những cái thành công.
         """
         if not self.is_available():
-            raise HeyGenError(
-                "HeyGen engine chưa khởi tạo. Kiểm tra API key, Avatar ID, Voice ID."
-            )
+            raise HeyGenError("HeyGen engine chưa khởi tạo. Kiểm tra API key, Avatar ID, Voice ID.")
 
         parts = extract_script_parts(script_body)
         tasks_to_run: list[tuple[str, str]] = []
@@ -359,7 +364,8 @@ class HeyGenVideoGenerator:
             if isinstance(result, Exception):
                 logger.error(
                     "[HeyGenEngine] Submit '%s' thất bại: %s",
-                    tasks_to_run[i][1], result,
+                    tasks_to_run[i][1],
+                    result,
                 )
             else:
                 jobs.append(result)
@@ -387,20 +393,17 @@ class HeyGenVideoGenerator:
         if resp.status_code == 200:
             return
         if resp.status_code in (401, 403):
-            raise HeyGenAuthError(
-                f"CẢNH BÁO: HẾT QUOTA API — HeyGen — 401/403 [{context}]"
-            )
+            raise HeyGenAuthError(f"CẢNH BÁO: HẾT QUOTA API — HeyGen — 401/403 [{context}]")
         if resp.status_code == 429:
             raise HeyGenRateLimitError(
                 f"CẢNH BÁO: HẾT QUOTA API — HeyGen — 429 Rate Limit [{context}]"
             )
         if resp.status_code >= 400:
-            raise HeyGenError(
-                f"HeyGen API lỗi {resp.status_code} [{context}]: {resp.text[:200]}"
-            )
+            raise HeyGenError(f"HeyGen API lỗi {resp.status_code} [{context}]: {resp.text[:200]}")
 
 
 # ── Script Parts Extractor ─────────────────────────────────────────────────────
+
 
 def extract_script_parts(script_body: str) -> HeyGenScriptParts:
     """Tách nội dung VOICE thành hook text và CTA text từ TikTok script table.
@@ -433,7 +436,7 @@ def extract_script_parts(script_body: str) -> HeyGenScriptParts:
 
         # Làm sạch voice text
         cleaned = re.sub(r"[*`]", "", voice_cell).strip()
-        cleaned = cleaned.strip('"\'""''')
+        cleaned = cleaned.strip('"\'""')
 
         # Hook: timing bắt đầu bằng 0
         if re.match(r"^0[\s\-–]", time_cell) and cleaned:
@@ -447,6 +450,7 @@ def extract_script_parts(script_body: str) -> HeyGenScriptParts:
 
 
 # ── Factory ───────────────────────────────────────────────────────────────────
+
 
 def create_heygen_engine() -> HeyGenVideoGenerator:
     """Factory — tạo HeyGenVideoGenerator từ settings hiện tại."""

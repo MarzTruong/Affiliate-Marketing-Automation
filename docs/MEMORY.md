@@ -3,7 +3,7 @@
 > Note: This file is autonomously updated by the AI to preserve context across sessions. Do not delete.
 
 **Repo:** `MarzTruong/Affiliate-Marketing-Automation`
-**Last updated:** 2026-04-14 (phiên 5)
+**Last updated:** 2026-04-16 (phiên 6)
 
 ---
 
@@ -43,12 +43,20 @@
 
 - **[2026-04-14] HeyGen async polling pattern:** HeyGen render video bất đồng bộ (~1-3 phút). Pattern: submit job → nhận video_id → poll GET /v1/video/{id} mỗi 10s → completed/failed. Timeout mặc định 600s. 2 clips (hook + CTA) submit và poll song song bằng asyncio.gather.
 - **[2026-04-14] ElevenLabs VoiceSettings import ở module level:** Import `VoiceSettings` và `AsyncElevenLabs` bằng try/except ở module level (không phải bên trong method) để unit test có thể patch được bằng `patch("backend.ai_engine.elevenlabs_engine.VoiceSettings")`.
+- **[2026-04-16] Cách đề xuất phương án kỹ thuật:** Luôn dùng bảng cụ thể (file nào đổi, dòng nào sửa) thay vì giải thích chung chung — owner cần thông tin cụ thể để ra quyết định, không phải lý thuyết.
+
+- **[2026-04-16] SQLAlchemy `mapped_column(default=...)` chỉ áp dụng khi INSERT:** `default=` trong `mapped_column` không set giá trị ở Python object level khi `__init__`. Phải truyền tường minh hoặc dùng `server_default` (DB-level). Tests nên tránh assert Python-level defaults nếu không truyền vào constructor.
+
+- **[2026-04-16] Backend module split — backward-compat shims:** Khi move package (`backend/connectors/` → `backend/affiliate/connectors/`), giữ `__init__.py` cũ làm shim re-export từ path mới. Tránh break code cũ còn import từ path gốc (analytics, workers, tests).
+
 - **[2026-04-14] TikTok channel strategy — content only, no direct affiliate links:** TikTok = kênh nội dung (faceless review video) + "link in bio". Facebook = kênh affiliate link trực tiếp. Không đặt link TMĐT trong caption TikTok.
 - **[2026-04-14] Không dùng Make/n8n:** Hệ thống đã có APScheduler + custom pipeline + webhook — thêm Make/n8n tạo ra 2 layer chồng chéo không cần thiết. Quyết định: giữ custom backend, mở rộng bằng cách thêm engine mới (ElevenLabs, HeyGen) theo pattern `GeminiEngine`.
 
 - **[2026-04-14] TikTok strategy: Content channel, NOT affiliate link channel:** TikTok nghiêm ngặt về link affiliate từ sàn TMĐT ngoài. Quyết định: TikTok = kênh nội dung (faceless review video) → CTA về "link in bio" → landing page. Facebook = kênh phân phối affiliate link trực tiếp.
 
 - **[2026-04-14] Content workflow TikTok = Hybrid (Auto + Manual):** Script + ElevenLabs audio + HeyGen clips = tự động. B-roll quay + CapCut dựng = thủ công (không thể tự động hóa). Hệ thống notify qua Telegram khi assets sẵn sàng để owner thao tác tiếp.
+
+- **[2026-04-16] TikTok Studio module split (backend):** `backend/tiktok/` = TikTok Studio (production pipeline, CRUD, router). `backend/affiliate/` = Affiliate automation (pipeline, scheduler, connectors, publishers). Shared: `ai_engine/`, `analytics/`, `models/`, `api/v1/` URLs không đổi. Old paths (`backend/connectors/`, `backend/publisher/`) giữ làm shims.
 
 - **[2026-04-13] AccessTrade là primary data source:** Shopee unofficial scraping đã bị xóa (vi phạm ToS). AccessTrade là connector duy nhất cho tất cả platform search (Shopee, Tiki, Lazada).
 

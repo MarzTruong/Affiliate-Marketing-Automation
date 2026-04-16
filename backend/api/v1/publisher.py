@@ -7,11 +7,15 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.affiliate.publishers.posting_service import (
+    PUBLISHER_REGISTRY,
+    get_publications,
+    publish_content,
+)
+from backend.affiliate.publishers.scheduler import schedule_publication
 from backend.config import settings
 from backend.database import get_db
-from backend.affiliate.publishers.posting_service import publish_content, get_publications, PUBLISHER_REGISTRY
-from backend.affiliate.publishers.scheduler import schedule_publication
-from backend.schemas.publisher import PublishRequest, ScheduleRequest, PublicationResponse
+from backend.schemas.publisher import PublicationResponse, PublishRequest, ScheduleRequest
 
 router = APIRouter()
 
@@ -28,6 +32,7 @@ class MarkPublishedResponse(BaseModel):
     platform: str
     published_at: datetime
     note: str | None
+
 
 # Credential fields required per channel
 _CHANNEL_CREDENTIALS: dict[str, list[str]] = {
@@ -59,13 +64,17 @@ async def publish_now(req: PublishRequest, db: AsyncSession = Depends(get_db)):
     """Đăng nội dung ngay lập tức lên các kênh đã chọn."""
     for ch in req.channels:
         if ch not in PUBLISHER_REGISTRY:
-            raise HTTPException(400, f"Kênh không hỗ trợ: {ch}. Có sẵn: {list(PUBLISHER_REGISTRY.keys())}")
+            raise HTTPException(
+                400, f"Kênh không hỗ trợ: {ch}. Có sẵn: {list(PUBLISHER_REGISTRY.keys())}"
+            )
     _check_credentials(req.channels)
     try:
         pubs = await publish_content(db, req.content_id, req.channels, req.extra_kwargs)
         # If all channels failed, surface the error clearly
         if pubs and all(p.status == "failed" for p in pubs):
-            raise HTTPException(502, "Đăng bài thất bại trên tất cả kênh. Kiểm tra lại API credentials.")
+            raise HTTPException(
+                502, "Đăng bài thất bại trên tất cả kênh. Kiểm tra lại API credentials."
+            )
         return pubs
     except HTTPException:
         raise
@@ -140,7 +149,9 @@ async def mark_published(req: MarkPublishedRequest, db: AsyncSession = Depends(g
 
     valid_platforms = {"tiktok", "facebook", "telegram", "wordpress"}
     if req.platform not in valid_platforms:
-        raise HTTPException(422, f"Platform không hợp lệ: {req.platform}. Hợp lệ: {valid_platforms}")
+        raise HTTPException(
+            422, f"Platform không hợp lệ: {req.platform}. Hợp lệ: {valid_platforms}"
+        )
 
     log = ManualPublishLog(
         content_id=req.content_id,
@@ -168,6 +179,7 @@ async def list_manual_logs(
 ):
     """Lịch sử đăng bài thủ công."""
     from sqlalchemy import select
+
     from backend.models.manual_publish_log import ManualPublishLog
 
     stmt = select(ManualPublishLog).order_by(ManualPublishLog.published_at.desc())

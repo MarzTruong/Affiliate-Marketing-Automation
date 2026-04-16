@@ -1,25 +1,23 @@
 """Tests for SOP engine: scoring, A/B testing, and utilities."""
 
-import math
 import uuid
 from decimal import Decimal
 
 import pytest
 
 from backend.models.campaign import Campaign
-from backend.models.sop_template import SOPTemplate, ABTest
+from backend.models.sop_template import SOPTemplate
 from backend.sop_engine.ab_testing import (
     _z_test_proportion,
+    conclude_test_manually,
     create_ab_test,
     pick_variant,
     record_impression,
-    record_conversion,
-    conclude_test_manually,
 )
 from backend.sop_engine.scorer import score_template
 
-
 # ── Z-test ─────────────────────────────────────────────────────
+
 
 def test_z_test_equal_proportions():
     """Equal proportions should give high p-value (not significant)."""
@@ -44,6 +42,7 @@ def test_z_test_no_conversions():
 
 
 # ── A/B Testing ────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_create_ab_test(db):
@@ -92,8 +91,20 @@ async def test_pick_variant_balanced(db):
 @pytest.mark.asyncio
 async def test_conclude_test_manually(db):
     campaign = Campaign(id=uuid.uuid4(), name="Test", platform="shopee")
-    tmpl_a = SOPTemplate(id=uuid.uuid4(), name="A", content_type="seo_article", prompt_template="A", performance_score=Decimal("50.00"))
-    tmpl_b = SOPTemplate(id=uuid.uuid4(), name="B", content_type="seo_article", prompt_template="B", performance_score=Decimal("50.00"))
+    tmpl_a = SOPTemplate(
+        id=uuid.uuid4(),
+        name="A",
+        content_type="seo_article",
+        prompt_template="A",
+        performance_score=Decimal("50.00"),
+    )
+    tmpl_b = SOPTemplate(
+        id=uuid.uuid4(),
+        name="B",
+        content_type="seo_article",
+        prompt_template="B",
+        performance_score=Decimal("50.00"),
+    )
     db.add_all([campaign, tmpl_a, tmpl_b])
     await db.flush()
 
@@ -113,8 +124,20 @@ async def test_conclude_test_manually(db):
 @pytest.mark.asyncio
 async def test_conclude_already_concluded(db):
     campaign = Campaign(id=uuid.uuid4(), name="Test", platform="shopee")
-    tmpl_a = SOPTemplate(id=uuid.uuid4(), name="A", content_type="seo_article", prompt_template="A", performance_score=Decimal("50.00"))
-    tmpl_b = SOPTemplate(id=uuid.uuid4(), name="B", content_type="seo_article", prompt_template="B", performance_score=Decimal("50.00"))
+    tmpl_a = SOPTemplate(
+        id=uuid.uuid4(),
+        name="A",
+        content_type="seo_article",
+        prompt_template="A",
+        performance_score=Decimal("50.00"),
+    )
+    tmpl_b = SOPTemplate(
+        id=uuid.uuid4(),
+        name="B",
+        content_type="seo_article",
+        prompt_template="B",
+        performance_score=Decimal("50.00"),
+    )
     db.add_all([campaign, tmpl_a, tmpl_b])
     await db.flush()
 
@@ -127,10 +150,13 @@ async def test_conclude_already_concluded(db):
 
 # ── Scoring ────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_score_template_no_data(db):
     """Template with no analytics data should score 0."""
-    tmpl = SOPTemplate(id=uuid.uuid4(), name="Empty", content_type="seo_article", prompt_template="X")
+    tmpl = SOPTemplate(
+        id=uuid.uuid4(), name="Empty", content_type="seo_article", prompt_template="X"
+    )
     db.add(tmpl)
     await db.flush()
 

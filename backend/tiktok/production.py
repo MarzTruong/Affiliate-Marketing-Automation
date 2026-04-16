@@ -38,13 +38,12 @@ async def run_production(db: AsyncSession, project: TikTokProject) -> TikTokProj
     return project
 
 
-async def _step_generate_script(
-    db: AsyncSession, project: TikTokProject
-) -> TikTokProject:
+async def _step_generate_script(db: AsyncSession, project: TikTokProject) -> TikTokProject:
     """Bước 1: Gọi Claude để viết kịch bản TikTok."""
-    from backend.ai_engine.client import ClaudeClient
-    from backend.ai_engine.prompts.templates import TIKTOK_SCRIPT_TEMPLATE, _COT_HEADER
     from jinja2 import Template
+
+    from backend.ai_engine.client import ClaudeClient
+    from backend.ai_engine.prompts.templates import _COT_HEADER, TIKTOK_SCRIPT_TEMPLATE
 
     logger.info(f"[Production:{project.id}] Bước 1 — Tạo script TikTok")
 
@@ -52,6 +51,7 @@ async def _step_generate_script(
     product_info: dict = {}
     if project.product_id:
         from backend.models.product import Product
+
         product = await db.get(Product, project.product_id)
         if product:
             meta = product.metadata_json or {}
@@ -101,9 +101,7 @@ async def _step_generate_script(
     return project
 
 
-async def _step_generate_audio(
-    db: AsyncSession, project: TikTokProject
-) -> TikTokProject:
+async def _step_generate_audio(db: AsyncSession, project: TikTokProject) -> TikTokProject:
     """Bước 2: Tổng hợp giọng đọc từ cột VOICE của script qua ElevenLabs."""
     from backend.ai_engine.elevenlabs_engine import (
         ElevenLabsRateLimitError,
@@ -156,9 +154,7 @@ async def _step_generate_audio(
     return project
 
 
-async def _step_generate_clips(
-    db: AsyncSession, project: TikTokProject
-) -> TikTokProject:
+async def _step_generate_clips(db: AsyncSession, project: TikTokProject) -> TikTokProject:
     """Bước 3: Tạo hook clip + CTA clip qua HeyGen (song song)."""
     from backend.ai_engine.heygen_engine import (
         HeyGenRateLimitError,

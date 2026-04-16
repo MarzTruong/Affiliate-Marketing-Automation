@@ -40,9 +40,7 @@ async def list_content(
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    query = select(ContentPiece).offset(skip).limit(limit).order_by(
-        ContentPiece.created_at.desc()
-    )
+    query = select(ContentPiece).offset(skip).limit(limit).order_by(ContentPiece.created_at.desc())
     if campaign_id:
         query = query.where(ContentPiece.campaign_id == campaign_id)
     if content_type:

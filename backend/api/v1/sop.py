@@ -7,30 +7,31 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.database import get_db
-from backend.models.sop_template import SOPTemplate, ABTest
+from backend.models.sop_template import ABTest, SOPTemplate
 from backend.schemas.sop import (
-    TemplateCreate,
-    TemplateResponse,
     ABTestCreate,
-    ABTestResponse,
     ABTestEvent,
+    ABTestResponse,
     EvolveRequest,
     ScoreResponse,
+    TemplateCreate,
+    TemplateResponse,
 )
-from backend.sop_engine.scorer import score_all_templates, score_template
 from backend.sop_engine.ab_testing import (
-    create_ab_test,
-    record_impression,
-    record_conversion,
     conclude_test_manually,
+    create_ab_test,
     pick_variant,
+    record_conversion,
+    record_impression,
 )
 from backend.sop_engine.prompt_evolution import evolve_template
+from backend.sop_engine.scorer import score_all_templates
 
 router = APIRouter()
 
 
 # ── Templates ──────────────────────────────────────────────────
+
 
 @router.post("/templates", response_model=TemplateResponse)
 async def create_template(req: TemplateCreate, db: AsyncSession = Depends(get_db)):
@@ -95,6 +96,7 @@ async def update_template(
 
 # ── Scoring ────────────────────────────────────────────────────
 
+
 @router.post("/score-all", response_model=list[ScoreResponse])
 async def rescore_all_templates(
     lookback_days: int = Query(30, ge=1, le=365),
@@ -106,6 +108,7 @@ async def rescore_all_templates(
 
 
 # ── A/B Testing ────────────────────────────────────────────────
+
 
 @router.post("/ab-tests", response_model=ABTestResponse)
 async def create_test(req: ABTestCreate, db: AsyncSession = Depends(get_db)):
@@ -170,6 +173,7 @@ async def force_conclude(test_id: uuid.UUID, db: AsyncSession = Depends(get_db))
 
 
 # ── Prompt Evolution ───────────────────────────────────────────
+
 
 @router.post("/evolve", response_model=TemplateResponse)
 async def evolve(req: EvolveRequest, db: AsyncSession = Depends(get_db)):

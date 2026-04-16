@@ -17,13 +17,14 @@ from tenacity import (
     wait_exponential,
 )
 
-from backend.config import settings
 from backend.affiliate.connectors.base import AffiliateLink, BasePlatformConnector, ProductInfo
+from backend.config import settings
 
 logger = logging.getLogger(__name__)
 
 
 # ── Custom Exceptions ────────────────────────────────────────────────────────
+
 
 class RateLimitError(Exception):
     """HTTP 429 — bị rate limit, cần backoff."""
@@ -38,6 +39,7 @@ class ConnectorNetworkError(Exception):
 
 
 # ── Rate Limiter ─────────────────────────────────────────────────────────────
+
 
 class RateLimiter:
     """Token bucket đơn giản — giới hạn số request mỗi giây."""
@@ -56,6 +58,7 @@ class RateLimiter:
 
 # ── Retry decorator cho API calls ────────────────────────────────────────────
 
+
 def _accesstrade_retry():
     """3 lần retry, backoff 2s → 4s → 8s, chỉ retry khi RateLimit hoặc NetworkError."""
     return retry(
@@ -67,6 +70,7 @@ def _accesstrade_retry():
 
 
 # ── AccessTrade Connector ─────────────────────────────────────────────────────
+
 
 class AccessTradeConnector(BasePlatformConnector):
     """AccessTrade Vietnam affiliate aggregator connector.
@@ -159,8 +163,9 @@ class AccessTradeConnector(BasePlatformConnector):
             original_link = offer.get("link", "") or aff_link
             coupons = offer.get("coupons", [])
             coupon_text = " | ".join(
-                f"{c.get('coupon_code','')} ({c.get('coupon_desc','')})"
-                for c in coupons if c.get("coupon_code")
+                f"{c.get('coupon_code', '')} ({c.get('coupon_desc', '')})"
+                for c in coupons
+                if c.get("coupon_code")
             )
             description = offer.get("content", "")
             if coupon_text:
@@ -218,10 +223,12 @@ class AccessTradeConnector(BasePlatformConnector):
 
     async def get_performance_data(self, start_date: date, end_date: date) -> list[dict]:
         try:
-            return await self._transactions_request({
-                "since": start_date.isoformat(),
-                "until": end_date.isoformat(),
-            })
+            return await self._transactions_request(
+                {
+                    "since": start_date.isoformat(),
+                    "until": end_date.isoformat(),
+                }
+            )
         except (AuthError, RateLimitError, ConnectorNetworkError, RetryError) as e:
             logger.warning(f"[AccessTrade] Không lấy được performance data: {e}")
             return []

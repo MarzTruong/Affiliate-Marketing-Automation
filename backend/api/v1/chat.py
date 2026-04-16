@@ -16,6 +16,7 @@ class SessionData:
     def __init__(self, session_id: str):
         self.session_id = session_id
         from backend.automation.cbd_agent import CBDSession
+
         self.cbd_session = CBDSession()
 
 
@@ -44,6 +45,7 @@ async def chat(req: ChatRequest, db: AsyncSession = Depends(get_db)):
     session_data.cbd_session.db = db
 
     from backend.automation.cbd_agent import CBDAgent
+
     agent = CBDAgent(db)
 
     try:

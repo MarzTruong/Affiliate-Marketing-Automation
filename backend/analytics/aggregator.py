@@ -11,9 +11,7 @@ from backend.models.analytics import AnalyticsEvent
 from backend.models.content import ContentPiece
 
 
-async def compute_campaign_kpis(
-    db: AsyncSession, campaign_id: UUID, days: int = 30
-) -> dict:
+async def compute_campaign_kpis(db: AsyncSession, campaign_id: UUID, days: int = 30) -> dict:
     """Compute key performance indicators for a campaign."""
     start = date.today() - timedelta(days=days)
     base_filter = [
@@ -21,13 +19,19 @@ async def compute_campaign_kpis(
         AnalyticsEvent.event_time >= start,
     ]
 
-    clicks = await db.scalar(
-        select(func.count()).where(*base_filter, AnalyticsEvent.event_type == "click")
-    ) or 0
+    clicks = (
+        await db.scalar(
+            select(func.count()).where(*base_filter, AnalyticsEvent.event_type == "click")
+        )
+        or 0
+    )
 
-    conversions = await db.scalar(
-        select(func.count()).where(*base_filter, AnalyticsEvent.event_type == "conversion")
-    ) or 0
+    conversions = (
+        await db.scalar(
+            select(func.count()).where(*base_filter, AnalyticsEvent.event_type == "conversion")
+        )
+        or 0
+    )
 
     revenue = await db.scalar(
         select(func.coalesce(func.sum(AnalyticsEvent.value), 0)).where(

@@ -37,7 +37,7 @@ def _verify_facebook_signature(body: bytes, signature_header: str | None, secret
         return False
     if not signature_header.startswith("sha256="):
         return False
-    received = signature_header[len("sha256="):]
+    received = signature_header[len("sha256=") :]
     expected = hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
     return secrets.compare_digest(expected, received)
 
@@ -88,6 +88,7 @@ async def facebook_webhook_verify(request: Request):
     if mode == "subscribe" and token == verify_token:
         logger.info("[Webhook] Facebook verification thành công.")
         from fastapi.responses import PlainTextResponse
+
         return PlainTextResponse(content=challenge or "")
 
     logger.warning("[Webhook] Facebook verification thất bại — token không khớp.")
@@ -143,9 +144,7 @@ async def facebook_webhook_receive(
 
             # Tìm ScheduledPost theo external_post_id
             result = await db.execute(
-                select(ScheduledPost).where(
-                    ScheduledPost.external_post_id == external_post_id
-                )
+                select(ScheduledPost).where(ScheduledPost.external_post_id == external_post_id)
             )
             post = result.scalar_one_or_none()
             if not post:

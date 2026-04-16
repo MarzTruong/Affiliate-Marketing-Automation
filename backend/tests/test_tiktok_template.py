@@ -6,12 +6,10 @@ Kiểm tra:
 3. ReviewItemOut chấp nhận audio/heygen fields
 """
 
-import pytest
 
-from backend.ai_engine.prompts.templates import TIKTOK_SCRIPT_TEMPLATE
 from backend.ai_engine.elevenlabs_engine import extract_voice_text
 from backend.ai_engine.heygen_engine import extract_script_parts
-
+from backend.ai_engine.prompts.templates import TIKTOK_SCRIPT_TEMPLATE
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -26,6 +24,7 @@ SAMPLE_TIKTOK_OUTPUT = """| ⏱ Thời gian | 🎙 VOICE (Text-to-Speech) | 📹
 
 
 # ── Tests: TIKTOK_SCRIPT_TEMPLATE structure ───────────────────────────────────
+
 
 def test_template_has_time_column():
     """Template hướng dẫn Claude output cột ⏱ Thời gian."""
@@ -89,11 +88,13 @@ def test_template_has_product_placeholders():
 def test_template_in_template_map():
     """TIKTOK_SCRIPT_TEMPLATE có trong TEMPLATE_MAP với key 'tiktok_script'."""
     from backend.ai_engine.content_generator import TEMPLATE_MAP
+
     assert "tiktok_script" in TEMPLATE_MAP
     assert TEMPLATE_MAP["tiktok_script"] is TIKTOK_SCRIPT_TEMPLATE
 
 
 # ── Tests: extract_voice_text với TikTok output ───────────────────────────────
+
 
 def test_extract_voice_text_gets_all_rows():
     """extract_voice_text trả về text từ cả 4 dòng (hook + 2 body + CTA)."""
@@ -125,6 +126,7 @@ def test_extract_voice_text_not_empty():
 
 
 # ── Tests: extract_script_parts với TikTok output ────────────────────────────
+
 
 def test_extract_hook_from_tiktok_output():
     """extract_script_parts lấy đúng hook text từ dòng 0–3s."""
@@ -158,10 +160,12 @@ def test_extract_empty_tiktok_script():
 
 # ── Tests: ReviewItemOut asset fields ────────────────────────────────────────
 
+
 def test_review_item_out_has_asset_fields():
     """ReviewItemOut có 3 trường asset mới."""
-    from backend.api.v1.automation import ReviewItemOut
     from datetime import datetime
+
+    from backend.api.v1.automation import ReviewItemOut
 
     item = ReviewItemOut(
         post_id="abc",
@@ -185,8 +189,9 @@ def test_review_item_out_has_asset_fields():
 
 def test_review_item_out_asset_fields_optional():
     """ReviewItemOut asset fields là optional — default None."""
-    from backend.api.v1.automation import ReviewItemOut
     from datetime import datetime
+
+    from backend.api.v1.automation import ReviewItemOut
 
     item = ReviewItemOut(
         post_id="abc",

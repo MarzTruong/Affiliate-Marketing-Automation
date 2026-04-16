@@ -5,10 +5,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+import backend.models  # noqa: F401 - register all models
 from backend.api.v1 import router as api_v1_router
 from backend.config import apply_db_settings, settings
 from backend.database import Base, engine
-import backend.models  # noqa: F401 - register all models
 
 # Thư mục serve audio files
 _AUDIO_DIR = Path(__file__).resolve().parent / "static" / "audio"
@@ -26,21 +26,25 @@ async def lifespan(app: FastAPI):
 
     # Khởi tạo Gemini Vision engine
     from backend.ai_engine.gemini_engine import create_gemini_engine
+
     app.state.gemini = create_gemini_engine()
     await app.state.gemini.initialize()
 
     # Khởi tạo ElevenLabs Audio engine
     from backend.ai_engine.elevenlabs_engine import create_elevenlabs_engine
+
     app.state.elevenlabs = create_elevenlabs_engine()
     await app.state.elevenlabs.initialize()
 
     # Khởi tạo HeyGen Video engine
     from backend.ai_engine.heygen_engine import create_heygen_engine
+
     app.state.heygen = create_heygen_engine()
     await app.state.heygen.initialize()
 
     # Khởi động Automation Scheduler
     from backend.affiliate.scheduler import start_scheduler, stop_scheduler
+
     await start_scheduler()
 
     yield

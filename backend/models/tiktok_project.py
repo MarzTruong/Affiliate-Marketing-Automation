@@ -27,7 +27,9 @@ class TikTokProject(Base):
         GUID(), ForeignKey("content_pieces.id"), nullable=True
     )
     script_body: Mapped[str | None] = mapped_column(Text, nullable=True)
-    angle: Mapped[str] = mapped_column(String(50), nullable=False)   # pain_point | feature | social_proof
+    angle: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # pain_point | feature | social_proof
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 

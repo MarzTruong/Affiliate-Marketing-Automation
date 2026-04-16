@@ -36,16 +36,13 @@ def _compute_score(impressions: int, clicks: int, conversions: int, revenue: flo
     conversion_rate = conversions / clicks if clicks > 0 else 0
     rpi = revenue / impressions  # revenue per impression
 
-    ctr_score = min(ctr / 0.10 * 100, 100)        # 10% CTR = perfect
+    ctr_score = min(ctr / 0.10 * 100, 100)  # 10% CTR = perfect
     conv_score = min(conversion_rate / 0.05 * 100, 100)  # 5% conv = perfect
-    rpi_score = min(rpi / 1000 * 100, 100)         # 1000 VND/impression = perfect
-    vol_score = min(impressions / 1000 * 100, 100) # 1000 impressions = full credit
+    rpi_score = min(rpi / 1000 * 100, 100)  # 1000 VND/impression = perfect
+    vol_score = min(impressions / 1000 * 100, 100)  # 1000 impressions = full credit
 
     composite = (
-        W_CTR * ctr_score
-        + W_CONVERSION * conv_score
-        + W_REVENUE * rpi_score
-        + W_VOLUME * vol_score
+        W_CTR * ctr_score + W_CONVERSION * conv_score + W_REVENUE * rpi_score + W_VOLUME * vol_score
     )
     return Decimal(str(round(composite, 2)))
 
@@ -81,9 +78,7 @@ async def score_all_templates(db: AsyncSession, lookback_days: int = 30) -> list
     """
     since = date.today() - timedelta(days=lookback_days)
 
-    result = await db.execute(
-        select(SOPTemplate).where(SOPTemplate.is_active.is_(True))
-    )
+    result = await db.execute(select(SOPTemplate).where(SOPTemplate.is_active.is_(True)))
     templates = result.scalars().all()
     if not templates:
         return []
@@ -127,12 +122,14 @@ async def score_all_templates(db: AsyncSession, lookback_days: int = 30) -> list
         if clicks > 0:
             t.avg_conversion_rate = Decimal(str(round(conversions / clicks, 4)))
 
-        scored.append({
-            "template_id": str(t.id),
-            "name": t.name,
-            "score": float(new_score),
-            "usage_count": t.usage_count,
-        })
+        scored.append(
+            {
+                "template_id": str(t.id),
+                "name": t.name,
+                "score": float(new_score),
+                "usage_count": t.usage_count,
+            }
+        )
         logger.info("Scored template %s (%s): %.2f", t.id, t.name, new_score)
 
     await db.commit()

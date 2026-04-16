@@ -46,9 +46,7 @@ class AITrainingData(Base):
         GUID(), nullable=True
     )  # FK mềm sang content_pieces.id (không enforce để tránh cascade issues)
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     def __repr__(self) -> str:
         return f"<AITrainingData {self.content_type}:{self.quality_signal}>"

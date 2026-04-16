@@ -1,8 +1,8 @@
+from backend.affiliate.connectors.accesstrade import AccessTradeConnector
 from backend.affiliate.connectors.base import BasePlatformConnector
+from backend.affiliate.connectors.shopback import ShopBackConnector
 from backend.affiliate.connectors.shopee import ShopeeConnector
 from backend.affiliate.connectors.tiktok_shop import TikTokShopConnector
-from backend.affiliate.connectors.shopback import ShopBackConnector
-from backend.affiliate.connectors.accesstrade import AccessTradeConnector
 
 
 def get_connector(platform: str) -> BasePlatformConnector:

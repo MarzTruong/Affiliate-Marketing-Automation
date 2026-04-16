@@ -57,6 +57,7 @@ async def publish_scheduled_post(db: AsyncSession, post: ScheduledPost) -> None:
 async def _publish_facebook(content: ContentPiece, visual_url: str | None) -> str:
     """Đăng lên Facebook Page."""
     import httpx
+
     from backend.config import settings
 
     if not settings.facebook_access_token or not settings.facebook_page_id:
@@ -87,8 +88,10 @@ async def _publish_facebook(content: ContentPiece, visual_url: str | None) -> st
 
 async def _publish_wordpress(content: ContentPiece, visual_url: str | None) -> str:
     """Đăng lên WordPress qua REST API."""
-    import httpx
     from base64 import b64encode
+
+    import httpx
+
     from backend.config import settings
 
     if not settings.wordpress_site_url:
@@ -141,6 +144,7 @@ async def _publish_tiktok_draft(content: ContentPiece, visual_url: str | None) -
     # Thông báo qua Telegram
     try:
         from backend.reports.telegram_reporter import send_tiktok_draft_alert
+
         await send_tiktok_draft_alert(content, visual_url)
     except Exception:
         pass

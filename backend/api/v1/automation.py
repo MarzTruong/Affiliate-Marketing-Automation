@@ -17,6 +17,7 @@ router = APIRouter()
 
 # ── Schemas ────────────────────────────────────────────────────────────────
 
+
 class AutomationRuleCreate(BaseModel):
     name: str
     platform: str
@@ -83,6 +84,7 @@ class ScheduledPostOut(BaseModel):
 
 class ReviewItemOut(BaseModel):
     """Bài chờ duyệt — gộp ScheduledPost + ContentPiece preview."""
+
     post_id: str
     content_id: str
     content_title: str | None
@@ -103,6 +105,7 @@ class ReviewDecision(BaseModel):
 
 class ApproveDecision(BaseModel):
     """Body cho approve — user có thể chỉnh sửa nội dung trước khi duyệt."""
+
     edited_body: str | None = None  # Nếu có → lưu bản chỉnh sửa, signal "edited_then_approved"
 
 
@@ -117,6 +120,7 @@ class BulkRejectDecision(BaseModel):
 
 # ── Endpoints ──────────────────────────────────────────────────────────────
 
+
 @router.get("", response_model=list[AutomationRuleOut])
 async def list_rules(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(AutomationRule).order_by(AutomationRule.created_at.desc()))
@@ -127,11 +131,14 @@ async def list_rules(db: AsyncSession = Depends(get_db)):
 @router.post("", response_model=AutomationRuleOut, status_code=201)
 async def create_rule(data: AutomationRuleCreate, db: AsyncSession = Depends(get_db)):
     from decimal import Decimal
+
     rule = AutomationRule(
         name=data.name,
         platform=data.platform,
         category=data.category,
-        min_commission_pct=Decimal(str(data.min_commission_pct)) if data.min_commission_pct else None,
+        min_commission_pct=Decimal(str(data.min_commission_pct))
+        if data.min_commission_pct
+        else None,
         min_price=Decimal(str(data.min_price)) if data.min_price else None,
         max_price=Decimal(str(data.max_price)) if data.max_price else None,
         min_rating=Decimal(str(data.min_rating)) if data.min_rating else None,
@@ -178,6 +185,7 @@ async def trigger_pipeline(rule_id: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(404, "Rule không tồn tại")
 
     from backend.affiliate.pipeline import run_pipeline
+
     run = await run_pipeline(db, rule)
     return _run_to_out(run)
 
@@ -217,6 +225,7 @@ async def get_scheduled_posts(
 @router.get("/schedule-insights")
 async def get_schedule_insights(db: AsyncSession = Depends(get_db)):
     from backend.affiliate.adaptive_scheduler import get_schedule_insights
+
     return await get_schedule_insights(db)
 
 
@@ -249,20 +258,22 @@ async def get_review_queue(
         if content and content.body:
             body_preview = content.body[:500] + ("…" if len(content.body) > 500 else "")
 
-        items.append({
-            "post_id": str(post.id),
-            "content_id": str(post.content_id),
-            "content_title": content.title if content else None,
-            "content_body_preview": body_preview,
-            "content_type": content.content_type if content else "social_post",
-            "channel": post.channel,
-            "scheduled_at": post.scheduled_at,
-            "visual_url": post.visual_url,
-            "rule_name": rule_name,
-            "audio_url": content.audio_url if content else None,
-            "heygen_hook_url": content.heygen_hook_url if content else None,
-            "heygen_cta_url": content.heygen_cta_url if content else None,
-        })
+        items.append(
+            {
+                "post_id": str(post.id),
+                "content_id": str(post.content_id),
+                "content_title": content.title if content else None,
+                "content_body_preview": body_preview,
+                "content_type": content.content_type if content else "social_post",
+                "channel": post.channel,
+                "scheduled_at": post.scheduled_at,
+                "visual_url": post.visual_url,
+                "rule_name": rule_name,
+                "audio_url": content.audio_url if content else None,
+                "heygen_hook_url": content.heygen_hook_url if content else None,
+                "heygen_cta_url": content.heygen_cta_url if content else None,
+            }
+        )
     return items
 
 
@@ -347,15 +358,18 @@ async def bulk_approve_posts(body: BulkApproveDecision, db: AsyncSession = Depen
             if content:
                 from backend.models.ai_training_data import AITrainingData
                 from backend.models.product import Product
+
                 product = await db.get(Product, content.product_id) if content.product_id else None
-                db.add(AITrainingData(
-                    content_type=content.content_type,
-                    product_category=product.category if product else "",
-                    product_platform=product.platform if product else "",
-                    final_text=content.body or "",
-                    quality_signal="approved",
-                    source_content_id=content.id,
-                ))
+                db.add(
+                    AITrainingData(
+                        content_type=content.content_type,
+                        product_category=product.category if product else "",
+                        product_platform=product.platform if product else "",
+                        final_text=content.body or "",
+                        quality_signal="approved",
+                        source_content_id=content.id,
+                    )
+                )
             post.status = "scheduled"
             approved += 1
         except Exception:
@@ -381,6 +395,7 @@ async def bulk_reject_posts(body: BulkRejectDecision, db: AsyncSession = Depends
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────
+
 
 def _rule_to_out(r: AutomationRule) -> dict:
     return {

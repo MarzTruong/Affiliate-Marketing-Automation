@@ -51,6 +51,7 @@ async def _send(text: str, parse_mode: str = "HTML") -> bool:
 async def send_daily_report(db) -> None:
     """Báo cáo ngày — gửi lúc 22:30 VN."""
     from sqlalchemy import func, select
+
     from backend.models.analytics import AnalyticsEvent
     from backend.models.automation import PipelineRun, ScheduledPost
 
@@ -123,6 +124,7 @@ async def send_daily_report(db) -> None:
 async def send_weekly_report(db) -> None:
     """Tóm tắt tuần — gửi thứ 2 sáng."""
     from sqlalchemy import func, select
+
     from backend.models.analytics import AnalyticsEvent
     from backend.models.automation import ScheduledPost, TimeSlotPerformance
 
@@ -154,9 +156,7 @@ async def send_weekly_report(db) -> None:
 
     # Top giờ tốt nhất tuần này
     slots_r = await db.execute(
-        select(TimeSlotPerformance)
-        .order_by(TimeSlotPerformance.performance_score.desc())
-        .limit(3)
+        select(TimeSlotPerformance).order_by(TimeSlotPerformance.performance_score.desc()).limit(3)
     )
     top_slots = slots_r.scalars().all()
     day_names = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
@@ -236,9 +236,12 @@ def generate_weekly_pdf(
     pdf.cell(0, 12, "BAO CAO TUAN - AFFILIATE MARKETING", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.set_font("Helvetica", "", 11)
     pdf.cell(
-        0, 8,
+        0,
+        8,
         f"Tu {week_start.strftime('%d/%m/%Y')} den {week_end.strftime('%d/%m/%Y')}",
-        new_x="LMARGIN", new_y="NEXT", align="C",
+        new_x="LMARGIN",
+        new_y="NEXT",
+        align="C",
     )
     pdf.ln(8)
 
@@ -279,7 +282,12 @@ def generate_weekly_pdf(
         for header, width in [("Thu", 30), ("Gio", 30), ("Kenh", 60), ("Avg Clicks", 60)]:
             last = header == "Avg Clicks"
             pdf.cell(
-                width, 9, header, border=1, fill=True, align="C",
+                width,
+                9,
+                header,
+                border=1,
+                fill=True,
+                align="C",
                 new_x="LMARGIN" if last else "RIGHT",
                 new_y="NEXT" if last else "TOP",
             )
@@ -290,8 +298,13 @@ def generate_weekly_pdf(
             pdf.cell(30, 9, f"{s.hour:02d}:00", border=1, align="C")
             pdf.cell(60, 9, s.channel, border=1, align="C")
             pdf.cell(
-                60, 9, f"{float(s.avg_clicks):.1f}", border=1, align="C",
-                new_x="LMARGIN", new_y="NEXT",
+                60,
+                9,
+                f"{float(s.avg_clicks):.1f}",
+                border=1,
+                align="C",
+                new_x="LMARGIN",
+                new_y="NEXT",
             )
     else:
         pdf.set_font("Helvetica", "I", 11)
@@ -303,9 +316,12 @@ def generate_weekly_pdf(
     pdf.set_font("Helvetica", "I", 9)
     pdf.set_text_color(120, 120, 120)
     pdf.cell(
-        0, 8,
+        0,
+        8,
         f"Tao luc: {datetime.now().strftime('%H:%M %d/%m/%Y')} | He thong Affiliate Marketing Automation",
-        new_x="LMARGIN", new_y="NEXT", align="C",
+        new_x="LMARGIN",
+        new_y="NEXT",
+        align="C",
     )
 
     return pdf.output()
@@ -314,6 +330,7 @@ def generate_weekly_pdf(
 async def send_weekly_pdf_report(db) -> None:
     """Tạo PDF báo cáo tuần và gửi qua Telegram (thứ 2 07:05 VN)."""
     from sqlalchemy import func, select
+
     from backend.models.analytics import AnalyticsEvent
     from backend.models.automation import ScheduledPost, TimeSlotPerformance
 
@@ -344,9 +361,7 @@ async def send_weekly_pdf_report(db) -> None:
     total_posts = posts_r.scalar() or 0
 
     slots_r = await db.execute(
-        select(TimeSlotPerformance)
-        .order_by(TimeSlotPerformance.performance_score.desc())
-        .limit(3)
+        select(TimeSlotPerformance).order_by(TimeSlotPerformance.performance_score.desc()).limit(3)
     )
     top_slots = slots_r.scalars().all()
 
@@ -419,15 +434,17 @@ async def send_tiktok_draft_alert(
     # Build asset section
     asset_lines: list[str] = []
     if audio_url:
-        asset_lines.append(f"🎙 <b>Audio MP3:</b> <a href=\"{audio_url}\">Tải về</a>")
+        asset_lines.append(f'🎙 <b>Audio MP3:</b> <a href="{audio_url}">Tải về</a>')
     if heygen_hook_url:
-        asset_lines.append(f"🎬 <b>Hook clip:</b> <a href=\"{heygen_hook_url}\">Tải Hook (0–3s)</a>")
+        asset_lines.append(f'🎬 <b>Hook clip:</b> <a href="{heygen_hook_url}">Tải Hook (0–3s)</a>')
     if heygen_cta_url:
-        asset_lines.append(f"🎬 <b>CTA clip:</b> <a href=\"{heygen_cta_url}\">Tải CTA (36–45s)</a>")
+        asset_lines.append(f'🎬 <b>CTA clip:</b> <a href="{heygen_cta_url}">Tải CTA (36–45s)</a>')
     if visual_url:
         asset_lines.append(f"🖼️ <b>Ảnh:</b> {visual_url}")
 
-    asset_block = ("\n\n📦 <b>Assets sẵn sàng:</b>\n" + "\n".join(asset_lines)) if asset_lines else ""
+    asset_block = (
+        ("\n\n📦 <b>Assets sẵn sàng:</b>\n" + "\n".join(asset_lines)) if asset_lines else ""
+    )
 
     text = (
         f"🎵 <b>TikTok Script sẵn sàng</b>\n"

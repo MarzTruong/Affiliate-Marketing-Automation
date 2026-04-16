@@ -7,7 +7,6 @@ script extraction, và factory function.
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-import httpx
 
 from backend.ai_engine.heygen_engine import (
     ClipJob,
@@ -17,15 +16,14 @@ from backend.ai_engine.heygen_engine import (
     HeyGenError,
     HeyGenRateLimitError,
     HeyGenRenderError,
-    HeyGenScriptParts,
     HeyGenTimeoutError,
     HeyGenVideoGenerator,
-    extract_script_parts,
     create_heygen_engine,
+    extract_script_parts,
 )
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def config_no_key():
@@ -64,6 +62,7 @@ SAMPLE_SCRIPT = """
 
 
 # ── Tests: initialize ─────────────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_initialize_no_api_key(config_no_key):
@@ -121,6 +120,7 @@ async def test_initialize_401_stays_unavailable(config_valid):
 
 
 # ── Tests: submit_clip ────────────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_submit_clip_success(engine_initialized):
@@ -214,6 +214,7 @@ async def test_submit_clip_truncates_long_text(engine_initialized):
 
 # ── Tests: wait_for_render ────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_wait_for_render_completed_first_poll(engine_initialized):
     """Video completed ngay lần poll đầu → trả về ClipResult."""
@@ -227,8 +228,10 @@ async def test_wait_for_render_completed_first_poll(engine_initialized):
         }
     }
 
-    with patch("httpx.AsyncClient") as mock_client_cls, \
-         patch("asyncio.sleep", new_callable=AsyncMock):
+    with (
+        patch("httpx.AsyncClient") as mock_client_cls,
+        patch("asyncio.sleep", new_callable=AsyncMock),
+    ):
         mock_client = AsyncMock()
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
@@ -248,12 +251,12 @@ async def test_wait_for_render_failed_status(engine_initialized):
     job = ClipJob(video_id="vid_fail", clip_type="cta")
     mock_resp = MagicMock()
     mock_resp.status_code = 200
-    mock_resp.json.return_value = {
-        "data": {"status": "failed", "error": "avatar_not_found"}
-    }
+    mock_resp.json.return_value = {"data": {"status": "failed", "error": "avatar_not_found"}}
 
-    with patch("httpx.AsyncClient") as mock_client_cls, \
-         patch("asyncio.sleep", new_callable=AsyncMock):
+    with (
+        patch("httpx.AsyncClient") as mock_client_cls,
+        patch("asyncio.sleep", new_callable=AsyncMock),
+    ):
         mock_client = AsyncMock()
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
@@ -272,8 +275,10 @@ async def test_wait_for_render_timeout(engine_initialized):
     mock_resp.status_code = 200
     mock_resp.json.return_value = {"data": {"status": "processing"}}
 
-    with patch("httpx.AsyncClient") as mock_client_cls, \
-         patch("asyncio.sleep", new_callable=AsyncMock):
+    with (
+        patch("httpx.AsyncClient") as mock_client_cls,
+        patch("asyncio.sleep", new_callable=AsyncMock),
+    ):
         mock_client = AsyncMock()
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
@@ -286,6 +291,7 @@ async def test_wait_for_render_timeout(engine_initialized):
 
 
 # ── Tests: generate_clips ─────────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_generate_clips_not_initialized(engine_valid):
@@ -302,9 +308,10 @@ async def test_generate_clips_success(engine_initialized):
     hook_result = ClipResult("vid_hook", "https://cdn.heygen.com/hook.mp4", "hook", 3)
     cta_result = ClipResult("vid_cta", "https://cdn.heygen.com/cta.mp4", "cta", 10)
 
-    with patch.object(engine_initialized, "submit_clip", new_callable=AsyncMock) as mock_submit, \
-         patch.object(engine_initialized, "wait_for_render", new_callable=AsyncMock) as mock_wait:
-
+    with (
+        patch.object(engine_initialized, "submit_clip", new_callable=AsyncMock) as mock_submit,
+        patch.object(engine_initialized, "wait_for_render", new_callable=AsyncMock) as mock_wait,
+    ):
         mock_submit.side_effect = [hook_job, cta_job]
         mock_wait.side_effect = [hook_result, cta_result]
 
@@ -321,9 +328,10 @@ async def test_generate_clips_partial_failure(engine_initialized):
     hook_job = ClipJob(video_id="vid_hook", clip_type="hook")
     hook_result = ClipResult("vid_hook", "https://cdn.heygen.com/hook.mp4", "hook", 3)
 
-    with patch.object(engine_initialized, "submit_clip", new_callable=AsyncMock) as mock_submit, \
-         patch.object(engine_initialized, "wait_for_render", new_callable=AsyncMock) as mock_wait:
-
+    with (
+        patch.object(engine_initialized, "submit_clip", new_callable=AsyncMock) as mock_submit,
+        patch.object(engine_initialized, "wait_for_render", new_callable=AsyncMock) as mock_wait,
+    ):
         # hook ok, cta submit thất bại
         mock_submit.side_effect = [hook_job, HeyGenError("CTA submit failed")]
         mock_wait.side_effect = [hook_result]
@@ -335,6 +343,7 @@ async def test_generate_clips_partial_failure(engine_initialized):
 
 
 # ── Tests: extract_script_parts ───────────────────────────────────────────────
+
 
 def test_extract_hook_text():
     """Hook text được extract đúng từ dòng 0–3s."""
@@ -381,6 +390,7 @@ def test_extract_skips_header_row():
 
 
 # ── Tests: factory ────────────────────────────────────────────────────────────
+
 
 def test_create_heygen_engine_returns_engine():
     """Factory trả về HeyGenVideoGenerator instance."""

@@ -10,8 +10,8 @@ from backend.api.v1.content import router as content_router
 from backend.api.v1.notifications import router as notifications_router
 from backend.api.v1.platforms import router as platforms_router
 from backend.api.v1.publisher import router as publisher_router
-from backend.api.v1.sop import router as sop_router
 from backend.api.v1.settings import router as settings_router
+from backend.api.v1.sop import router as sop_router
 from backend.api.v1.system import router as system_router
 from backend.api.v1.webhooks import router as webhooks_router
 from backend.tiktok.router import router as tiktok_studio_router

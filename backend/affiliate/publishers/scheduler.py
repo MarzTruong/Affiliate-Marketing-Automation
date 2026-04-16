@@ -4,12 +4,12 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import select, and_
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.affiliate.publishers.posting_service import publish_content
 from backend.database import get_db_context
 from backend.models.publication import Publication
-from backend.affiliate.publishers.posting_service import publish_content
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,9 @@ async def schedule_publication(
         results.append(pub)
 
     await db.commit()
-    logger.info("Scheduled content %s for %d channels at %s", content_id, len(channels), scheduled_at)
+    logger.info(
+        "Scheduled content %s for %d channels at %s", content_id, len(channels), scheduled_at
+    )
     return results
 
 
@@ -71,4 +73,6 @@ async def process_scheduled_publications():
             try:
                 await publish_content(db, content_id, channels)
             except Exception:
-                logger.exception("Failed to process scheduled publication for content %s", content_id)
+                logger.exception(
+                    "Failed to process scheduled publication for content %s", content_id
+                )

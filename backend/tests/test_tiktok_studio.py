@@ -10,8 +10,7 @@ Coverage:
 """
 
 import uuid
-from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -19,8 +18,8 @@ from backend.models.tiktok_project import TikTokProject
 from backend.tiktok import studio
 from backend.tiktok.production import _ANGLE_HINTS
 
-
 # ── Model tests ───────────────────────────────────────────────────────────────
+
 
 def test_tiktok_project_explicit_status():
     """TikTokProject nhận status được truyền vào constructor."""
@@ -80,6 +79,7 @@ def test_tiktok_project_title_auto_set():
 
 # ── studio.py — MANUAL_STATUS_MAP tests ──────────────────────────────────────
 
+
 def test_manual_status_map_has_three_keys():
     """MANUAL_STATUS_MAP có đúng 3 milestone thủ công."""
     assert set(studio.MANUAL_STATUS_MAP.keys()) == {
@@ -100,6 +100,7 @@ def test_manual_status_map_values_are_timestamp_fields():
 
 
 # ── studio.py — CRUD async tests ─────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_create_project_sets_correct_fields():
@@ -254,6 +255,7 @@ async def test_delete_project_calls_db_delete():
 
 # ── production.py — angle hints tests ────────────────────────────────────────
 
+
 def test_angle_hints_cover_all_valid_angles():
     """_ANGLE_HINTS có hint cho tất cả 3 angle hợp lệ."""
     assert "pain_point" in _ANGLE_HINTS
@@ -269,9 +271,11 @@ def test_angle_hints_are_non_empty():
 
 # ── Migration file tests ──────────────────────────────────────────────────────
 
+
 def test_migration_file_exists():
     """File migration tiktok_projects tồn tại."""
     import os
+
     migration_path = os.path.join(
         os.path.dirname(__file__),
         "../../alembic/versions/e5f6a7b8c9d0_add_tiktok_projects_table.py",
@@ -281,11 +285,15 @@ def test_migration_file_exists():
 
 def test_migration_has_correct_revision():
     """Migration có revision ID đúng."""
-    import importlib.util, os
-    path = os.path.normpath(os.path.join(
-        os.path.dirname(__file__),
-        "../../alembic/versions/e5f6a7b8c9d0_add_tiktok_projects_table.py",
-    ))
+    import importlib.util
+    import os
+
+    path = os.path.normpath(
+        os.path.join(
+            os.path.dirname(__file__),
+            "../../alembic/versions/e5f6a7b8c9d0_add_tiktok_projects_table.py",
+        )
+    )
     spec = importlib.util.spec_from_file_location("migration", path)
     migration = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(migration)

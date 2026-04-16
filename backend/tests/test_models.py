@@ -7,11 +7,10 @@ import pytest
 
 from backend.models.campaign import Campaign
 from backend.models.content import ContentPiece
+from backend.models.notification import Notification
 from backend.models.product import Product
 from backend.models.publication import Publication
-from backend.models.sop_template import SOPTemplate, ABTest
-from backend.models.notification import Notification
-from backend.models.fraud_event import FraudEvent
+from backend.models.sop_template import ABTest, SOPTemplate
 
 
 @pytest.mark.asyncio

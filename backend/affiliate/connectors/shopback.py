@@ -2,8 +2,8 @@ from datetime import date
 
 import httpx
 
-from backend.config import settings
 from backend.affiliate.connectors.base import AffiliateLink, BasePlatformConnector, ProductInfo
+from backend.config import settings
 
 
 class ShopBackConnector(BasePlatformConnector):

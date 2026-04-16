@@ -28,6 +28,7 @@ _KEYWORD_SEARCH_DELAY = 0.5
 @dataclass
 class FilterCriteria:
     """Tiêu chí lọc sản phẩm từ AutomationRule."""
+
     platform: str
     category: str | None
     keywords: list[str]
@@ -103,7 +104,7 @@ async def scan_products(rule: AutomationRule) -> tuple[list[ProductInfo], int]:
     connector = AccessTradeConnector()
 
     if not connector.api_key:
-        logger.info(f"[Scanner] AccessTrade API key chưa cấu hình. Dùng mock data.")
+        logger.info("[Scanner] AccessTrade API key chưa cấu hình. Dùng mock data.")
         return _mock_fallback(criteria, reason="no_api_key")
 
     try:
@@ -120,8 +121,9 @@ async def scan_products(rule: AutomationRule) -> tuple[list[ProductInfo], int]:
     all_products: list[ProductInfo] = []
     seen_ids: set[str] = set()
 
-    from backend.affiliate.connectors.accesstrade import ConnectorNetworkError, RateLimitError
     from tenacity import RetryError
+
+    from backend.affiliate.connectors.accesstrade import ConnectorNetworkError, RateLimitError
 
     for i, keyword in enumerate(criteria.keywords[:3]):
         # Delay giữa các keyword search (bỏ qua lần đầu)
@@ -172,17 +174,15 @@ async def scan_products(rule: AutomationRule) -> tuple[list[ProductInfo], int]:
         f"[AccessTrade] Tìm thấy {total_found} SP, "
         f"qua lọc {len(filtered)}, lấy {min(len(filtered), criteria.max_products)}"
     )
-    return filtered[:criteria.max_products], total_found
+    return filtered[: criteria.max_products], total_found
 
 
-def _mock_fallback(
-    criteria: FilterCriteria, reason: str
-) -> tuple[list[ProductInfo], int]:
+def _mock_fallback(criteria: FilterCriteria, reason: str) -> tuple[list[ProductInfo], int]:
     """Trả về mock products kèm log lý do — để pipeline không bị block khi dev."""
     logger.info(f"[Scanner:MOCK] Lý do: {reason}. Platform: {criteria.platform}")
     mock = _get_mock_products(criteria)
     filtered = [p for p in mock if _passes_filter(p, criteria)]
-    return filtered[:criteria.max_products], len(mock)
+    return filtered[: criteria.max_products], len(mock)
 
 
 def _get_mock_products(criteria: FilterCriteria) -> list[ProductInfo]:
@@ -192,64 +192,87 @@ def _get_mock_products(criteria: FilterCriteria) -> list[ProductInfo]:
             external_id="mock_001",
             name="Tai nghe Sony WH-1000XM5 chống ồn",
             description="Tai nghe không dây cao cấp, chống ồn ANC, pin 30 tiếng",
-            price=7490000, original_price=8990000,
+            price=7490000,
+            original_price=8990000,
             image_urls=["https://via.placeholder.com/400x400?text=Sony+WH-1000XM5"],
             original_url=f"https://{criteria.platform}.vn/product/mock_001",
             affiliate_url=f"https://{criteria.platform}.vn/affiliate/mock_001",
-            commission_rate=8.5, rating=4.8, sales_count=12500,
-            category="Điện tử", platform=criteria.platform,
+            commission_rate=8.5,
+            rating=4.8,
+            sales_count=12500,
+            category="Điện tử",
+            platform=criteria.platform,
         ),
         ProductInfo(
             external_id="mock_002",
             name="Đầm maxi hoa nhí dự tiệc phong cách Hàn Quốc",
             description="Chất vải lụa mềm mại, thiết kế thanh lịch phù hợp nhiều dịp",
-            price=285000, original_price=450000,
+            price=285000,
+            original_price=450000,
             image_urls=["https://via.placeholder.com/400x400?text=Dam+Maxi"],
             original_url=f"https://{criteria.platform}.vn/product/mock_002",
             affiliate_url=f"https://{criteria.platform}.vn/affiliate/mock_002",
-            commission_rate=12.0, rating=4.6, sales_count=8900,
-            category="Thời trang", platform=criteria.platform,
+            commission_rate=12.0,
+            rating=4.6,
+            sales_count=8900,
+            category="Thời trang",
+            platform=criteria.platform,
         ),
         ProductInfo(
             external_id="mock_003",
             name="Nồi chiên không dầu Xiaomi 5.5L",
             description="Công nghệ 360° Air Fry, tiết kiệm 85% dầu mỡ",
-            price=1290000, original_price=1890000,
+            price=1290000,
+            original_price=1890000,
             image_urls=["https://via.placeholder.com/400x400?text=Xiaomi+AirFryer"],
             original_url=f"https://{criteria.platform}.vn/product/mock_003",
             affiliate_url=f"https://{criteria.platform}.vn/affiliate/mock_003",
-            commission_rate=9.0, rating=4.7, sales_count=23400,
-            category="Gia dụng", platform=criteria.platform,
+            commission_rate=9.0,
+            rating=4.7,
+            sales_count=23400,
+            category="Gia dụng",
+            platform=criteria.platform,
         ),
         ProductInfo(
             external_id="mock_004",
             name="Serum Vitamin C The Ordinary 30ml",
             description="Serum làm sáng da, giảm thâm nám, chống oxy hóa",
-            price=320000, original_price=420000,
+            price=320000,
+            original_price=420000,
             image_urls=["https://via.placeholder.com/400x400?text=Vitamin+C+Serum"],
             original_url=f"https://{criteria.platform}.vn/product/mock_004",
             affiliate_url=f"https://{criteria.platform}.vn/affiliate/mock_004",
-            commission_rate=15.0, rating=4.9, sales_count=45200,
-            category="Làm đẹp", platform=criteria.platform,
+            commission_rate=15.0,
+            rating=4.9,
+            sales_count=45200,
+            category="Làm đẹp",
+            platform=criteria.platform,
         ),
         ProductInfo(
             external_id="mock_005",
             name="Giày thể thao Nike Air Max 270",
             description="Đệm khí Max 270 siêu êm, thiết kế hiện đại năng động",
-            price=2850000, original_price=3500000,
+            price=2850000,
+            original_price=3500000,
             image_urls=["https://via.placeholder.com/400x400?text=Nike+Air+Max"],
             original_url=f"https://{criteria.platform}.vn/product/mock_005",
             affiliate_url=f"https://{criteria.platform}.vn/affiliate/mock_005",
-            commission_rate=7.5, rating=4.7, sales_count=6700,
-            category="Giày dép", platform=criteria.platform,
+            commission_rate=7.5,
+            rating=4.7,
+            sales_count=6700,
+            category="Giày dép",
+            platform=criteria.platform,
         ),
     ]
 
     # Lọc theo danh mục nếu có
     if criteria.category:
         category_map = {
-            "dien_tu": "Điện tử", "thoi_trang": "Thời trang",
-            "gia_dung": "Gia dụng", "lam_dep": "Làm đẹp", "giay_dep": "Giày dép",
+            "dien_tu": "Điện tử",
+            "thoi_trang": "Thời trang",
+            "gia_dung": "Gia dụng",
+            "lam_dep": "Làm đẹp",
+            "giay_dep": "Giày dép",
         }
         target = category_map.get(criteria.category.lower(), criteria.category)
         filtered = [p for p in base_products if target.lower() in (p.category or "").lower()]

@@ -7,12 +7,12 @@ from datetime import datetime, timezone
 from sqlalchemy import nullslast, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models.content import ContentPiece
-from backend.models.publication import Publication
 from backend.affiliate.publishers.base import BasePublisher, PublishResult
 from backend.affiliate.publishers.facebook import FacebookPublisher
-from backend.affiliate.publishers.wordpress import WordPressPublisher
 from backend.affiliate.publishers.telegram import TelegramPublisher
+from backend.affiliate.publishers.wordpress import WordPressPublisher
+from backend.models.content import ContentPiece
+from backend.models.publication import Publication
 from backend.tiktok.publisher import TikTokPublisher
 
 logger = logging.getLogger(__name__)
@@ -29,7 +29,9 @@ def get_publisher(channel: str, **kwargs) -> BasePublisher:
     """Get a publisher instance by channel name."""
     cls = PUBLISHER_REGISTRY.get(channel)
     if not cls:
-        raise ValueError(f"Unknown publish channel: {channel}. Available: {list(PUBLISHER_REGISTRY.keys())}")
+        raise ValueError(
+            f"Unknown publish channel: {channel}. Available: {list(PUBLISHER_REGISTRY.keys())}"
+        )
     return cls(**kwargs)
 
 
@@ -76,10 +78,14 @@ async def publish_content(
                 pub.published_at = datetime.now(timezone.utc)
                 content.status = "published"
                 content.published_at = datetime.now(timezone.utc)
-                logger.info("Published content %s to %s: %s", content_id, channel, result.external_post_id)
+                logger.info(
+                    "Published content %s to %s: %s", content_id, channel, result.external_post_id
+                )
             else:
                 pub.status = "failed"
-                logger.error("Failed to publish content %s to %s: %s", content_id, channel, result.error)
+                logger.error(
+                    "Failed to publish content %s to %s: %s", content_id, channel, result.error
+                )
         except Exception as e:
             pub.status = "failed"
             logger.exception("Error publishing content %s to %s: %s", content_id, channel, e)

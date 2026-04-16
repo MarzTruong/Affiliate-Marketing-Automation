@@ -137,7 +137,9 @@ async def delete_campaign_product(
 @router.get("/{campaign_id}/products", response_model=list[ProductResponse])
 async def list_campaign_products(campaign_id: UUID, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Product).where(Product.campaign_id == campaign_id).order_by(Product.created_at.desc())
+        select(Product)
+        .where(Product.campaign_id == campaign_id)
+        .order_by(Product.created_at.desc())
     )
     return result.scalars().all()
 
@@ -147,24 +149,28 @@ async def get_campaign_stats(campaign_id: UUID, db: AsyncSession = Depends(get_d
     from backend.models.analytics import AnalyticsEvent
     from backend.models.content import ContentPiece
 
-    product_count = await db.scalar(
-        select(func.count()).where(Product.campaign_id == campaign_id)
-    )
+    product_count = await db.scalar(select(func.count()).where(Product.campaign_id == campaign_id))
     content_count = await db.scalar(
         select(func.count()).where(ContentPiece.campaign_id == campaign_id)
     )
-    total_clicks = await db.scalar(
-        select(func.count()).where(
-            AnalyticsEvent.campaign_id == campaign_id,
-            AnalyticsEvent.event_type == "click",
+    total_clicks = (
+        await db.scalar(
+            select(func.count()).where(
+                AnalyticsEvent.campaign_id == campaign_id,
+                AnalyticsEvent.event_type == "click",
+            )
         )
-    ) or 0
-    total_revenue = await db.scalar(
-        select(func.coalesce(func.sum(AnalyticsEvent.value), 0)).where(
-            AnalyticsEvent.campaign_id == campaign_id,
-            AnalyticsEvent.event_type == "revenue",
+        or 0
+    )
+    total_revenue = (
+        await db.scalar(
+            select(func.coalesce(func.sum(AnalyticsEvent.value), 0)).where(
+                AnalyticsEvent.campaign_id == campaign_id,
+                AnalyticsEvent.event_type == "revenue",
+            )
         )
-    ) or 0
+        or 0
+    )
 
     return {
         "product_count": product_count,

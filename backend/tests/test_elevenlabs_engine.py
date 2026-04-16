@@ -3,7 +3,6 @@
 Dùng mock để không gọi API thật — test logic, error handling, và voice text extraction.
 """
 
-import asyncio
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -19,8 +18,8 @@ from backend.ai_engine.elevenlabs_engine import (
     extract_voice_text,
 )
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def config_no_key():
@@ -52,6 +51,7 @@ SAMPLE_TIKTOK_SCRIPT = """
 
 # ── Tests: initialize ─────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_initialize_no_api_key(config_no_key):
     """Engine không khởi tạo khi thiếu API key — scaffold mode."""
@@ -66,8 +66,12 @@ async def test_initialize_success(config_valid, tmp_path):
     engine = ElevenLabsAudioGenerator(config=config_valid)
     mock_client = MagicMock()
 
-    with patch("backend.ai_engine.elevenlabs_engine._AUDIO_DIR", tmp_path), \
-         patch("backend.ai_engine.elevenlabs_engine.ElevenLabsAudioGenerator.initialize") as mock_init:
+    with (
+        patch("backend.ai_engine.elevenlabs_engine._AUDIO_DIR", tmp_path),
+        patch(
+            "backend.ai_engine.elevenlabs_engine.ElevenLabsAudioGenerator.initialize"
+        ) as mock_init,
+    ):
 
         async def _init(self_inner=None):
             engine._client = mock_client
@@ -99,6 +103,7 @@ async def test_initialize_import_error(config_valid):
 
 
 # ── Tests: generate_audio ─────────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_generate_audio_not_initialized(engine_valid):
@@ -135,9 +140,10 @@ async def test_generate_audio_success(engine_valid, tmp_path):
     mock_client.text_to_speech = mock_tts
     engine_valid._client = mock_client
 
-    with patch("backend.ai_engine.elevenlabs_engine._AUDIO_DIR", tmp_path), \
-         patch("backend.ai_engine.elevenlabs_engine.VoiceSettings", MagicMock()):
-
+    with (
+        patch("backend.ai_engine.elevenlabs_engine._AUDIO_DIR", tmp_path),
+        patch("backend.ai_engine.elevenlabs_engine.VoiceSettings", MagicMock()),
+    ):
         # Act
         result = await engine_valid.generate_audio(
             text="Mình đang review sản phẩm này, rất thích.",
@@ -178,8 +184,10 @@ async def test_generate_audio_truncates_long_text(engine_valid, tmp_path):
     mock_client.text_to_speech = mock_tts
     engine_valid._client = mock_client
 
-    with patch("backend.ai_engine.elevenlabs_engine._AUDIO_DIR", tmp_path), \
-         patch("backend.ai_engine.elevenlabs_engine.VoiceSettings", MagicMock()):
+    with (
+        patch("backend.ai_engine.elevenlabs_engine._AUDIO_DIR", tmp_path),
+        patch("backend.ai_engine.elevenlabs_engine.VoiceSettings", MagicMock()),
+    ):
         await engine_valid.generate_audio(text=long_text)
 
     assert len(received_texts) == 1
@@ -226,6 +234,7 @@ async def test_generate_audio_auth_error(engine_valid):
 
 # ── Tests: extract_voice_text ─────────────────────────────────────────────────
 
+
 def test_extract_voice_text_standard_table():
     """Trích xuất đúng 4 dòng VOICE từ TikTok script table chuẩn."""
     result = extract_voice_text(SAMPLE_TIKTOK_SCRIPT)
@@ -271,6 +280,7 @@ def test_extract_voice_text_cleans_markdown():
 
 # ── Tests: _estimate_duration ─────────────────────────────────────────────────
 
+
 def test_estimate_duration_typical_script():
     """Script 50 từ ≈ 25 giây (120 words/min)."""
     text = " ".join(["mình"] * 50)
@@ -286,11 +296,15 @@ def test_estimate_duration_empty():
 
 # ── Tests: factory ────────────────────────────────────────────────────────────
 
+
 def test_create_elevenlabs_engine_returns_engine():
     """Factory function trả về ElevenLabsAudioGenerator instance."""
     from backend.ai_engine.elevenlabs_engine import create_elevenlabs_engine
-    with patch("backend.ai_engine.elevenlabs_engine.ElevenLabsConfig") as mock_cfg, \
-         patch("backend.config.settings") as mock_settings:
+
+    with (
+        patch("backend.ai_engine.elevenlabs_engine.ElevenLabsConfig") as mock_cfg,
+        patch("backend.config.settings") as mock_settings,
+    ):
         mock_settings.elevenlabs_api_key = "test_key"
         mock_settings.elevenlabs_voice_id = "test_voice"
         engine = create_elevenlabs_engine()

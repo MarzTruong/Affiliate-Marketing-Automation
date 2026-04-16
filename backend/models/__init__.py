@@ -1,10 +1,15 @@
 from backend.models.ai_training_data import AITrainingData
-from backend.models.manual_publish_log import ManualPublishLog
 from backend.models.analytics import AnalyticsEvent
-from backend.models.automation import AutomationRule, PipelineRun, ScheduledPost, TimeSlotPerformance
+from backend.models.automation import (
+    AutomationRule,
+    PipelineRun,
+    ScheduledPost,
+    TimeSlotPerformance,
+)
 from backend.models.campaign import Campaign
 from backend.models.content import ContentPiece
 from backend.models.fraud_event import FraudEvent
+from backend.models.manual_publish_log import ManualPublishLog
 from backend.models.notification import Notification
 from backend.models.platform_account import PlatformAccount
 from backend.models.product import Product

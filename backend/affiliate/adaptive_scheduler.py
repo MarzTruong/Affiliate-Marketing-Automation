@@ -38,15 +38,14 @@ async def record_post_performance(
     """Ghi nhận kết quả thực tế sau khi bài đăng có data.
     Cập nhật TimeSlotPerformance với exponential moving average.
     """
-    result = await db.execute(
-        select(ScheduledPost).where(ScheduledPost.id == scheduled_post_id)
-    )
+    result = await db.execute(select(ScheduledPost).where(ScheduledPost.id == scheduled_post_id))
     post = result.scalar_one_or_none()
     if not post:
         return
 
     # Lấy content type
     from backend.models.content import ContentPiece
+
     content_result = await db.execute(
         select(ContentPiece).where(ContentPiece.id == post.content_id)
     )
@@ -101,12 +100,16 @@ async def record_post_performance(
 
     slot.avg_clicks = Decimal(str(round(new_avg_clicks, 4)))
     slot.avg_conversions = Decimal(str(round(new_avg_conv, 4)))
-    slot.performance_score = Decimal(str(round(
-        new_avg_conv * WEIGHT_CONVERSION
-        + new_avg_clicks * WEIGHT_CLICK
-        + (reach / max(slot.total_posts, 1)) * WEIGHT_REACH,
-        4,
-    )))
+    slot.performance_score = Decimal(
+        str(
+            round(
+                new_avg_conv * WEIGHT_CONVERSION
+                + new_avg_clicks * WEIGHT_CLICK
+                + (reach / max(slot.total_posts, 1)) * WEIGHT_REACH,
+                4,
+            )
+        )
+    )
 
     await db.commit()
 
@@ -192,8 +195,7 @@ async def update_rule_schedule(db: AsyncSession, rule: AutomationRule) -> str:
 async def get_schedule_insights(db: AsyncSession) -> dict:
     """Phân tích tổng hợp để gửi cho Claude API hoặc hiển thị trong dashboard."""
     result = await db.execute(
-        select(TimeSlotPerformance)
-        .order_by(TimeSlotPerformance.performance_score.desc())
+        select(TimeSlotPerformance).order_by(TimeSlotPerformance.performance_score.desc())
     )
     slots = result.scalars().all()
 

@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.ai_engine.client import ClaudeClient
 from backend.ai_engine.prompts.templates import (
+    _COT_HEADER,
     FACEBOOK_VARIANT_TEMPLATE,
     PRODUCT_DESCRIPTION_TEMPLATE,
     SEO_ARTICLE_TEMPLATE,
@@ -19,7 +20,6 @@ from backend.ai_engine.prompts.templates import (
     TIKTOK_SCRIPT_TEMPLATE,
     TIKTOK_VARIANT_TEMPLATE,
     VIDEO_SCRIPT_TEMPLATE,
-    _COT_HEADER,
     build_few_shot_prefix,
 )
 from backend.models.content import ContentPiece
@@ -44,12 +44,15 @@ class ContentGenerator:
     def __init__(self):
         self.claude = ClaudeClient()
         from backend.ai_engine.gemini_engine import create_gemini_engine
+
         self._gemini = create_gemini_engine()
         self._gemini_ready = False
         from backend.ai_engine.elevenlabs_engine import create_elevenlabs_engine
+
         self._elevenlabs = create_elevenlabs_engine()
         self._elevenlabs_ready = False
         from backend.ai_engine.heygen_engine import create_heygen_engine
+
         self._heygen = create_heygen_engine()
         self._heygen_ready = False
 
@@ -99,6 +102,7 @@ class ContentGenerator:
         if image_urls and await self._ensure_gemini_initialized():
             try:
                 from backend.ai_engine.gemini_engine import ProductImageContext
+
                 ctx = ProductImageContext(
                     product_name=product.name,
                     price=float(product.price or 0),
@@ -217,9 +221,7 @@ class ContentGenerator:
         """
         try:
             if not await self._ensure_elevenlabs_initialized():
-                logger.info(
-                    "[ContentGenerator] ElevenLabs không khả dụng — bỏ qua bước tạo audio."
-                )
+                logger.info("[ContentGenerator] ElevenLabs không khả dụng — bỏ qua bước tạo audio.")
                 return
 
             from backend.ai_engine.elevenlabs_engine import (
@@ -229,9 +231,7 @@ class ContentGenerator:
 
             voice_text = extract_voice_text(content_piece.body)
             if not voice_text:
-                logger.warning(
-                    "[ContentGenerator] Không extract được VOICE text — bỏ qua audio."
-                )
+                logger.warning("[ContentGenerator] Không extract được VOICE text — bỏ qua audio.")
                 return
 
             prefix = f"tiktok_{product.name[:20].replace(' ', '_')}" if product else "tiktok"
@@ -253,9 +253,7 @@ class ContentGenerator:
         except ElevenLabsRateLimitError as e:
             logger.error("[ContentGenerator] %s", e)
         except Exception as e:
-            logger.warning(
-                "[ContentGenerator] ElevenLabs audio failed (ignored): %s", e
-            )
+            logger.warning("[ContentGenerator] ElevenLabs audio failed (ignored): %s", e)
 
     async def _get_template(
         self, content_type: str, template_id: UUID | None, db: AsyncSession
@@ -286,8 +284,9 @@ class ContentGenerator:
         Giới hạn _MAX_FEW_SHOT_EXAMPLES để không làm prompt quá dài.
         """
         try:
-            from backend.models.ai_training_data import AITrainingData
             from sqlalchemy import and_
+
+            from backend.models.ai_training_data import AITrainingData
 
             # Ưu tiên: cùng content_type + cùng danh mục
             category = product.category or ""
@@ -363,6 +362,7 @@ class ContentGenerator:
         Xử lý cả trường hợp </thinking> bị thiếu (Claude bị cắt giữa chừng do max_tokens).
         """
         import re as _re
+
         # Strip complete blocks
         content = _re.sub(r"<thinking>.*?</thinking>\s*", "", content, flags=_re.DOTALL)
         # Strip unclosed block (từ <thinking> đến hết chuỗi nếu không có </thinking>)

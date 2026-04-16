@@ -3,7 +3,7 @@
 import pytest
 
 from backend.affiliate.publishers.base import BasePublisher, PublishResult
-from backend.affiliate.publishers.posting_service import get_publisher, PUBLISHER_REGISTRY
+from backend.affiliate.publishers.posting_service import PUBLISHER_REGISTRY, get_publisher
 
 
 def test_publish_result_success():

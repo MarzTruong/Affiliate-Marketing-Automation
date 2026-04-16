@@ -16,7 +16,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.models.automation import AutomationRule, PipelineRun, ScheduledPost
 from backend.models.campaign import Campaign
 from backend.models.content import ContentPiece
-from backend.models.product import Product
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +36,7 @@ async def run_pipeline(db: AsyncSession, rule: AutomationRule) -> PipelineRun:
     try:
         # ── Step 1: Scan + Filter sản phẩm ─────────────────────────────
         from backend.affiliate.product_scanner import scan_products
+
         products, total_found = await scan_products(rule)
 
         run.products_found = total_found
@@ -58,8 +58,8 @@ async def run_pipeline(db: AsyncSession, rule: AutomationRule) -> PipelineRun:
         content_ids: list[uuid.UUID] = []
         visual_urls: dict[str, str] = {}
 
-        from backend.ai_engine.content_generator import ContentGenerator
         from backend.affiliate.visual_generator import generate_visual
+        from backend.ai_engine.content_generator import ContentGenerator
         from backend.models.product import Product as DBProduct
 
         generator = ContentGenerator()
@@ -78,9 +78,8 @@ async def run_pipeline(db: AsyncSession, rule: AutomationRule) -> PipelineRun:
                 metadata_json={
                     "description": prod_info.description,
                     "image_url": prod_info.image_url,
-                    "image_urls": prod_info.image_urls or (
-                        [prod_info.image_url] if prod_info.image_url else []
-                    ),
+                    "image_urls": prod_info.image_urls
+                    or ([prod_info.image_url] if prod_info.image_url else []),
                     "commission_rate": prod_info.commission_rate,
                     "rating": prod_info.rating,
                     "sales_count": prod_info.sales_count,
@@ -114,14 +113,17 @@ async def run_pipeline(db: AsyncSession, rule: AutomationRule) -> PipelineRun:
                 except Exception as e:
                     logger.error(f"Tạo content {ct} thất bại cho {prod_info.name}: {e}")
 
-        details["steps"].append({
-            "step": "content",
-            "content_created": run.content_created,
-            "visuals_created": run.visuals_created,
-        })
+        details["steps"].append(
+            {
+                "step": "content",
+                "content_created": run.content_created,
+                "visuals_created": run.visuals_created,
+            }
+        )
 
         # ── Step 4: Lên lịch đăng bài ───────────────────────────────────
         from backend.affiliate.adaptive_scheduler import get_best_slots, next_scheduled_time
+
         channels = _get_enabled_channels(rule)
 
         for content_id in content_ids:
@@ -145,11 +147,13 @@ async def run_pipeline(db: AsyncSession, rule: AutomationRule) -> PipelineRun:
                 db.add(post)
                 run.posts_scheduled += 1
 
-        details["steps"].append({
-            "step": "schedule",
-            "posts_scheduled": run.posts_scheduled,
-            "channels": channels,
-        })
+        details["steps"].append(
+            {
+                "step": "schedule",
+                "posts_scheduled": run.posts_scheduled,
+                "channels": channels,
+            }
+        )
 
         run.status = "completed"
         run.finished_at = datetime.utcnow()
@@ -222,6 +226,7 @@ async def _notify_pipeline_done(run: PipelineRun) -> None:
     """Gửi thông báo Telegram khi pipeline hoàn thành."""
     try:
         from backend.reports.telegram_reporter import send_pipeline_report
+
         await send_pipeline_report(run)
     except Exception as e:
         logger.warning(f"Gửi Telegram notification thất bại: {e}")

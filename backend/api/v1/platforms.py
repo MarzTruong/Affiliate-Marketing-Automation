@@ -22,9 +22,7 @@ async def register_platform(data: PlatformAccountCreate, db: AsyncSession = Depe
 
 @router.get("", response_model=list[PlatformAccountResponse])
 async def list_platforms(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(
-        select(PlatformAccount).order_by(PlatformAccount.created_at.desc())
-    )
+    result = await db.execute(select(PlatformAccount).order_by(PlatformAccount.created_at.desc()))
     return result.scalars().all()
 
 

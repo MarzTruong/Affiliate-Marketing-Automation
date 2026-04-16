@@ -35,29 +35,35 @@ async def get_overview(
     if campaign_id:
         base_filter.append(AnalyticsEvent.campaign_id == campaign_id)
 
-    total_clicks = await db.scalar(
-        select(func.count()).where(
-            *base_filter, AnalyticsEvent.event_type == "click"
+    total_clicks = (
+        await db.scalar(
+            select(func.count()).where(*base_filter, AnalyticsEvent.event_type == "click")
         )
-    ) or 0
+        or 0
+    )
 
-    total_conversions = await db.scalar(
-        select(func.count()).where(
-            *base_filter, AnalyticsEvent.event_type == "conversion"
+    total_conversions = (
+        await db.scalar(
+            select(func.count()).where(*base_filter, AnalyticsEvent.event_type == "conversion")
         )
-    ) or 0
+        or 0
+    )
 
-    total_revenue = await db.scalar(
-        select(func.coalesce(func.sum(AnalyticsEvent.value), 0)).where(
-            *base_filter, AnalyticsEvent.event_type == "revenue"
+    total_revenue = (
+        await db.scalar(
+            select(func.coalesce(func.sum(AnalyticsEvent.value), 0)).where(
+                *base_filter, AnalyticsEvent.event_type == "revenue"
+            )
         )
-    ) or 0
+        or 0
+    )
 
-    total_impressions = await db.scalar(
-        select(func.count()).where(
-            *base_filter, AnalyticsEvent.event_type == "impression"
+    total_impressions = (
+        await db.scalar(
+            select(func.count()).where(*base_filter, AnalyticsEvent.event_type == "impression")
         )
-    ) or 0
+        or 0
+    )
 
     ctr = (total_clicks / total_impressions * 100) if total_impressions > 0 else 0
     conversion_rate = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
@@ -111,7 +117,13 @@ async def get_daily_stats(
     for row in rows:
         day_str = str(row.day)
         if day_str not in daily:
-            daily[day_str] = {"date": day_str, "clicks": 0, "conversions": 0, "revenue": 0, "impressions": 0}
+            daily[day_str] = {
+                "date": day_str,
+                "clicks": 0,
+                "conversions": 0,
+                "revenue": 0,
+                "impressions": 0,
+            }
         if row.event_type == "click":
             daily[day_str]["clicks"] = row.count
         elif row.event_type == "conversion":
@@ -144,7 +156,6 @@ async def get_cost_summary(
     end_date: date | None = None,
     db: AsyncSession = Depends(get_db),
 ):
-    from backend.models.content import ContentPiece
 
     if not start_date:
         start_date = date.today() - timedelta(days=30)
@@ -214,7 +225,13 @@ async def get_platform_breakdown(
     for row in rows:
         p = row.platform
         if p not in platforms:
-            platforms[p] = {"platform": p, "clicks": 0, "conversions": 0, "revenue": 0, "impressions": 0}
+            platforms[p] = {
+                "platform": p,
+                "clicks": 0,
+                "conversions": 0,
+                "revenue": 0,
+                "impressions": 0,
+            }
         if row.event_type == "click":
             platforms[p]["clicks"] = row.count
         elif row.event_type == "conversion":
@@ -226,7 +243,9 @@ async def get_platform_breakdown(
 
     for p in platforms.values():
         p["ctr"] = round((p["clicks"] / p["impressions"] * 100) if p["impressions"] > 0 else 0, 2)
-        p["conversion_rate"] = round((p["conversions"] / p["clicks"] * 100) if p["clicks"] > 0 else 0, 2)
+        p["conversion_rate"] = round(
+            (p["conversions"] / p["clicks"] * 100) if p["clicks"] > 0 else 0, 2
+        )
 
     return list(platforms.values())
 
@@ -268,7 +287,13 @@ async def compare_campaigns(
     for row in rows:
         cid = str(row.campaign_id)
         if cid not in campaigns:
-            campaigns[cid] = {"campaign_id": cid, "clicks": 0, "conversions": 0, "revenue": 0, "impressions": 0}
+            campaigns[cid] = {
+                "campaign_id": cid,
+                "clicks": 0,
+                "conversions": 0,
+                "revenue": 0,
+                "impressions": 0,
+            }
         if row.event_type == "click":
             campaigns[cid]["clicks"] = row.count
         elif row.event_type == "conversion":
@@ -280,7 +305,9 @@ async def compare_campaigns(
 
     for c in campaigns.values():
         c["ctr"] = round((c["clicks"] / c["impressions"] * 100) if c["impressions"] > 0 else 0, 2)
-        c["conversion_rate"] = round((c["conversions"] / c["clicks"] * 100) if c["clicks"] > 0 else 0, 2)
+        c["conversion_rate"] = round(
+            (c["conversions"] / c["clicks"] * 100) if c["clicks"] > 0 else 0, 2
+        )
 
     return list(campaigns.values())
 
@@ -306,9 +333,7 @@ async def export_analytics_csv(
         base_filter.append(AnalyticsEvent.campaign_id == campaign_id)
 
     result = await db.execute(
-        select(AnalyticsEvent)
-        .where(*base_filter)
-        .order_by(AnalyticsEvent.event_time)
+        select(AnalyticsEvent).where(*base_filter).order_by(AnalyticsEvent.event_time)
     )
     events = result.scalars().all()
 
@@ -317,14 +342,16 @@ async def export_analytics_csv(
     writer.writerow(["Thời gian", "Loại sự kiện", "Nền tảng", "Chiến dịch", "Sản phẩm", "Giá trị"])
 
     for e in events:
-        writer.writerow([
-            e.event_time.isoformat() if e.event_time else "",
-            e.event_type,
-            e.platform or "",
-            str(e.campaign_id) if e.campaign_id else "",
-            str(e.product_id) if e.product_id else "",
-            float(e.value) if e.value else 0,
-        ])
+        writer.writerow(
+            [
+                e.event_time.isoformat() if e.event_time else "",
+                e.event_type,
+                e.platform or "",
+                str(e.campaign_id) if e.campaign_id else "",
+                str(e.product_id) if e.product_id else "",
+                float(e.value) if e.value else 0,
+            ]
+        )
 
     output.seek(0)
     filename = f"analytics_{start_date}_{end_date}.csv"

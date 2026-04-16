@@ -17,7 +17,9 @@ class ManualPublishLog(Base):
     content_id: Mapped[uuid.UUID] = mapped_column(
         GUID(), ForeignKey("content_pieces.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    platform: Mapped[str] = mapped_column(String(30), nullable=False)  # tiktok | facebook | telegram
+    platform: Mapped[str] = mapped_column(
+        String(30), nullable=False
+    )  # tiktok | facebook | telegram
     published_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

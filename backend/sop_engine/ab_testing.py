@@ -109,8 +109,10 @@ async def record_conversion(db: AsyncSession, test_id: uuid.UUID, variant: str) 
 async def _conclude_test(db: AsyncSession, test: ABTest) -> None:
     """Conclude a test by determining the winner."""
     p_value = _z_test_proportion(
-        test.variant_a_impressions, test.variant_a_conversions,
-        test.variant_b_impressions, test.variant_b_conversions,
+        test.variant_a_impressions,
+        test.variant_a_conversions,
+        test.variant_b_impressions,
+        test.variant_b_conversions,
     )
 
     test.statistical_significance = Decimal(str(round(1 - p_value, 4)))
@@ -118,8 +120,16 @@ async def _conclude_test(db: AsyncSession, test: ABTest) -> None:
 
     # Determine winner (significance threshold: 95%)
     if p_value < 0.05:
-        rate_a = test.variant_a_conversions / test.variant_a_impressions if test.variant_a_impressions > 0 else 0
-        rate_b = test.variant_b_conversions / test.variant_b_impressions if test.variant_b_impressions > 0 else 0
+        rate_a = (
+            test.variant_a_conversions / test.variant_a_impressions
+            if test.variant_a_impressions > 0
+            else 0
+        )
+        rate_b = (
+            test.variant_b_conversions / test.variant_b_impressions
+            if test.variant_b_impressions > 0
+            else 0
+        )
         test.winner = "A" if rate_a >= rate_b else "B"
         test.status = "concluded"
 
@@ -130,11 +140,20 @@ async def _conclude_test(db: AsyncSession, test: ABTest) -> None:
         winner = await db.get(SOPTemplate, winner_id)
         loser = await db.get(SOPTemplate, loser_id)
         if winner:
-            winner.performance_score = min(winner.performance_score + Decimal("5.00"), Decimal("100.00"))
+            winner.performance_score = min(
+                winner.performance_score + Decimal("5.00"), Decimal("100.00")
+            )
         if loser:
-            loser.performance_score = max(loser.performance_score - Decimal("3.00"), Decimal("0.00"))
+            loser.performance_score = max(
+                loser.performance_score - Decimal("3.00"), Decimal("0.00")
+            )
 
-        logger.info("A/B test %s concluded: winner=%s (sig=%.2f%%)", test.id, test.winner, float(test.statistical_significance) * 100)
+        logger.info(
+            "A/B test %s concluded: winner=%s (sig=%.2f%%)",
+            test.id,
+            test.winner,
+            float(test.statistical_significance) * 100,
+        )
     else:
         test.status = "inconclusive"
         test.winner = None

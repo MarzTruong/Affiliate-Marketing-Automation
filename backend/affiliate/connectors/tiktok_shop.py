@@ -2,12 +2,12 @@ import calendar
 import hashlib
 import hmac
 import time
-from datetime import date, datetime
+from datetime import date
 
 import httpx
 
-from backend.config import settings
 from backend.affiliate.connectors.base import AffiliateLink, BasePlatformConnector, ProductInfo
+from backend.config import settings
 
 
 class TikTokShopConnector(BasePlatformConnector):
@@ -26,9 +26,7 @@ class TikTokShopConnector(BasePlatformConnector):
         sorted_params = sorted(params.items())
         param_str = "".join(f"{k}{v}" for k, v in sorted_params)
         base_string = f"{self.app_secret}{path}{param_str}{self.app_secret}"
-        return hmac.new(
-            self.app_secret.encode(), base_string.encode(), hashlib.sha256
-        ).hexdigest()
+        return hmac.new(self.app_secret.encode(), base_string.encode(), hashlib.sha256).hexdigest()
 
     async def _request(self, path: str, params: dict | None = None) -> dict:
         timestamp = int(time.time())
@@ -78,7 +76,11 @@ class TikTokShopConnector(BasePlatformConnector):
                     original_url=f"https://shop.tiktok.com/view/product/{item.get('id', '')}",
                     image_urls=images,
                     description=item.get("description", ""),
-                    category=str(item.get("category_list", [{}])[0].get("id", "") if item.get("category_list") else ""),
+                    category=str(
+                        item.get("category_list", [{}])[0].get("id", "")
+                        if item.get("category_list")
+                        else ""
+                    ),
                     commission_rate=float(item.get("affiliate_commission_rate", 0)),
                 )
                 products.append(product)

@@ -3,11 +3,11 @@
 import pytest
 
 from backend.affiliate.connectors import get_connector
+from backend.affiliate.connectors.accesstrade import AccessTradeConnector
 from backend.affiliate.connectors.base import BasePlatformConnector
+from backend.affiliate.connectors.shopback import ShopBackConnector
 from backend.affiliate.connectors.shopee import ShopeeConnector
 from backend.affiliate.connectors.tiktok_shop import TikTokShopConnector
-from backend.affiliate.connectors.shopback import ShopBackConnector
-from backend.affiliate.connectors.accesstrade import AccessTradeConnector
 
 
 def test_get_connector_shopee():

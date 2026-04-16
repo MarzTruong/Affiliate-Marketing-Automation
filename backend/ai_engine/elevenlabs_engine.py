@@ -9,7 +9,6 @@ Chức năng chính:
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import re
 import uuid
@@ -32,6 +31,7 @@ except ImportError:
 
 # ── Custom Exceptions ──────────────────────────────────────────────────────────
 
+
 class ElevenLabsRateLimitError(Exception):
     """429 — Vượt quá quota ElevenLabs (character limit hoặc request limit)."""
 
@@ -50,6 +50,7 @@ class ElevenLabsError(Exception):
 
 # ── Config ─────────────────────────────────────────────────────────────────────
 
+
 @dataclass(frozen=True)
 class ElevenLabsConfig:
     """Cấu hình kết nối ElevenLabs TTS."""
@@ -61,10 +62,10 @@ class ElevenLabsConfig:
     model_id: str = "eleven_multilingual_v2"
 
     # Voice settings
-    stability: float = 0.5          # 0.0–1.0: thấp = đa dạng, cao = ổn định
+    stability: float = 0.5  # 0.0–1.0: thấp = đa dạng, cao = ổn định
     similarity_boost: float = 0.75  # 0.0–1.0: giống giọng gốc
-    style: float = 0.0              # 0.0–1.0: phong cách đọc (0 = trung tính)
-    use_speaker_boost: bool = True   # Tăng độ rõ ràng
+    style: float = 0.0  # 0.0–1.0: phong cách đọc (0 = trung tính)
+    use_speaker_boost: bool = True  # Tăng độ rõ ràng
 
     # Output
     output_format: str = "mp3_44100_128"  # MP3 44.1kHz 128kbps — chất lượng tốt cho TikTok
@@ -74,6 +75,7 @@ class ElevenLabsConfig:
 
 
 # ── Engine ────────────────────────────────────────────────────────────────────
+
 
 class ElevenLabsAudioGenerator:
     """Tổng hợp giọng đọc từ text bằng ElevenLabs API.
@@ -139,9 +141,7 @@ class ElevenLabsAudioGenerator:
             ElevenLabsError: Lỗi khác.
         """
         if not self.is_available():
-            raise ElevenLabsError(
-                "ElevenLabs engine chưa khởi tạo. Kiểm tra API key và Voice ID."
-            )
+            raise ElevenLabsError("ElevenLabs engine chưa khởi tạo. Kiểm tra API key và Voice ID.")
 
         text = text.strip()
         if not text:
@@ -215,13 +215,9 @@ class ElevenLabsAudioGenerator:
         """Chuyển lỗi SDK sang internal exception."""
         msg = str(exc).lower()
         if "401" in msg or "403" in msg or "unauthorized" in msg or "forbidden" in msg:
-            return ElevenLabsAuthError(
-                f"CẢNH BÁO: API key hoặc Voice ID không hợp lệ — {exc}"
-            )
+            return ElevenLabsAuthError(f"CẢNH BÁO: API key hoặc Voice ID không hợp lệ — {exc}")
         if "429" in msg or "rate limit" in msg or "quota" in msg:
-            return ElevenLabsRateLimitError(
-                f"CẢNH BÁO: HẾT QUOTA API — ElevenLabs — {exc}"
-            )
+            return ElevenLabsRateLimitError(f"CẢNH BÁO: HẾT QUOTA API — ElevenLabs — {exc}")
         if "timeout" in msg or "timed out" in msg:
             return ElevenLabsTimeoutError(f"ElevenLabs request timeout — {exc}")
         return ElevenLabsError(f"ElevenLabs lỗi không xác định — {exc}")
@@ -238,18 +234,20 @@ class ElevenLabsAudioGenerator:
 
 # ── Result DTO ─────────────────────────────────────────────────────────────────
 
+
 @dataclass
 class AudioResult:
     """Kết quả generate audio từ ElevenLabs."""
 
-    file_path: str   # Đường dẫn tuyệt đối tới file MP3 trên server
-    audio_url: str   # URL tương đối để truy cập qua HTTP (/static/audio/...)
-    voice_id: str    # Voice ID đã dùng
+    file_path: str  # Đường dẫn tuyệt đối tới file MP3 trên server
+    audio_url: str  # URL tương đối để truy cập qua HTTP (/static/audio/...)
+    voice_id: str  # Voice ID đã dùng
     duration_s: float  # Thời lượng ước tính (giây)
     char_count: int  # Số ký tự đã tổng hợp
 
 
 # ── Voice Text Extractor ───────────────────────────────────────────────────────
+
 
 def extract_voice_text(script_body: str) -> str:
     """Trích xuất nội dung cột VOICE từ TikTok script markdown table.
@@ -287,7 +285,9 @@ def extract_voice_text(script_body: str) -> str:
         # Làm sạch: bỏ *, `, backtick, dấu nháy đơn/đôi nghiêng, italic
         cleaned = re.sub(r"[*`]", "", voice_cell)
         # Bỏ cặp dấu ngoặc như *"..."* hoặc "..."
-        cleaned = re.sub(r'^["\u201c\u201d\u2018\u2019]|["\u201c\u201d\u2018\u2019]$', "", cleaned.strip())
+        cleaned = re.sub(
+            r'^["\u201c\u201d\u2018\u2019]|["\u201c\u201d\u2018\u2019]$', "", cleaned.strip()
+        )
         cleaned = cleaned.strip()
 
         if cleaned:
@@ -304,6 +304,7 @@ def extract_voice_text(script_body: str) -> str:
 
 
 # ── Factory ───────────────────────────────────────────────────────────────────
+
 
 def create_elevenlabs_engine() -> ElevenLabsAudioGenerator:
     """Factory — tạo ElevenLabsAudioGenerator từ settings hiện tại."""

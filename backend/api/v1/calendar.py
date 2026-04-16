@@ -41,22 +41,27 @@ async def get_calendar(
 
     # Load content info
     from backend.models.content import ContentPiece
+
     calendar_items = []
     for post in posts:
         content = await db.get(ContentPiece, post.content_id)
-        calendar_items.append({
-            "id": str(post.id),
-            "content_id": str(post.content_id),
-            "title": content.title if content else "Bài đăng",
-            "body_preview": (content.body[:120] + "...") if content and len(content.body) > 120 else (content.body if content else ""),
-            "channel": post.channel,
-            "scheduled_at": post.scheduled_at.isoformat(),
-            "published_at": post.published_at.isoformat() if post.published_at else None,
-            "status": post.status,
-            "visual_url": post.visual_url,
-            "clicks": post.clicks,
-            "conversions": post.conversions,
-        })
+        calendar_items.append(
+            {
+                "id": str(post.id),
+                "content_id": str(post.content_id),
+                "title": content.title if content else "Bài đăng",
+                "body_preview": (content.body[:120] + "...")
+                if content and len(content.body) > 120
+                else (content.body if content else ""),
+                "channel": post.channel,
+                "scheduled_at": post.scheduled_at.isoformat(),
+                "published_at": post.published_at.isoformat() if post.published_at else None,
+                "status": post.status,
+                "visual_url": post.visual_url,
+                "clicks": post.clicks,
+                "conversions": post.conversions,
+            }
+        )
 
     return calendar_items
 
@@ -90,18 +95,21 @@ async def get_week_calendar(
         days[day] = []
 
     from backend.models.content import ContentPiece
+
     for post in posts:
         day_key = post.scheduled_at.strftime("%Y-%m-%d")
         content = await db.get(ContentPiece, post.content_id)
         if day_key in days:
-            days[day_key].append({
-                "id": str(post.id),
-                "title": content.title if content else "Bài đăng",
-                "channel": post.channel,
-                "hour": post.scheduled_at.strftime("%H:%M"),
-                "status": post.status,
-                "visual_url": post.visual_url,
-            })
+            days[day_key].append(
+                {
+                    "id": str(post.id),
+                    "title": content.title if content else "Bài đăng",
+                    "channel": post.channel,
+                    "hour": post.scheduled_at.strftime("%H:%M"),
+                    "status": post.status,
+                    "visual_url": post.visual_url,
+                }
+            )
 
     return {
         "week_start": week_start.strftime("%Y-%m-%d"),

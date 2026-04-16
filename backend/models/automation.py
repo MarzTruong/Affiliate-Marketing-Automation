@@ -138,9 +138,9 @@ class TimeSlotPerformance(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=uuid.uuid4)
 
-    hour: Mapped[int] = mapped_column(Integer, nullable=False)         # 0-23
+    hour: Mapped[int] = mapped_column(Integer, nullable=False)  # 0-23
     day_of_week: Mapped[int] = mapped_column(Integer, nullable=False)  # 0=Mon, 6=Sun
-    channel: Mapped[str] = mapped_column(String(50), nullable=False)   # facebook, wordpress...
+    channel: Mapped[str] = mapped_column(String(50), nullable=False)  # facebook, wordpress...
     content_type: Mapped[str] = mapped_column(String(50), nullable=False)
 
     # Thống kê tích lũy

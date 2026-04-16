@@ -106,9 +106,8 @@ async def trigger_rule_now(rule_id: str) -> None:
 
     async with get_db_context() as db:
         from backend.models.automation import AutomationRule
-        result = await db.execute(
-            select(AutomationRule).where(AutomationRule.id == rule_id)
-        )
+
+        result = await db.execute(select(AutomationRule).where(AutomationRule.id == rule_id))
         rule = result.scalar_one_or_none()
         if rule:
             await run_pipeline(db, rule)
@@ -145,13 +144,12 @@ async def _publish_due_posts() -> None:
 async def _check_and_run_pipelines() -> None:
     """Kiểm tra AutomationRule nào cần chạy dựa trên cron expression."""
     from croniter import croniter  # type: ignore[import-untyped]
+
     from backend.affiliate.pipeline import run_pipeline
     from backend.models.automation import AutomationRule, PipelineRun
 
     async with get_db_context() as db:
-        result = await db.execute(
-            select(AutomationRule).where(AutomationRule.is_active == True)
-        )
+        result = await db.execute(select(AutomationRule).where(AutomationRule.is_active == True))
         rules = result.scalars().all()
         now = datetime.now()
 
@@ -196,17 +194,20 @@ async def _weekly_schedule_update() -> None:
 
 async def _daily_report() -> None:
     from backend.reports.telegram_reporter import send_daily_report
+
     async with get_db_context() as db:
         await send_daily_report(db)
 
 
 async def _weekly_report() -> None:
     from backend.reports.telegram_reporter import send_weekly_report
+
     async with get_db_context() as db:
         await send_weekly_report(db)
 
 
 async def _weekly_pdf_report() -> None:
     from backend.reports.telegram_reporter import send_weekly_pdf_report
+
     async with get_db_context() as db:
         await send_weekly_pdf_report(db)

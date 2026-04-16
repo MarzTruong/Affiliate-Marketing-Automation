@@ -8,11 +8,12 @@ import logging
 from datetime import datetime, timezone
 
 from arq.cron import cron
-from backend.database import get_db_context
-from backend.sop_engine.scorer import score_all_templates
-from backend.sop_engine.prompt_evolution import auto_evolve_top_templates
+
 from backend.affiliate.publishers.scheduler import process_scheduled_publications
 from backend.analytics.fraud_detector import FraudDetector
+from backend.database import get_db_context
+from backend.sop_engine.prompt_evolution import auto_evolve_top_templates
+from backend.sop_engine.scorer import score_all_templates
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,7 @@ async def task_fraud_scan(ctx: dict | None = None):
 # ARQ worker settings
 class WorkerSettings:
     """ARQ worker configuration."""
+
     functions = [
         task_score_templates,
         task_evolve_templates,

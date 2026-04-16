@@ -74,8 +74,7 @@ async def update_manual_status(
     timestamp_field = MANUAL_STATUS_MAP.get(status_key)
     if not timestamp_field:
         raise ValueError(
-            f"status_key không hợp lệ: '{status_key}'. "
-            f"Hợp lệ: {list(MANUAL_STATUS_MAP)}"
+            f"status_key không hợp lệ: '{status_key}'. Hợp lệ: {list(MANUAL_STATUS_MAP)}"
         )
 
     now = datetime.utcnow()

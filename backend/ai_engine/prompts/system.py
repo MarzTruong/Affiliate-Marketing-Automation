@@ -38,19 +38,16 @@ NHIỆM VỤ HIỆN TẠI: Viết mô tả sản phẩm cho trang listing sàn T
 Mục tiêu: Tăng tỷ lệ click (CTR) và tỷ lệ thêm vào giỏ (Add-to-cart).
 Ưu tiên: Tiêu đề chứa từ khóa mua hàng + bullet points lợi ích thực tế.\
 """,
-
     "seo_article": """\
 NHIỆM VỤ HIỆN TẠI: Viết bài review/đánh giá chuẩn SEO cho blog affiliate.
 Mục tiêu: Rank top Google với từ khóa "review [tên SP]", "có nên mua [tên SP]".
 Ưu tiên: E-E-A-T signals — viết như người đã dùng sản phẩm, trung thực về nhược điểm nhỏ.\
 """,
-
     "social_post": """\
 NHIỆM VỤ HIỆN TẠI: Viết bài đăng mạng xã hội quảng bá sản phẩm affiliate.
 Mục tiêu: Tăng engagement (like/share/comment) và click vào link affiliate.
 Ưu tiên: Hook 3 giây đầu đủ mạnh để dừng scroll, CTA tạo FOMO tự nhiên.\
 """,
-
     "video_script": """\
 NHIỆM VỤ HIỆN TẠI: Viết kịch bản video short-form (TikTok/Reels/Shorts).
 Mục tiêu: Giữ người xem đến cuối video (watch-time cao) và click link bio/sticker.

@@ -2,8 +2,8 @@
 
 import httpx
 
-from backend.config import settings
 from backend.affiliate.publishers.base import BasePublisher, PublishResult
+from backend.config import settings
 
 
 class FacebookPublisher(BasePublisher):

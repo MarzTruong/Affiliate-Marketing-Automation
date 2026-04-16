@@ -4,7 +4,6 @@ import hashlib
 import hmac
 import json
 import uuid
-from datetime import datetime, timezone
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -26,9 +25,11 @@ def make_fb_signature(body: bytes, secret: str) -> str:
 
 # ── Unit tests cho helper functions ─────────────────────────────────────────
 
+
 class TestVerifySignature:
     def test_valid_signature(self):
         from backend.api.v1.webhooks import _verify_facebook_signature
+
         body = b'{"test": "data"}'
         secret = "my_secret"
         sig = make_fb_signature(body, secret)
@@ -36,25 +37,30 @@ class TestVerifySignature:
 
     def test_invalid_signature(self):
         from backend.api.v1.webhooks import _verify_facebook_signature
+
         body = b'{"test": "data"}'
         assert _verify_facebook_signature(body, "sha256=wrongdigest", "secret") is False
 
     def test_missing_signature(self):
         from backend.api.v1.webhooks import _verify_facebook_signature
+
         assert _verify_facebook_signature(b"data", None, "secret") is False
 
     def test_missing_secret_returns_false(self):
         from backend.api.v1.webhooks import _verify_facebook_signature
+
         assert _verify_facebook_signature(b"data", "sha256=abc", "") is False
 
     def test_wrong_prefix(self):
         from backend.api.v1.webhooks import _verify_facebook_signature
+
         assert _verify_facebook_signature(b"data", "sha1=abc", "secret") is False
 
 
 class TestMapFbEventToMetrics:
     def test_reactions_map_to_clicks(self):
         from backend.api.v1.webhooks import _map_fb_event_to_metrics
+
         change = {"field": "reactions", "value": {"count": 42}}
         clicks, conversions, reach = _map_fb_event_to_metrics(change)
         assert clicks == 42
@@ -63,18 +69,21 @@ class TestMapFbEventToMetrics:
 
     def test_likes_map_to_clicks(self):
         from backend.api.v1.webhooks import _map_fb_event_to_metrics
+
         change = {"field": "likes", "value": {"like_count": 10}}
         clicks, conversions, reach = _map_fb_event_to_metrics(change)
         assert clicks == 10
 
     def test_comments_map_to_clicks(self):
         from backend.api.v1.webhooks import _map_fb_event_to_metrics
+
         change = {"field": "comments", "value": {"comment_count": 5}}
         clicks, conversions, reach = _map_fb_event_to_metrics(change)
         assert clicks == 5
 
     def test_shares_map_to_conversions(self):
         from backend.api.v1.webhooks import _map_fb_event_to_metrics
+
         change = {"field": "shares", "value": {"share_count": 3}}
         clicks, conversions, reach = _map_fb_event_to_metrics(change)
         assert conversions == 3
@@ -82,22 +91,26 @@ class TestMapFbEventToMetrics:
 
     def test_reach_map_to_reach(self):
         from backend.api.v1.webhooks import _map_fb_event_to_metrics
+
         change = {"field": "reach", "value": {"count": 1000}}
         clicks, conversions, reach = _map_fb_event_to_metrics(change)
         assert reach == 1000
 
     def test_unknown_field_returns_zeros(self):
         from backend.api.v1.webhooks import _map_fb_event_to_metrics
+
         change = {"field": "unknown_event", "value": {}}
         assert _map_fb_event_to_metrics(change) == (0, 0, 0)
 
 
 # ── Integration tests via HTTP ───────────────────────────────────────────────
 
+
 class TestFacebookWebhookVerification:
     def test_verification_success(self, client):
         """GET /webhooks/facebook với token đúng → trả về challenge."""
         from backend.config import settings
+
         verify_token = settings.facebook_webhook_verify_token
 
         resp = client.get(
@@ -125,16 +138,22 @@ class TestFacebookWebhookVerification:
 
 
 class TestFacebookWebhookReceive:
-    def _build_payload(self, external_post_id: str, field: str = "reactions", count: int = 5) -> dict:
+    def _build_payload(
+        self, external_post_id: str, field: str = "reactions", count: int = 5
+    ) -> dict:
         return {
             "object": "page",
-            "entry": [{
-                "id": "page_123",
-                "changes": [{
-                    "field": field,
-                    "value": {"post_id": external_post_id, "count": count},
-                }],
-            }],
+            "entry": [
+                {
+                    "id": "page_123",
+                    "changes": [
+                        {
+                            "field": field,
+                            "value": {"post_id": external_post_id, "count": count},
+                        }
+                    ],
+                }
+            ],
         }
 
     def test_receive_without_secret_no_signature_check(self, client):
@@ -198,10 +217,10 @@ class TestFacebookWebhookReceive:
     @patch("backend.api.v1.webhooks.record_post_performance", new_callable=AsyncMock)
     def test_receive_calls_record_performance_when_post_found(self, mock_record):
         """Khi tìm thấy ScheduledPost khớp → gọi record_post_performance."""
-        from backend.models.automation import ScheduledPost
-        from backend.database import get_db
-        from datetime import datetime, timezone
         from unittest.mock import MagicMock
+
+        from backend.database import get_db
+        from backend.models.automation import ScheduledPost
 
         ext_id = f"fb_post_{uuid.uuid4().hex[:8]}"
         fake_post = MagicMock(spec=ScheduledPost)

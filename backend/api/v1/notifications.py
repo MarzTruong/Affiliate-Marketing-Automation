@@ -33,9 +33,7 @@ async def list_notifications(
 @router.get("/unread-count")
 async def unread_count(db: AsyncSession = Depends(get_db)):
     """Số thông báo chưa đọc."""
-    count = await db.scalar(
-        select(func.count()).where(Notification.is_read.is_(False))
-    ) or 0
+    count = await db.scalar(select(func.count()).where(Notification.is_read.is_(False))) or 0
     return {"unread": count}
 
 

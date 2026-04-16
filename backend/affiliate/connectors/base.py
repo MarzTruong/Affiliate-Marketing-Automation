@@ -62,8 +62,6 @@ class BasePlatformConnector(ABC):
         ...
 
     @abstractmethod
-    async def get_performance_data(
-        self, start_date: date, end_date: date
-    ) -> list[dict]:
+    async def get_performance_data(self, start_date: date, end_date: date) -> list[dict]:
         """Fetch click/conversion/revenue data for a date range."""
         ...

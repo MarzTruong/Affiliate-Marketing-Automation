@@ -42,7 +42,10 @@ CBD_TOOLS = [
                     "enum": ["shopee", "tiktok_shop", "shopback", "accesstrade"],
                     "description": "Nền tảng affiliate",
                 },
-                "category": {"type": "string", "description": "Danh mục sản phẩm VD: thoi_trang, dien_tu"},
+                "category": {
+                    "type": "string",
+                    "description": "Danh mục sản phẩm VD: thoi_trang, dien_tu",
+                },
                 "min_commission_pct": {"type": "number", "description": "Hoa hồng tối thiểu (%)"},
                 "min_price": {"type": "number", "description": "Giá tối thiểu (VNĐ)"},
                 "max_price": {"type": "number", "description": "Giá tối đa (VNĐ)"},
@@ -83,7 +86,10 @@ CBD_TOOLS = [
                     "type": "string",
                     "enum": ["social_post", "product_description", "seo_article", "video_script"],
                 },
-                "style": {"type": "string", "description": "Phong cách VD: trẻ trung, chuyên nghiệp, hài hước"},
+                "style": {
+                    "type": "string",
+                    "description": "Phong cách VD: trẻ trung, chuyên nghiệp, hài hước",
+                },
                 "platform": {"type": "string", "description": "Nền tảng đăng"},
                 "campaign_id": {"type": "string", "description": "ID chiến dịch (tuỳ chọn)"},
             },
@@ -193,6 +199,7 @@ class ChatMessage:
 @dataclass
 class CBDSession:
     """Session hội thoại — giữ context giữa các tin nhắn."""
+
     history: list[ChatMessage] = field(default_factory=list)
     db: Any = None  # AsyncSession
 
@@ -235,11 +242,13 @@ class CBDAgent:
             for block in response.content:
                 if block.type == "tool_use":
                     result = await self._execute_tool(block.name, block.input)
-                    tool_results.append({
-                        "type": "tool_result",
-                        "tool_use_id": block.id,
-                        "content": json.dumps(result, ensure_ascii=False),
-                    })
+                    tool_results.append(
+                        {
+                            "type": "tool_result",
+                            "tool_use_id": block.id,
+                            "content": json.dumps(result, ensure_ascii=False),
+                        }
+                    )
 
             # Gửi kết quả tool lại cho Claude để tổng hợp câu trả lời
             messages = session.to_anthropic_messages() + [
@@ -294,6 +303,7 @@ class CBDAgent:
 
     async def _tool_create_rule(self, inp: dict) -> dict:
         from decimal import Decimal
+
         from backend.models.automation import AutomationRule
 
         channels = inp.get("channels", ["facebook"])
@@ -303,7 +313,9 @@ class CBDAgent:
             name=inp["name"],
             platform=inp["platform"],
             category=inp.get("category"),
-            min_commission_pct=Decimal(str(inp["min_commission_pct"])) if inp.get("min_commission_pct") else None,
+            min_commission_pct=Decimal(str(inp["min_commission_pct"]))
+            if inp.get("min_commission_pct")
+            else None,
             min_price=Decimal(str(inp["min_price"])) if inp.get("min_price") else None,
             max_price=Decimal(str(inp["max_price"])) if inp.get("max_price") else None,
             min_rating=Decimal(str(inp["min_rating"])) if inp.get("min_rating") else None,
@@ -321,9 +333,10 @@ class CBDAgent:
         }
 
     async def _tool_trigger_pipeline(self, inp: dict) -> dict:
-        from sqlalchemy import select, or_
-        from backend.models.automation import AutomationRule
+        from sqlalchemy import or_, select
+
         from backend.affiliate.pipeline import run_pipeline
+        from backend.models.automation import AutomationRule
 
         name_or_id = inp["rule_name_or_id"]
         result = await self.db.execute(
@@ -379,10 +392,10 @@ class CBDAgent:
         }
 
     async def _tool_schedule_post(self, inp: dict) -> dict:
-        from datetime import datetime, timedelta
+        import uuid
+
         from backend.affiliate.adaptive_scheduler import get_best_slots, next_scheduled_time
         from backend.models.automation import ScheduledPost
-        import uuid
 
         channels = inp.get("channels", ["facebook"])
         use_best = inp.get("use_best_slot", True)
@@ -407,17 +420,21 @@ class CBDAgent:
                 status="scheduled",
             )
             self.db.add(post)
-            scheduled_posts.append({
-                "channel": channel,
-                "scheduled_at": sched_time.strftime("%H:%M %d/%m/%Y"),
-            })
+            scheduled_posts.append(
+                {
+                    "channel": channel,
+                    "scheduled_at": sched_time.strftime("%H:%M %d/%m/%Y"),
+                }
+            )
 
         await self.db.commit()
         return {"success": True, "scheduled": scheduled_posts}
 
     async def _tool_analytics(self, inp: dict) -> dict:
-        from sqlalchemy import func, select
         from datetime import datetime, timedelta, timezone
+
+        from sqlalchemy import func, select
+
         from backend.models.analytics import AnalyticsEvent
 
         period = inp.get("period", "week")
@@ -448,10 +465,12 @@ class CBDAgent:
 
     async def _tool_schedule_insights(self) -> dict:
         from backend.affiliate.adaptive_scheduler import get_schedule_insights
+
         return await get_schedule_insights(self.db)
 
     async def _tool_list_rules(self, inp: dict) -> dict:
         from sqlalchemy import select
+
         from backend.models.automation import AutomationRule
 
         query = select(AutomationRule)
@@ -476,14 +495,15 @@ class CBDAgent:
 
     async def _tool_telegram(self, inp: dict) -> dict:
         from backend.reports.telegram_reporter import send_custom_message
+
         success = await send_custom_message(inp["message"])
         return {"success": success}
 
 
 def _parse_scheduled_time(time_str: str):
     """Parse chuỗi thời gian tự nhiên VN thành datetime."""
-    from datetime import datetime, timedelta
     import re
+    from datetime import datetime, timedelta
 
     now = datetime.now()
 
@@ -503,4 +523,5 @@ def _parse_scheduled_time(time_str: str):
 
     # Default: giờ cao điểm tiếp theo
     from backend.affiliate.adaptive_scheduler import _default_peak_hours, next_scheduled_time
+
     return next_scheduled_time(_default_peak_hours())

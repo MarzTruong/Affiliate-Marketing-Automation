@@ -22,16 +22,18 @@ logger = logging.getLogger(__name__)
 
 # ── Config ─────────────────────────────────────────────────────────────────────
 
+
 @dataclass(frozen=True)
 class GeminiConfig:
     """Cấu hình kết nối Google Gemini."""
+
     api_key: str = ""
     project_id: str = ""
     location: str = "us-central1"
     use_vertex: bool = False
 
     vision_model: str = "gemini-2.0-flash"  # Multimodal — free tier 1500 req/ngày, đủ dùng
-    text_model: str = "gemini-2.0-flash"    # Text only — cùng model, nhất quán
+    text_model: str = "gemini-2.0-flash"  # Text only — cùng model, nhất quán
 
     temperature: float = 0.7
     max_output_tokens: int = 2048
@@ -43,9 +45,11 @@ class GeminiConfig:
 
 # ── Data Transfer Objects ──────────────────────────────────────────────────────
 
+
 @dataclass
 class ProductImageContext:
     """Thông tin sản phẩm kết hợp với ảnh để feed vào Gemini Vision."""
+
     product_name: str
     price: float
     category: str
@@ -62,6 +66,7 @@ class ProductImageContext:
 @dataclass
 class GeminiGenerationResult:
     """Kết quả từ Gemini generation."""
+
     content: str
     model: str
     input_tokens: int = 0
@@ -71,6 +76,7 @@ class GeminiGenerationResult:
 
 
 # ── Exceptions ─────────────────────────────────────────────────────────────────
+
 
 class GeminiRateLimitError(Exception):
     """429 Resource Exhausted — vượt quá quota."""
@@ -89,6 +95,7 @@ class GeminiError(Exception):
 
 
 # ── Main Class ─────────────────────────────────────────────────────────────────
+
 
 class GeminiContentGenerator:
     """AI content generator dùng Google Gemini Pro Multimodal (google-genai SDK)."""
@@ -145,6 +152,7 @@ class GeminiContentGenerator:
         # google.genai.errors (new SDK)
         try:
             from google.genai import errors as genai_errors
+
             if isinstance(exc, genai_errors.ClientError):
                 code = getattr(exc, "status_code", None) or getattr(exc, "code", 0)
                 if code == 429 or "resource_exhausted" in str(exc).lower():
@@ -357,6 +365,7 @@ class GeminiContentGenerator:
             analysis_text = result.get("analysis", "")
             if analysis_text and not result.get("error"):
                 import dataclasses
+
                 enriched_desc = (
                     f"{product_info.description}\n[Phân tích ảnh: {analysis_text}]"
                     if product_info.description
@@ -371,14 +380,17 @@ class GeminiContentGenerator:
 
 # ── Factory ────────────────────────────────────────────────────────────────────
 
+
 def create_gemini_engine() -> GeminiContentGenerator:
     """Factory — tạo GeminiContentGenerator từ settings.gemini_api_key."""
     from backend.config import settings
+
     config = GeminiConfig(api_key=settings.gemini_api_key)
     return GeminiContentGenerator(config=config)
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
+
 
 def _detect_mime_type(data: bytes) -> str:
     """Detect MIME type từ magic bytes."""

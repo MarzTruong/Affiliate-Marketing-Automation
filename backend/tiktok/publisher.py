@@ -2,8 +2,8 @@
 
 import httpx
 
-from backend.config import settings
 from backend.affiliate.publishers.base import BasePublisher, PublishResult
+from backend.config import settings
 
 
 class TikTokPublisher(BasePublisher):
@@ -89,7 +89,10 @@ class TikTokPublisher(BasePublisher):
                 err = data.get("error", {}).get("message", "Unknown TikTok error")
                 return PublishResult(success=False, error=err)
             except httpx.HTTPStatusError as e:
-                return PublishResult(success=False, error=f"TikTok API {e.response.status_code}: {e.response.text[:200]}")
+                return PublishResult(
+                    success=False,
+                    error=f"TikTok API {e.response.status_code}: {e.response.text[:200]}",
+                )
             except Exception as e:
                 return PublishResult(success=False, error=str(e))
 
@@ -137,7 +140,10 @@ class TikTokPublisher(BasePublisher):
                 err = data.get("error", {}).get("message", "Unknown TikTok error")
                 return PublishResult(success=False, error=err)
             except httpx.HTTPStatusError as e:
-                return PublishResult(success=False, error=f"TikTok API {e.response.status_code}: {e.response.text[:200]}")
+                return PublishResult(
+                    success=False,
+                    error=f"TikTok API {e.response.status_code}: {e.response.text[:200]}",
+                )
             except Exception as e:
                 return PublishResult(success=False, error=str(e))
 

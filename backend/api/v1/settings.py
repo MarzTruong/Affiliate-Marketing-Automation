@@ -17,33 +17,129 @@ router = APIRouter()
 
 # Metadata hiển thị cho UI — thứ tự và nhóm
 CREDENTIAL_KEYS: list[dict] = [
-    {"key": "CLAUDE_DAILY_COST_LIMIT_USD", "group": "ai", "label": "Giới hạn chi phí/ngày (USD)", "sensitive": False},
-    {"key": "FACEBOOK_PAGE_ID", "group": "facebook", "label": "Facebook Page ID", "sensitive": False},
-    {"key": "FACEBOOK_ACCESS_TOKEN", "group": "facebook", "label": "Facebook Access Token", "sensitive": True},
-    {"key": "WORDPRESS_SITE_URL", "group": "wordpress", "label": "WordPress Site URL", "sensitive": False},
-    {"key": "WORDPRESS_USERNAME", "group": "wordpress", "label": "WordPress Username", "sensitive": False},
-    {"key": "WORDPRESS_APP_PASSWORD", "group": "wordpress", "label": "WordPress App Password", "sensitive": True},
-    {"key": "TELEGRAM_BOT_TOKEN", "group": "telegram", "label": "Telegram Bot Token", "sensitive": True},
-    {"key": "TELEGRAM_CHANNEL_ID", "group": "telegram", "label": "Telegram Channel ID", "sensitive": False},
-    {"key": "TIKTOK_ACCESS_TOKEN", "group": "tiktok", "label": "TikTok Access Token", "sensitive": True},
+    {
+        "key": "CLAUDE_DAILY_COST_LIMIT_USD",
+        "group": "ai",
+        "label": "Giới hạn chi phí/ngày (USD)",
+        "sensitive": False,
+    },
+    {
+        "key": "FACEBOOK_PAGE_ID",
+        "group": "facebook",
+        "label": "Facebook Page ID",
+        "sensitive": False,
+    },
+    {
+        "key": "FACEBOOK_ACCESS_TOKEN",
+        "group": "facebook",
+        "label": "Facebook Access Token",
+        "sensitive": True,
+    },
+    {
+        "key": "WORDPRESS_SITE_URL",
+        "group": "wordpress",
+        "label": "WordPress Site URL",
+        "sensitive": False,
+    },
+    {
+        "key": "WORDPRESS_USERNAME",
+        "group": "wordpress",
+        "label": "WordPress Username",
+        "sensitive": False,
+    },
+    {
+        "key": "WORDPRESS_APP_PASSWORD",
+        "group": "wordpress",
+        "label": "WordPress App Password",
+        "sensitive": True,
+    },
+    {
+        "key": "TELEGRAM_BOT_TOKEN",
+        "group": "telegram",
+        "label": "Telegram Bot Token",
+        "sensitive": True,
+    },
+    {
+        "key": "TELEGRAM_CHANNEL_ID",
+        "group": "telegram",
+        "label": "Telegram Channel ID",
+        "sensitive": False,
+    },
+    {
+        "key": "TIKTOK_ACCESS_TOKEN",
+        "group": "tiktok",
+        "label": "TikTok Access Token",
+        "sensitive": True,
+    },
     {"key": "TIKTOK_APP_KEY", "group": "tiktok", "label": "TikTok App Key", "sensitive": False},
-    {"key": "TIKTOK_APP_SECRET", "group": "tiktok", "label": "TikTok App Secret", "sensitive": True},
-    {"key": "SHOPEE_PARTNER_ID", "group": "shopee", "label": "Shopee Partner ID", "sensitive": False},
-    {"key": "SHOPEE_PARTNER_KEY", "group": "shopee", "label": "Shopee Partner Key", "sensitive": True},
-    {"key": "SHOPEE_ACCESS_TOKEN", "group": "shopee", "label": "Shopee Access Token", "sensitive": True},
+    {
+        "key": "TIKTOK_APP_SECRET",
+        "group": "tiktok",
+        "label": "TikTok App Secret",
+        "sensitive": True,
+    },
+    {
+        "key": "SHOPEE_PARTNER_ID",
+        "group": "shopee",
+        "label": "Shopee Partner ID",
+        "sensitive": False,
+    },
+    {
+        "key": "SHOPEE_PARTNER_KEY",
+        "group": "shopee",
+        "label": "Shopee Partner Key",
+        "sensitive": True,
+    },
+    {
+        "key": "SHOPEE_ACCESS_TOKEN",
+        "group": "shopee",
+        "label": "Shopee Access Token",
+        "sensitive": True,
+    },
     {"key": "SHOPEE_SHOP_ID", "group": "shopee", "label": "Shopee Shop ID", "sensitive": False},
-    {"key": "SHOPBACK_PARTNER_ID", "group": "shopback", "label": "ShopBack Partner ID", "sensitive": False},
-    {"key": "SHOPBACK_API_KEY", "group": "shopback", "label": "ShopBack API Key", "sensitive": True},
-    {"key": "ACCESSTRADE_API_KEY", "group": "accesstrade", "label": "AccessTrade API Key", "sensitive": True},
-    {"key": "ACCESSTRADE_SITE_ID", "group": "accesstrade", "label": "AccessTrade Site ID", "sensitive": False},
-    {"key": "BANNERBEAR_API_KEY", "group": "bannerbear", "label": "Bannerbear API Key", "sensitive": True},
-    {"key": "BANNERBEAR_DEFAULT_TEMPLATE_ID", "group": "bannerbear", "label": "Bannerbear Template ID", "sensitive": False},
+    {
+        "key": "SHOPBACK_PARTNER_ID",
+        "group": "shopback",
+        "label": "ShopBack Partner ID",
+        "sensitive": False,
+    },
+    {
+        "key": "SHOPBACK_API_KEY",
+        "group": "shopback",
+        "label": "ShopBack API Key",
+        "sensitive": True,
+    },
+    {
+        "key": "ACCESSTRADE_API_KEY",
+        "group": "accesstrade",
+        "label": "AccessTrade API Key",
+        "sensitive": True,
+    },
+    {
+        "key": "ACCESSTRADE_SITE_ID",
+        "group": "accesstrade",
+        "label": "AccessTrade Site ID",
+        "sensitive": False,
+    },
+    {
+        "key": "BANNERBEAR_API_KEY",
+        "group": "bannerbear",
+        "label": "Bannerbear API Key",
+        "sensitive": True,
+    },
+    {
+        "key": "BANNERBEAR_DEFAULT_TEMPLATE_ID",
+        "group": "bannerbear",
+        "label": "Bannerbear Template ID",
+        "sensitive": False,
+    },
 ]
 
 KNOWN_KEYS = {item["key"] for item in CREDENTIAL_KEYS}
 
 
 # ── Pydantic schemas ─────────────────────────────────────────────────────────
+
 
 class CredentialItem(BaseModel):
     key: str
@@ -68,6 +164,7 @@ class UpdateCredentialsRequest(BaseModel):
 
 # ── Endpoints ────────────────────────────────────────────────────────────────
 
+
 @router.get("/credentials", response_model=CredentialsResponse)
 async def get_credentials(db: AsyncSession = Depends(get_db)):
     """Đọc credentials hiện tại từ DB — sensitive fields hiện là ****."""
@@ -78,13 +175,15 @@ async def get_credentials(db: AsyncSession = Depends(get_db)):
     for meta in CREDENTIAL_KEYS:
         raw = db_values.get(meta["key"], "")
         display = "****" if (meta["sensitive"] and raw) else raw
-        items.append(CredentialItem(
-            key=meta["key"],
-            group=meta["group"],
-            label=meta["label"],
-            sensitive=meta["sensitive"],
-            value=display,
-        ))
+        items.append(
+            CredentialItem(
+                key=meta["key"],
+                group=meta["group"],
+                label=meta["label"],
+                sensitive=meta["sensitive"],
+                value=display,
+            )
+        )
     return CredentialsResponse(credentials=items)
 
 
@@ -140,6 +239,7 @@ async def test_connection(platform: str):
     if platform in affiliate_platforms:
         try:
             from backend.affiliate.connectors import get_connector
+
             connector = get_connector(platform)
             is_connected = await connector.authenticate()
             status = "connected" if is_connected else "failed"
@@ -150,6 +250,7 @@ async def test_connection(platform: str):
     if platform in publisher_platforms:
         try:
             from backend.affiliate.publishers.posting_service import get_publisher
+
             publisher = get_publisher(platform)
             _ = publisher
             return {"status": "connected", "platform": platform}

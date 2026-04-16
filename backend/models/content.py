@@ -3,9 +3,9 @@ from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, Numeric, String, Text, func
-from backend.compat import GUID, JSONType, StringArrayType
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from backend.compat import GUID, JSONType, StringArrayType
 from backend.database import Base
 
 

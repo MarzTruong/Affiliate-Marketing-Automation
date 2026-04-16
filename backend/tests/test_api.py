@@ -32,9 +32,7 @@ async def test_app():
 
     app.dependency_overrides[get_db] = override_get_db
 
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
 
     app.dependency_overrides.clear()
@@ -44,6 +42,7 @@ async def test_app():
 
 
 # ── Health ─────────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_health_check(test_app):
@@ -55,12 +54,16 @@ async def test_health_check(test_app):
 
 # ── Campaigns ──────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_create_campaign(test_app):
-    resp = await test_app.post("/api/v1/campaigns", json={
-        "name": "Test Campaign",
-        "platform": "shopee",
-    })
+    resp = await test_app.post(
+        "/api/v1/campaigns",
+        json={
+            "name": "Test Campaign",
+            "platform": "shopee",
+        },
+    )
     assert resp.status_code == 201
     data = resp.json()
     assert data["name"] == "Test Campaign"
@@ -82,7 +85,9 @@ async def test_list_campaigns(test_app):
 
 @pytest.mark.asyncio
 async def test_get_campaign(test_app):
-    create_resp = await test_app.post("/api/v1/campaigns", json={"name": "C3", "platform": "tiktok_shop"})
+    create_resp = await test_app.post(
+        "/api/v1/campaigns", json={"name": "C3", "platform": "tiktok_shop"}
+    )
     campaign_id = create_resp.json()["id"]
 
     resp = await test_app.get(f"/api/v1/campaigns/{campaign_id}")
@@ -99,6 +104,7 @@ async def test_get_campaign_not_found(test_app):
 
 # ── Platforms ──────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_list_platforms(test_app):
     resp = await test_app.get("/api/v1/platforms")
@@ -107,16 +113,20 @@ async def test_list_platforms(test_app):
 
 @pytest.mark.asyncio
 async def test_register_platform(test_app):
-    resp = await test_app.post("/api/v1/platforms", json={
-        "platform": "shopee",
-        "account_name": "My Shopee Store",
-        "credentials": {"partner_id": "123", "key": "abc"},
-    })
+    resp = await test_app.post(
+        "/api/v1/platforms",
+        json={
+            "platform": "shopee",
+            "account_name": "My Shopee Store",
+            "credentials": {"partner_id": "123", "key": "abc"},
+        },
+    )
     assert resp.status_code == 201
     assert resp.json()["platform"] == "shopee"
 
 
 # ── Publisher ──────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_list_channels(test_app):
@@ -136,6 +146,7 @@ async def test_list_publications(test_app):
 
 
 # ── Analytics ──────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_analytics_overview(test_app):
@@ -173,22 +184,31 @@ async def test_analytics_costs(test_app):
 
 # ── SOP ────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_create_template(test_app):
-    resp = await test_app.post("/api/v1/sop/templates", json={
-        "name": "SEO Article V1",
-        "content_type": "seo_article",
-        "prompt_template": "Viết bài SEO cho {{ product_name }}",
-    })
+    resp = await test_app.post(
+        "/api/v1/sop/templates",
+        json={
+            "name": "SEO Article V1",
+            "content_type": "seo_article",
+            "prompt_template": "Viết bài SEO cho {{ product_name }}",
+        },
+    )
     assert resp.status_code == 200
     assert resp.json()["name"] == "SEO Article V1"
 
 
 @pytest.mark.asyncio
 async def test_list_templates(test_app):
-    await test_app.post("/api/v1/sop/templates", json={
-        "name": "T1", "content_type": "seo_article", "prompt_template": "X",
-    })
+    await test_app.post(
+        "/api/v1/sop/templates",
+        json={
+            "name": "T1",
+            "content_type": "seo_article",
+            "prompt_template": "X",
+        },
+    )
     resp = await test_app.get("/api/v1/sop/templates")
     assert resp.status_code == 200
     assert len(resp.json()) >= 1
@@ -201,6 +221,7 @@ async def test_score_all(test_app):
 
 
 # ── Notifications ──────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_list_notifications(test_app):
@@ -222,6 +243,7 @@ async def test_mark_all_read(test_app):
 
 
 # ── System ─────────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_system_stats(test_app):

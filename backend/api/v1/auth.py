@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.config import settings
@@ -53,7 +53,6 @@ async def tiktok_me():
                 "open_id": user.get("open_id", ""),
                 "display_name": user.get("display_name", ""),
                 "avatar_url": user.get("avatar_url", ""),
-
             }
         except HTTPException:
             raise
@@ -94,34 +93,42 @@ async def tiktok_auth_callback(
     # User từ chối hoặc lỗi
     if error:
         logger.warning(f"[TikTok OAuth] Error: {error} — {error_description}")
-        return HTMLResponse(_result_page(
-            success=False,
-            message=f"Xác thực thất bại: {error_description or error}",
-        ))
+        return HTMLResponse(
+            _result_page(
+                success=False,
+                message=f"Xác thực thất bại: {error_description or error}",
+            )
+        )
 
     # Validate state chống CSRF
     if not state or state not in _oauth_states:
-        return HTMLResponse(_result_page(
-            success=False,
-            message="State không hợp lệ — vui lòng thử lại.",
-        ))
+        return HTMLResponse(
+            _result_page(
+                success=False,
+                message="State không hợp lệ — vui lòng thử lại.",
+            )
+        )
     _oauth_states.pop(state, None)
 
     if not code:
-        return HTMLResponse(_result_page(
-            success=False,
-            message="Không nhận được authorization code từ TikTok.",
-        ))
+        return HTMLResponse(
+            _result_page(
+                success=False,
+                message="Không nhận được authorization code từ TikTok.",
+            )
+        )
 
     # Đổi code lấy access token
     try:
         token_data = await _exchange_code_for_token(code)
     except Exception as e:
         logger.error(f"[TikTok OAuth] Token exchange failed: {e}")
-        return HTMLResponse(_result_page(
-            success=False,
-            message=f"Lỗi lấy token: {str(e)}",
-        ))
+        return HTMLResponse(
+            _result_page(
+                success=False,
+                message=f"Lỗi lấy token: {str(e)}",
+            )
+        )
 
     access_token = token_data.get("access_token", "")
     open_id = token_data.get("open_id", "")
@@ -129,20 +136,24 @@ async def tiktok_auth_callback(
     expires_in = token_data.get("expires_in", 0)
 
     if not access_token:
-        return HTMLResponse(_result_page(
-            success=False,
-            message="TikTok không trả về access token.",
-        ))
+        return HTMLResponse(
+            _result_page(
+                success=False,
+                message="TikTok không trả về access token.",
+            )
+        )
 
     # Lưu vào system_settings
     await _save_tiktok_token(db, access_token, open_id, scope)
 
     logger.info(f"[TikTok OAuth] Token saved, open_id={open_id[:8]}..., scope={scope}")
 
-    return HTMLResponse(_result_page(
-        success=True,
-        message=f"Kết nối TikTok thành công! Open ID: {open_id[:8]}... | Scope: {scope} | Hết hạn sau: {expires_in // 3600}h",
-    ))
+    return HTMLResponse(
+        _result_page(
+            success=True,
+            message=f"Kết nối TikTok thành công! Open ID: {open_id[:8]}... | Scope: {scope} | Hết hạn sau: {expires_in // 3600}h",
+        )
+    )
 
 
 async def _exchange_code_for_token(code: str) -> dict:
@@ -168,7 +179,7 @@ async def _exchange_code_for_token(code: str) -> dict:
 
 async def _save_tiktok_token(db: AsyncSession, access_token: str, open_id: str, scope: str) -> None:
     """Lưu TikTok token vào bảng system_settings."""
-    from sqlalchemy import select, text
+    from sqlalchemy import text
 
     # Keys phải viết hoa để apply_db_settings() load được vào settings singleton
     entries = {

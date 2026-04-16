@@ -3,8 +3,6 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-import pytest
-
 from backend.analytics.fraud_detector import FraudDetector
 from backend.models.analytics import AnalyticsEvent
 
@@ -23,10 +21,7 @@ def _make_event(event_type: str, ip: str = "1.2.3.4", time_offset_sec: int = 0, 
 
 def test_no_fraud_normal_traffic():
     detector = FraudDetector()
-    events = [
-        _make_event("click", ip=f"10.0.0.{i}", time_offset_sec=i * 60)
-        for i in range(5)
-    ]
+    events = [_make_event("click", ip=f"10.0.0.{i}", time_offset_sec=i * 60) for i in range(5)]
     alerts = detector.analyze(events)
     assert len(alerts) == 0
 
@@ -34,10 +29,7 @@ def test_no_fraud_normal_traffic():
 def test_click_spam_detection():
     detector = FraudDetector()
     # 15 clicks from same IP in same hour
-    events = [
-        _make_event("click", ip="1.2.3.4", time_offset_sec=i * 10)
-        for i in range(15)
-    ]
+    events = [_make_event("click", ip="1.2.3.4", time_offset_sec=i * 10) for i in range(15)]
     alerts = detector.analyze(events)
     fraud_types = [a.fraud_type for a in alerts]
     assert "click_spam" in fraud_types
@@ -46,10 +38,7 @@ def test_click_spam_detection():
 def test_timing_anomaly_detection():
     detector = FraudDetector()
     # 12 clicks at exact 1-second intervals from same IP
-    events = [
-        _make_event("click", ip="5.5.5.5", time_offset_sec=i)
-        for i in range(12)
-    ]
+    events = [_make_event("click", ip="5.5.5.5", time_offset_sec=i) for i in range(12)]
     alerts = detector.analyze(events)
     fraud_types = [a.fraud_type for a in alerts]
     assert "timing_anomaly" in fraud_types
@@ -78,7 +67,9 @@ def test_no_conversion_spike_low_volume():
 def test_normal_conversion_rate():
     detector = FraudDetector()
     # 100 clicks, 3 conversions = 3% (normal)
-    events = [_make_event("click", ip=f"10.0.0.{i % 256}", time_offset_sec=i * 60) for i in range(100)]
+    events = [
+        _make_event("click", ip=f"10.0.0.{i % 256}", time_offset_sec=i * 60) for i in range(100)
+    ]
     events += [_make_event("conversion", ip=f"10.0.0.{i}") for i in range(3)]
     alerts = detector.analyze(events)
     fraud_types = [a.fraud_type for a in alerts]

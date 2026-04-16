@@ -82,7 +82,9 @@ async def evolve_template(
 
     logger.info(
         "Evolved template %s -> %s (%s)",
-        source.id, new_template.id, new_template.name,
+        source.id,
+        new_template.id,
+        new_template.name,
     )
     return new_template
 
@@ -94,11 +96,13 @@ async def auto_evolve_top_templates(
 ) -> list[SOPTemplate]:
     """Automatically evolve templates that meet performance thresholds."""
     result = await db.execute(
-        select(SOPTemplate).where(
+        select(SOPTemplate)
+        .where(
             SOPTemplate.is_active.is_(True),
             SOPTemplate.performance_score >= Decimal(str(min_score)),
             SOPTemplate.usage_count >= min_usage,
-        ).order_by(SOPTemplate.performance_score.desc())
+        )
+        .order_by(SOPTemplate.performance_score.desc())
     )
     top_templates = result.scalars().all()
 

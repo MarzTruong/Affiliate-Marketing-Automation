@@ -14,8 +14,8 @@ import logging
 import time
 from datetime import date
 
-from backend.config import settings
 from backend.affiliate.connectors.base import AffiliateLink, BasePlatformConnector, ProductInfo
+from backend.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +41,7 @@ class ShopeeConnector(BasePlatformConnector):
     def _get_accesstrade(self):
         if self._accesstrade is None:
             from backend.affiliate.connectors.accesstrade import AccessTradeConnector
+
             self._accesstrade = AccessTradeConnector()
         return self._accesstrade
 
@@ -48,9 +49,7 @@ class ShopeeConnector(BasePlatformConnector):
 
     def _sign(self, path: str, timestamp: int) -> str:
         base_string = f"{self.partner_id}{path}{timestamp}{self.access_token}{self.shop_id}"
-        return hmac.new(
-            self.partner_key.encode(), base_string.encode(), hashlib.sha256
-        ).hexdigest()
+        return hmac.new(self.partner_key.encode(), base_string.encode(), hashlib.sha256).hexdigest()
 
     async def authenticate(self) -> bool:
         """Xác thực Shopee Partner API credentials."""
@@ -59,6 +58,7 @@ class ShopeeConnector(BasePlatformConnector):
             return await self._get_accesstrade().authenticate()
 
         import httpx
+
         path = "/api/v2/shop/get_shop_info"
         timestamp = int(time.time())
         params = {
