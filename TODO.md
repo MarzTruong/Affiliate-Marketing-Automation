@@ -1,6 +1,6 @@
 # TODO — Affiliate Marketing Automation
 
-> Cập nhật lần cuối: 16/04/2026 (phiên 7 — Security Audit)
+> Cập nhật lần cuối: 17/04/2026 (phiên 8 — Frontend TikTok Studio)
 
 ---
 
@@ -72,7 +72,7 @@
 ## Bước tiếp theo (Phase 3 — Content Production)
 
 ### Ưu tiên cao
-- [ ] **Frontend TikTok Studio** — `sidebar.tsx` (2 sections mới), `/tiktok-studio` (Kanban board), `/tiktok-studio/new` (3-step wizard), `/tiktok-studio/[id]` (4 tabs: Kịch bản, Assets, Checklist, Timeline)
+- [x] **Frontend TikTok Studio** — `sidebar.tsx` (2 sections mới), `/tiktok-studio` (Kanban board), `/tiktok-studio/new` (3-step wizard), `/tiktok-studio/[id]` (4 tabs: Kịch bản, Assets, Checklist, Timeline)
 - [ ] **ElevenLabs setup thật** — clone giọng bạn (upload 1-2 phút audio sạch) → Voice ID → điền Settings
 - [ ] **HeyGen setup thật** — tạo Photo Avatar / Digital Twin → Avatar ID + Voice ID → điền Settings
 - [ ] **Test end-to-end** — chạy pipeline với `tiktok_script` → nhận Telegram thông báo link MP3 + MP4 clips
@@ -94,6 +94,14 @@
 ---
 
 ## Lịch sử hoàn thành (mới → cũ)
+
+### Phiên 8 (17/04/2026) — Frontend TikTok Studio
+- [x] **TikTokProject types** — thêm `TikTokProject`, `TikTokAngle`, `TikTokStatus` vào `frontend/src/lib/types.ts`
+- [x] **Sidebar** — thêm section "TIKTOK STUDIO" (🎬 TikTok Studio + ➕ Dự án mới)
+- [x] **`/tiktok-studio`** — Kanban board 5 cột (Kịch bản, Audio, Clips, Dựng phim, Hoàn thành), stats row 3 card, empty state
+- [x] **`/tiktok-studio/new`** — Wizard 3 bước: Thông tin SP → Góc tiếp cận (pain_point/feature/social_proof) → Xác nhận & tạo
+- [x] **`/tiktok-studio/[id]`** — Detail 4 tabs: Kịch bản (view/copy/tạo lại), Assets (audio player + download MP3/MP4), Checklist (B-roll/Dựng/Upload + form hiệu suất), Timeline (milestone + stats)
+- [x] **Build check** — `npm run build` pass 0 lỗi TypeScript, 15 routes OK
 
 ### Phiên 7 (16/04/2026) — Security Audit + P1-P3 Fixes
 - [x] **Security audit toàn diện** — phát hiện 3 P0 (`.env.prod` + `api.txt` commit public GitHub, GitHub PAT lộ trong `.git/config`) + 10 lỗi P1-P3

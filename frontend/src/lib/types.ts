@@ -169,3 +169,45 @@ export interface PlatformBreakdown {
   ctr: number;
   conversion_rate: number;
 }
+
+// ── TikTok Studio types ─────────────────────────────────────────────────────
+
+export type TikTokAngle = "pain_point" | "feature" | "social_proof";
+
+export type TikTokStatus =
+  | "script_pending"
+  | "script_ready"
+  | "audio_ready"
+  | "clips_ready"
+  | "b_roll_filmed"
+  | "editing"
+  | "uploaded"
+  | "live";
+
+export interface TikTokProject {
+  id: string;
+  product_name: string;
+  product_ref_url: string | null;
+  angle: TikTokAngle;
+  title: string;
+  status: TikTokStatus;
+  script_body: string | null;
+  audio_url: string | null;
+  audio_duration_s: number | null;
+  heygen_hook_url: string | null;
+  heygen_cta_url: string | null;
+  script_ready_at: string | null;
+  audio_ready_at: string | null;
+  clips_ready_at: string | null;
+  b_roll_filmed_at: string | null;
+  editing_done_at: string | null;
+  uploaded_at: string | null;
+  tiktok_video_url: string | null;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}

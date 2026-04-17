@@ -24,6 +24,13 @@ const navSections: NavSection[] = [
     ],
   },
   {
+    title: "TIKTOK STUDIO",
+    items: [
+      { href: "/tiktok-studio", label: "TikTok Studio", icon: "🎬" },
+      { href: "/tiktok-studio/new", label: "Dự án mới", icon: "➕" },
+    ],
+  },
+  {
     title: "THỦ CÔNG",
     items: [
       { href: "/campaigns", label: "Chiến dịch", icon: "🎯" },
