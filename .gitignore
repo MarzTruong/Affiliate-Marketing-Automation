@@ -37,6 +37,9 @@ out/
 frontend/.next/
 frontend/node_modules/
 
+# Git worktrees
+.worktrees/
+
 # OS
 .DS_Store
 Thumbs.db
@@ -73,3 +76,6 @@ backend/static/visuals/*.png
 # Dev leftovers
 openapi_check.json
 test_ai_quick.py
+
+# Superpowers brainstorm session files
+.superpowers/
