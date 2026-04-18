@@ -1,6 +1,6 @@
 # TODO — Affiliate Marketing Automation
 
-> Cập nhật lần cuối: 17/04/2026 (phiên 8 — Frontend TikTok Studio)
+> Cập nhật lần cuối: 18/04/2026 (phiên 9 — Phase 0 smoke test + ProductScoringEngine)
 
 ---
 
@@ -66,6 +66,28 @@
 | 1 | INFO | TikTok chỉ hỗ trợ draft mode | Giới hạn của TikTok Content API |
 | 2 | INFO | Gemini mock image URLs (placeholder.com) bị block | Sẽ tự resolve khi có ảnh thật từ AccessTrade |
 | 3 | PRE-EXISTING | 3 test failures trong test_publisher.py + test_sop_engine.py | Không liên quan Phase 2, cần fix riêng |
+
+---
+
+## Phase 0 — Foundation ✅ (2026-04-18)
+- [x] Skill files
+- [x] DB models + migration
+- [x] Gemini TTS Engine
+- [x] Kling AI Engine
+- [x] TikTok Shop Connector (skeleton — chờ Developer approval)
+- [x] Google Sheet Poller
+- [x] Tag Queue backend + frontend
+- [x] Hook A/B Engine (Loop 4)
+- [x] Product Scoring Engine (Loop 5)
+- [x] Kênh 1 pipeline integration
+- [x] Smoke test pass
+
+## Phase 1 — Warm Up (Tuần 4-8)
+- [ ] User: apply TikTok Shop Developer (follow docs/skills/tiktok_shop_developer_onboarding.md)
+- [ ] User: chọn 2 sub-niche + tạo 2 TikTok account (+ 1 backup)
+- [ ] Dev: wire TikTok Shop Connector với real credentials
+- [ ] Dev: publish 1 video thật qua Tag Queue (golden path test)
+- [ ] Hit target: 30 video Kênh 1 + 12 video Kênh 2 trong tháng đầu
 
 ---
 

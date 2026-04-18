@@ -1,1 +1,1 @@
-"""Learning module — AI-driven product scoring and performance tracking."""
+"""Self-learning feedback loops for content generation."""

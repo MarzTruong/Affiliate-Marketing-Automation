@@ -19,16 +19,17 @@ from backend.models.publication import Publication
 from backend.models.sop_template import ABTest, SOPTemplate
 from backend.models.system_settings import SystemSettings
 from backend.models.tag_queue_item import TagQueueItem
+from backend.models.tiktok_project import TikTokProject
 
 __all__ = [
     "AITrainingData",
+    "HookVariant",
     "ManualPublishLog",
     "AnalyticsEvent",
     "AutomationRule",
     "Campaign",
     "ContentPiece",
     "FraudEvent",
-    "HookVariant",
     "Notification",
     "PipelineRun",
     "PlatformAccount",
@@ -38,7 +39,8 @@ __all__ = [
     "ScheduledPost",
     "SOPTemplate",
     "ABTest",
-    "TagQueueItem",
+    "TikTokProject",
     "TimeSlotPerformance",
     "SystemSettings",
+    "TagQueueItem",
 ]

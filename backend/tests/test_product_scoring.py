@@ -1,90 +1,99 @@
-"""Test ProductScoringEngine — Loop 5."""
+"""Test ProductScoringEngine — Loop 5 product performance learner."""
+
 from __future__ import annotations
+
+import math
 
 import pytest
 
-from backend.learning.product_scoring import (
-    RETURN_RATE_BLACKLIST_THRESHOLD,
-    ProductScoringEngine,
-)
-from backend.models.product_score import ProductScore
+from backend.learning.product_scoring import ProductScoringEngine
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_record_creates_new_product(db):
+async def test_record_performance_creates_row(db):
     eng = ProductScoringEngine(db)
-    await eng.record_performance(
-        product_id="sp_new",
-        ctr=0.012,
-        conversion=0.025,
-        return_rate=0.10,
-        orders_delta=5,
-    )
-    row = await db.get(ProductScore, "sp_new")
-    assert row is not None
-    assert row.actual_ctr == pytest.approx(0.012)
-    assert row.total_orders == 5
-    assert row.status == "active"
-
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-async def test_high_return_rate_blacklists(db):
-    eng = ProductScoringEngine(db)
-    await eng.record_performance(
-        product_id="sp_bad",
-        ctr=0.01,
-        conversion=0.02,
-        return_rate=0.30,  # >= 0.25 threshold
+    ps = await eng.record_performance(
+        product_id="sp_meiji",
+        ctr=0.05,
+        conversion=0.03,
+        return_rate=0.05,
         orders_delta=10,
     )
-    row = await db.get(ProductScore, "sp_bad")
-    assert row.status == "blacklisted"
+    assert ps.id is not None
+    assert ps.product_id == "sp_meiji"
+    assert ps.ctr == pytest.approx(0.05)
+    assert ps.conversion == pytest.approx(0.03)
+    assert ps.return_rate == pytest.approx(0.05)
+    assert ps.orders_delta == 10
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_ema_updates_on_subsequent_calls(db):
+async def test_score_formula_is_correct(db):
+    """Score = ctr*40 + conversion*50 - return_rate*30 + log1p(orders_delta)*10"""
     eng = ProductScoringEngine(db)
-    await eng.record_performance(
-        product_id="sp_ema",
-        ctr=0.01,
-        conversion=0.02,
-        return_rate=0.05,
-        orders_delta=1,
+    ctr, conv, rr, od = 0.1, 0.05, 0.02, 5
+    expected = ctr * 40 + conv * 50 - rr * 30 + math.log1p(od) * 10
+    ps = await eng.record_performance(
+        product_id="sp_score",
+        ctr=ctr,
+        conversion=conv,
+        return_rate=rr,
+        orders_delta=od,
     )
-    await eng.record_performance(
-        product_id="sp_ema",
-        ctr=0.02,
-        conversion=0.03,
-        return_rate=0.06,
-        orders_delta=2,
-    )
-    row = await db.get(ProductScore, "sp_ema")
-    # EMA: 0.3*0.02 + 0.7*0.01 = 0.013
-    assert row.actual_ctr == pytest.approx(0.013)
-    assert row.total_orders == 3
+    assert ps.score == pytest.approx(expected, rel=1e-5)
 
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_list_active_excludes_blacklisted(db):
+async def test_empty_product_id_raises_value_error(db):
     eng = ProductScoringEngine(db)
-    await eng.record_performance(
-        product_id="sp_ok",
-        ctr=0.01, conversion=0.02, return_rate=0.05, orders_delta=1,
-    )
-    await eng.record_performance(
-        product_id="sp_bad",
-        ctr=0.01, conversion=0.02, return_rate=0.40, orders_delta=1,
-    )
-    active = await eng.list_active()
-    ids = [p.product_id for p in active]
-    assert "sp_ok" in ids
-    assert "sp_bad" not in ids
+    with pytest.raises(ValueError, match="product_id must not be empty"):
+        await eng.record_performance(
+            product_id="   ",
+            ctr=0.01,
+            conversion=0.01,
+            return_rate=0.01,
+            orders_delta=0,
+        )
 
 
 @pytest.mark.unit
-def test_blacklist_threshold_is_correct():
-    assert RETURN_RATE_BLACKLIST_THRESHOLD == 0.25
+@pytest.mark.asyncio
+async def test_top_products_returns_descending_score(db):
+    eng = ProductScoringEngine(db)
+    # low score
+    await eng.record_performance(
+        product_id="low",
+        ctr=0.001,
+        conversion=0.001,
+        return_rate=0.5,
+        orders_delta=0,
+    )
+    # high score
+    await eng.record_performance(
+        product_id="high",
+        ctr=0.2,
+        conversion=0.1,
+        return_rate=0.01,
+        orders_delta=100,
+    )
+    top = await eng.top_products(limit=2)
+    assert len(top) == 2
+    assert top[0].score >= top[1].score
+    assert top[0].product_id == "high"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_negative_orders_delta_raises(db):
+    eng = ProductScoringEngine(db)
+    with pytest.raises(ValueError, match="orders_delta must be >= 0"):
+        await eng.record_performance(
+            product_id="sp_neg",
+            ctr=0.0,
+            conversion=0.0,
+            return_rate=0.0,
+            orders_delta=-5,
+        )

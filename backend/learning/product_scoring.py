@@ -1,19 +1,41 @@
-"""ProductScoringEngine — Loop 5: track per-product performance + auto-blacklist."""
+"""ProductScoringEngine — Loop 5: score products by CTR, conversion, return rate.
+
+Higher score = better candidate for next video batch.
+Score formula: ctr*40 + conversion*50 - return_rate*30 + log1p(orders_delta)*10
+"""
+
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import logging
+import math
+import uuid
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.models.product_score import ProductScore
 
-RETURN_RATE_BLACKLIST_THRESHOLD = 0.25
+logger = logging.getLogger(__name__)
 
 
 class ProductScoringEngine:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
+
+    @staticmethod
+    def _compute_score(
+        ctr: float,
+        conversion: float,
+        return_rate: float,
+        orders_delta: int,
+    ) -> float:
+        """Composite score formula. Higher is better."""
+        return (
+            ctr * 40.0
+            + conversion * 50.0
+            - return_rate * 30.0
+            + math.log1p(max(orders_delta, 0)) * 10.0
+        )
 
     async def record_performance(
         self,
@@ -23,38 +45,50 @@ class ProductScoringEngine:
         conversion: float,
         return_rate: float,
         orders_delta: int,
-    ) -> None:
-        """Upsert product stats using EMA. Auto-blacklist if return_rate >= 0.25."""
-        row = await self.db.get(ProductScore, product_id)
-        if row is None:
-            row = ProductScore(
-                product_id=product_id,
-                actual_ctr=ctr,
-                actual_conversion=conversion,
-                return_rate=return_rate,
-                total_orders=orders_delta,
-                status="active",
-            )
-            self.db.add(row)
-        else:
-            row.actual_ctr = self._ema(row.actual_ctr, ctr)
-            row.actual_conversion = self._ema(row.actual_conversion, conversion)
-            row.return_rate = self._ema(row.return_rate, return_rate)
-            row.total_orders += orders_delta
+    ) -> ProductScore:
+        """Insert a new performance observation row for the given product_id."""
+        if not product_id.strip():
+            raise ValueError("product_id must not be empty")
+        for name, val in (("ctr", ctr), ("conversion", conversion), ("return_rate", return_rate)):
+            if not 0.0 <= val <= 1.0:
+                raise ValueError(f"{name} must be in [0.0, 1.0], got {val}")
+        if orders_delta < 0:
+            raise ValueError(f"orders_delta must be >= 0, got {orders_delta}")
 
-        if row.return_rate >= RETURN_RATE_BLACKLIST_THRESHOLD:
-            row.status = "blacklisted"
+        score = self._compute_score(ctr, conversion, return_rate, orders_delta)
 
-        row.last_updated = datetime.now(timezone.utc)
+        ps = ProductScore(
+            id=uuid.uuid4(),
+            product_id=product_id,
+            ctr=ctr,
+            conversion=conversion,
+            return_rate=return_rate,
+            orders_delta=orders_delta,
+            score=score,
+        )
+        self.db.add(ps)
         await self.db.commit()
+        await self.db.refresh(ps)
+        logger.info("ProductScore recorded: product=%s score=%.2f", product_id, score)
+        return ps
 
-    @staticmethod
-    def _ema(old: float, new: float, alpha: float = 0.3) -> float:
-        """Exponential moving average: alpha * new + (1-alpha) * old."""
-        return alpha * new + (1 - alpha) * old
+    async def top_products(self, limit: int = 10) -> list[ProductScore]:
+        """Return top N distinct products by highest score, descending."""
+        from sqlalchemy import func
 
-    async def list_active(self) -> list[ProductScore]:
-        """Return products with status='active'."""
-        stmt = select(ProductScore).where(ProductScore.status == "active")
+        subq = (
+            select(
+                ProductScore.product_id,
+                func.max(ProductScore.score).label("max_score"),
+            )
+            .group_by(ProductScore.product_id)
+            .subquery()
+        )
+        stmt = (
+            select(ProductScore)
+            .join(subq, (ProductScore.product_id == subq.c.product_id) & (ProductScore.score == subq.c.max_score))
+            .order_by(ProductScore.score.desc())
+            .limit(limit)
+        )
         result = await self.db.execute(stmt)
         return list(result.scalars().all())

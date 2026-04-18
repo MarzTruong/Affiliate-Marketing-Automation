@@ -1,27 +1,44 @@
-"""ProductScore — Loop 5 per-product performance tracking."""
+"""Model ProductScore — tracks per-product performance metrics for Loop 5 learning."""
+
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 
 from sqlalchemy import DateTime, Float, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
+from backend.compat import GUID
 from backend.database import Base
 
 
 class ProductScore(Base):
     __tablename__ = "product_scores"
 
-    product_id: Mapped[str] = mapped_column(String(100), primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=uuid.uuid4)
 
-    actual_ctr: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
-    actual_conversion: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    # ── Product reference ─────────────────────────────────────────────────
+    product_id: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
+
+    # ── Performance metrics ───────────────────────────────────────────────
+    ctr: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    conversion: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     return_rate: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
-    total_orders: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    status: Mapped[str] = mapped_column(
-        String(20), nullable=False, default="active", index=True
-    )  # "active" | "blacklisted"
+    orders_delta: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
-    last_updated: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    # ── Composite score (higher = better) ────────────────────────────────
+    score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+
+    # ── Timeline ─────────────────────────────────────────────────────────
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
     )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    def __repr__(self) -> str:
+        return f"<ProductScore {self.product_id}:{self.score:.2f}>"

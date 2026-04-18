@@ -261,7 +261,7 @@ export default function NewTikTokProjectPage() {
             <p className="font-semibold mb-1">⚡ Sau khi tạo:</p>
             <ul className="list-disc list-inside space-y-0.5 text-xs">
               <li>Dự án tạo với status <strong>script_pending</strong></li>
-              <li>Bấm <strong>"Tạo kịch bản"</strong> để Claude AI viết script</li>
+              <li>Bấm <strong>&quot;Tạo kịch bản&quot;</strong> để Claude AI viết script</li>
               <li>Sau đó chạy ElevenLabs (audio) + HeyGen (clips) tự động</li>
               <li>Nhận thông báo Telegram khi assets sẵn sàng</li>
             </ul>
