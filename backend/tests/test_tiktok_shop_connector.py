@@ -1,13 +1,12 @@
 """Test TikTok Shop Connector — product search + order tracking."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from backend.tiktok_shop.connector import (
-    TikTokShopAPIError,
     TikTokShopAuthError,
     TikTokShopConfig,
     TikTokShopConnector,

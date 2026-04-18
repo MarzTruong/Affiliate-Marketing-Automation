@@ -7,9 +7,9 @@ from fastapi.staticfiles import StaticFiles
 
 import backend.models  # noqa: F401 - register all models
 from backend.api.v1 import router as api_v1_router
-from backend.tiktok_shop.router import router as tag_queue_router
 from backend.config import apply_db_settings, settings
 from backend.database import Base, engine
+from backend.tiktok_shop.router import router as tag_queue_router
 
 # Thư mục serve audio files
 _AUDIO_DIR = Path(__file__).resolve().parent / "static" / "audio"

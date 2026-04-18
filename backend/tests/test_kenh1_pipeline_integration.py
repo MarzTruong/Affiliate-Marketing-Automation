@@ -13,7 +13,6 @@ from backend.ai_engine.kling_engine import KlingResult
 from backend.models.hook_variant import HookVariant
 from backend.tiktok.production import run_production
 
-
 # ── Shared fakes ──────────────────────────────────────────────────────────────
 
 _FAKE_TTS_RESULT = TTSResult(

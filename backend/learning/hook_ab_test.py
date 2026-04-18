@@ -1,4 +1,5 @@
 """HookABTestEngine — Loop 4: learn which hook patterns win by retention@3s."""
+
 from __future__ import annotations
 
 import uuid
@@ -35,9 +36,7 @@ class HookABTestEngine:
         await self.db.refresh(v)
         return v
 
-    async def ingest_retention(
-        self, variant_id: uuid.UUID, retention_at_3s: float
-    ) -> None:
+    async def ingest_retention(self, variant_id: uuid.UUID, retention_at_3s: float) -> None:
         """Update retention metric and compute score. Raises ValueError if not found."""
         v = await self.db.get(HookVariant, variant_id)
         if v is None:
@@ -56,9 +55,6 @@ class HookABTestEngine:
         for v in variants:
             bucket[v.pattern_type].append(v.score)
 
-        ranked = [
-            (pattern, sum(scores) / len(scores))
-            for pattern, scores in bucket.items()
-        ]
+        ranked = [(pattern, sum(scores) / len(scores)) for pattern, scores in bucket.items()]
         ranked.sort(key=lambda x: x[1], reverse=True)
         return ranked[:limit]
