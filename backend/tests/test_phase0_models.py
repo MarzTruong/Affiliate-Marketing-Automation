@@ -81,21 +81,23 @@ async def test_hook_variant_instantiation(db):
 
 @pytest.mark.asyncio
 async def test_product_score_defaults(db):
+    import uuid
     ps = ProductScore(
+        id=uuid.uuid4(),
         product_id="tiktok_shop_12345",
-        actual_ctr=0.0,
-        actual_conversion=0.0,
+        ctr=0.0,
+        conversion=0.0,
         return_rate=0.0,
-        total_orders=0,
-        status="active",
+        orders_delta=0,
+        score=0.0,
     )
     db.add(ps)
     await db.flush()
     await db.refresh(ps)
 
-    assert ps.status == "active"
-    assert ps.total_orders == 0
     assert ps.product_id == "tiktok_shop_12345"
+    assert ps.ctr == 0.0
+    assert ps.score == 0.0
 
 
 # ---------------------------------------------------------------------------
