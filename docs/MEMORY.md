@@ -3,7 +3,7 @@
 > Note: This file is autonomously updated by the AI to preserve context across sessions. Do not delete.
 
 **Repo:** `MarzTruong/Affiliate-Marketing-Automation`
-**Last updated:** 2026-04-16 (phiên 7 — Security Audit + P1-P3 Fixes)
+**Last updated:** 2026-04-19 (phiên 9 — Phase 0 Foundation hoàn thành)
 
 ---
 
@@ -44,6 +44,18 @@
 ---
 
 ## Architecture Decisions
+
+- **[2026-04-19] Phase 0 Foundation complete — TikTok dual-channel:** Kênh 1 (Faceless AI) dùng Gemini TTS (voice Aoede, giọng nữ miền Nam) + Kling AI (fal.ai, 3 clips 9:16x5s) + Hook A/B (Loop 4). Kênh 2 (Real Review) dùng ElevenLabs + HeyGen. `run_production(channel_type=)` dispatch đúng pipeline. Sub-niche: Mẹ bầu tiết kiệm + Đồ chơi Montessori.
+
+- **[2026-04-19] ProductScore model field names:** `ctr`, `conversion`, `return_rate`, `orders_delta`, `score` — KHÔNG phải `actual_ctr`/`actual_conversion`/`total_orders` (tên cũ trong spec). Đã được fix khi merge Phase 0.
+
+- **[2026-04-19] KlingEngine fal-client pattern:** fal-client không cài trong `.venv` → `__init__` check ImportError khi không có key. Tests dùng `KlingEngine.__new__()` để bypass import check. Smoke script kiểm tra `FAL_KEY` env var trước khi khởi tạo engine.
+
+- **[2026-04-19] ProductScoringEngine là append-only (không upsert):** Mỗi lần `record_performance()` tạo 1 row mới (insert). `top_products()` dùng subquery `GROUP BY product_id MAX(score)` để tránh trả nhiều row cùng product. Metric validation: `ctr/conversion/return_rate` phải trong `[0.0, 1.0]`, `orders_delta >= 0`.
+
+- **[2026-04-19] Alembic migration Phase 0 chưa apply:** File `f6a7b8c9d0e1_add_tiktok_phase0_tables.py` tạo bằng tay (Docker offline). Cần `alembic upgrade head` khi Docker chạy để tạo `hook_variants`, `product_scores`, `tag_queue_items`.
+
+- **[2026-04-19] Tag Queue flow:** Video xong → enqueue vào `tag_queue_items` → Owner mở `/tag-queue` frontend → click "Đánh dấu đã tag" → click "Đã publish". Không có TikTok API cho tag automation → owner thao tác thủ công trên TikTok Studio app.
 
 - **[2026-04-16] Pipeline Fail Loud pattern — non-critical per-item failures:** Visual + content generation lỗi 1 sản phẩm không nên kill toàn pipeline (sản phẩm khác vẫn chạy). Pattern: `try/except` với `logger.error(exc_info=True)` + increment counter (`visual_failures`, `content_failures`) + expose vào `run_details`. Cảnh báo thêm nếu `content_failures > 0 and content_created == 0`. KHÔNG `raise` per-item nhưng vẫn fail loud qua log + metric.
 
