@@ -431,13 +431,13 @@ Lưu trong `docs/skills/kenh2_review_sop.md`:
 
 ---
 
-## 13. Open Questions (cần decide trước implement)
+## 13. Resolved Decisions (owner đã chốt 2026-04-18)
 
-- [ ] **Sub-niche cụ thể Kênh 1?** (gợi ý: "Mẹ bầu tiết kiệm" + "Đồ chơi Montessori")
-- [ ] **Voice preset Kênh 1?** — Giọng nữ trẻ, vùng miền (Bắc/Nam/trung tính)
-- [ ] **Kênh 2 — user upload list đồ qua UI form hay Google Sheet?**
-- [ ] **Thời gian user muốn tag batch** — thứ 7+CN hay hàng ngày?
-- [ ] **Backup account ngay từ đầu?** Hay chỉ chuẩn bị credentials để mở khi cần?
+- [x] **Sub-niche Kênh 1:** "Mẹ bầu tiết kiệm" + "Đồ chơi Montessori"
+- [x] **Voice preset Kênh 1:** Giọng **nữ trẻ miền Nam** (Gemini TTS preset: `Aoede` hoặc prompt chỉ định "giọng nữ 25-30 tuổi, miền Nam, ấm, thân thiện")
+- [x] **Kênh 2 input:** **Google Sheet** — user điền list đồ dùng, backend poll sheet định kỳ (hoặc nút "Import from Sheet" trong dashboard)
+- [x] **Tag batch schedule:** **Hàng ngày** — buổi tối user tag 3-5 video (~15-20 phút/ngày)
+- [x] **Backup account:** **Tạo ngay từ Phase 0** — chuẩn bị 2 tài khoản TikTok + CCCD người thân (nếu cần) để đề phòng ban
 
 ---
 
