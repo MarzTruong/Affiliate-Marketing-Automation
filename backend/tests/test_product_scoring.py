@@ -87,14 +87,13 @@ async def test_top_products_returns_descending_score(db):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_negative_orders_delta_clamped_to_zero(db):
+async def test_negative_orders_delta_raises(db):
     eng = ProductScoringEngine(db)
-    ps = await eng.record_performance(
-        product_id="sp_neg",
-        ctr=0.0,
-        conversion=0.0,
-        return_rate=0.0,
-        orders_delta=-5,
-    )
-    # log1p(max(-5, 0)) = log1p(0) = 0
-    assert ps.score == pytest.approx(0.0)
+    with pytest.raises(ValueError, match="orders_delta must be >= 0"):
+        await eng.record_performance(
+            product_id="sp_neg",
+            ctr=0.0,
+            conversion=0.0,
+            return_rate=0.0,
+            orders_delta=-5,
+        )

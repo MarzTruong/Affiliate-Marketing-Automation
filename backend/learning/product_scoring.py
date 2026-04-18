@@ -46,9 +46,14 @@ class ProductScoringEngine:
         return_rate: float,
         orders_delta: int,
     ) -> ProductScore:
-        """Upsert product score row. Creates new record per observation."""
+        """Insert a new performance observation row for the given product_id."""
         if not product_id.strip():
             raise ValueError("product_id must not be empty")
+        for name, val in (("ctr", ctr), ("conversion", conversion), ("return_rate", return_rate)):
+            if not 0.0 <= val <= 1.0:
+                raise ValueError(f"{name} must be in [0.0, 1.0], got {val}")
+        if orders_delta < 0:
+            raise ValueError(f"orders_delta must be >= 0, got {orders_delta}")
 
         score = self._compute_score(ctr, conversion, return_rate, orders_delta)
 
@@ -68,7 +73,22 @@ class ProductScoringEngine:
         return ps
 
     async def top_products(self, limit: int = 10) -> list[ProductScore]:
-        """Return top N products by latest score, descending."""
-        stmt = select(ProductScore).order_by(ProductScore.score.desc()).limit(limit)
+        """Return top N distinct products by highest score, descending."""
+        from sqlalchemy import func
+
+        subq = (
+            select(
+                ProductScore.product_id,
+                func.max(ProductScore.score).label("max_score"),
+            )
+            .group_by(ProductScore.product_id)
+            .subquery()
+        )
+        stmt = (
+            select(ProductScore)
+            .join(subq, (ProductScore.product_id == subq.c.product_id) & (ProductScore.score == subq.c.max_score))
+            .order_by(ProductScore.score.desc())
+            .limit(limit)
+        )
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
