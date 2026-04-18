@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 import backend.models  # noqa: F401 - register all models
 from backend.api.v1 import router as api_v1_router
+from backend.tiktok_shop.router import router as tag_queue_router
 from backend.config import apply_db_settings, settings
 from backend.database import Base, engine
 
@@ -74,6 +75,7 @@ _AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static/audio", StaticFiles(directory=str(_AUDIO_DIR)), name="audio")
 
 app.include_router(api_v1_router, prefix="/api/v1")
+app.include_router(tag_queue_router)
 
 
 @app.get("/health")

@@ -1,4 +1,5 @@
 from backend.models.ai_training_data import AITrainingData
+from backend.models.tag_queue_item import TagQueueItem
 from backend.models.analytics import AnalyticsEvent
 from backend.models.automation import (
     AutomationRule,
@@ -35,4 +36,5 @@ __all__ = [
     "ABTest",
     "TimeSlotPerformance",
     "SystemSettings",
+    "TagQueueItem",
 ]
