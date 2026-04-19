@@ -3,7 +3,7 @@
 > Note: This file is autonomously updated by the AI to preserve context across sessions. Do not delete.
 
 **Repo:** `MarzTruong/Affiliate-Marketing-Automation`
-**Last updated:** 2026-04-19 (phiên 10 — Partner Center app tạo thành công, clarify kiến trúc affiliate)
+**Last updated:** 2026-04-20 (phiên 11 — OAuth fixed, 2-kênh strategy confirmed, affiliate creator API blocked by draft app)
 
 ---
 
@@ -44,6 +44,14 @@
 ---
 
 ## Architecture Decisions
+
+- **[2026-04-20] Chiến lược 2 kênh đã xác nhận:** Kênh 1 "Lab Gia Dụng" = faceless automation, account marz.tiktok.affiliate01@gmail.com. Kênh 2 "Đồ Này Tui Xài" = semi-auto có xuất hiện thật, account kafekaykhe@gmail.com (đã có TikTok Shop + Partner Center). Cả 2 đều đã đăng ký TikTok Shop Affiliate Creator. CCCD chỉ đăng ký được 1 TikTok Shop → kafekaykhe là seller account, Lab Gia Dụng chỉ làm affiliate (không cần shop riêng).
+
+- **[2026-04-20] TikTok Shop OAuth đúng spec — 4 fixes:** (1) Auth URL = `auth.tiktok-shops.com/oauth/authorize`, (2) param `app_key` không phải `client_key`, (3) token exchange dùng `auth_code` + `grant_type=authorized_code` + `app_secret`, (4) access token truyền qua header `x-tts-access-token` không phải query param. Signing = SHA256 plain (không phải HMAC-SHA256), path nằm trong signing string: `app_secret + path + sorted_params + app_secret`.
+
+- **[2026-04-20] Affiliate Creator API blocked — nguyên nhân và next step:** `GET /affiliate_creator/202309/products/search` trả 404 vì Partner Center app "Affiliate Automation" đang ở trạng thái draft/pending approval. Trong khi chờ duyệt: cần lưu 2 token riêng (`TIKTOK_TOKEN_KENH1`, `TIKTOK_TOKEN_KENH2`) và build endpoint OAuth riêng cho từng kênh. Hiện tại chỉ có 1 token slot.
+
+- **[2026-04-20] TikTok Shop Connector đã wire vào API:** `GET /api/v1/tiktok-shop/products/search?keyword=&limit=&min_commission=` đã có, dùng `get_connector()` factory từ DB settings. Sẵn sàng khi app được approve.
 
 - **[2026-04-19] Phân tách nguồn sản phẩm theo kênh — QUAN TRỌNG:** TikTok (Kênh 1 + 2) dùng TikTok Shop Affiliate Creator API (`/affiliate_creator/202309/products/search`) — product tag trực tiếp trong video → viewer mua trên TikTok Shop → commission. AccessTrade CHỈ dùng cho Facebook/Instagram/YouTube (link affiliate ngoài). KHÔNG dùng AccessTrade làm source cho TikTok content. `backend/tiktok_shop/product_search.py` và `order_tracking.py` đã implement đúng, chỉ chưa wire vào pipeline TikTok. Affiliate Creator APIs hoạt động qua OAuth access token của tài khoản đã đăng ký Affiliate Creator — không cần bật trong "Manage API" panel của Partner Center.
 
