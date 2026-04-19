@@ -1,5 +1,7 @@
-"""TikTok OAuth 2.0 flow — authorization code + token exchange."""
+"""TikTok OAuth 2.0 flow — authorization code + PKCE + token exchange."""
 
+import base64
+import hashlib
 import logging
 import secrets
 from datetime import datetime, timezone
@@ -17,47 +19,23 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# TikTok OAuth endpoints
-TIKTOK_AUTH_URL = "https://www.tiktok.com/v2/auth/authorize/"
-TIKTOK_TOKEN_URL = "https://open.tiktokapis.com/v2/oauth/token/"
+# TikTok Shop OAuth endpoints (Partner Center app — khác với developers.tiktok.com)
+TIKTOK_AUTH_URL = "https://auth.tiktok-shops.com/oauth/authorize"
+TIKTOK_TOKEN_URL = "https://auth.tiktok-shops.com/api/v2/token/get"
 
-# Scopes cần thiết cho Content Posting API
-TIKTOK_SCOPES = "user.info.basic,video.upload,video.publish"
+REDIRECT_URI = "http://localhost:8000/api/v1/auth/tiktok/callback"
 
-REDIRECT_URI = "https://colony-ideally-epilepsy.ngrok-free.dev/api/v1/auth/tiktok/callback"
-
-# Simple in-memory state store (đủ dùng cho 1 user)
-_oauth_states: dict[str, datetime] = {}
+# In-memory store: state -> (created_at, code_verifier)
+_oauth_states: dict[str, tuple[datetime, str]] = {}
 
 
-@router.get("/tiktok/me")
-async def tiktok_me():
-    """Kiểm tra token còn sống + lấy thông tin user TikTok."""
-    if not settings.tiktok_access_token:
-        raise HTTPException(422, "Chưa có TikTok access token. Vào /auth/tiktok để kết nối trước.")
+def _generate_pkce() -> tuple[str, str]:
+    """Generate PKCE code_verifier and code_challenge (S256)."""
+    code_verifier = base64.urlsafe_b64encode(secrets.token_bytes(32)).rstrip(b"=").decode()
+    digest = hashlib.sha256(code_verifier.encode()).digest()
+    code_challenge = base64.urlsafe_b64encode(digest).rstrip(b"=").decode()
+    return code_verifier, code_challenge
 
-    async with httpx.AsyncClient(timeout=10) as client:
-        try:
-            resp = await client.get(
-                "https://open.tiktokapis.com/v2/user/info/",
-                headers={"Authorization": f"Bearer {settings.tiktok_access_token}"},
-                params={"fields": "open_id,display_name"},
-            )
-            data = resp.json()
-            err = data.get("error", {})
-            if err.get("code") != "ok":
-                raise HTTPException(502, f"TikTok API lỗi: {err.get('message', 'Unknown')}")
-            user = data.get("data", {}).get("user", {})
-            return {
-                "ok": True,
-                "open_id": user.get("open_id", ""),
-                "display_name": user.get("display_name", ""),
-                "avatar_url": user.get("avatar_url", ""),
-            }
-        except HTTPException:
-            raise
-        except Exception as e:
-            raise HTTPException(500, f"Lỗi kết nối TikTok: {str(e)}")
 
 
 @router.get("/tiktok")
@@ -67,14 +45,16 @@ async def tiktok_auth_start():
         raise HTTPException(422, "Chưa cấu hình TIKTOK_APP_KEY. Vào Settings → Kết nối nền tảng.")
 
     state = secrets.token_urlsafe(16)
-    _oauth_states[state] = datetime.now(timezone.utc)
+    code_verifier, code_challenge = _generate_pkce()
+    _oauth_states[state] = (datetime.now(timezone.utc), code_verifier)
 
     params = {
-        "client_key": settings.tiktok_app_key,
+        "app_key": settings.tiktok_app_key,
         "redirect_uri": REDIRECT_URI,
         "response_type": "code",
-        "scope": TIKTOK_SCOPES,
         "state": state,
+        "code_challenge": code_challenge,
+        "code_challenge_method": "S256",
     }
     auth_url = f"{TIKTOK_AUTH_URL}?{urlencode(params)}"
     logger.info(f"[TikTok OAuth] Redirecting to auth, state={state[:8]}...")
@@ -108,7 +88,7 @@ async def tiktok_auth_callback(
                 message="State không hợp lệ — vui lòng thử lại.",
             )
         )
-    _oauth_states.pop(state, None)
+    _, code_verifier = _oauth_states.pop(state)
 
     if not code:
         return HTMLResponse(
@@ -120,7 +100,7 @@ async def tiktok_auth_callback(
 
     # Đổi code lấy access token
     try:
-        token_data = await _exchange_code_for_token(code)
+        token_data = await _exchange_code_for_token(code, code_verifier)
     except Exception as e:
         logger.error(f"[TikTok OAuth] Token exchange failed: {e}")
         return HTMLResponse(
@@ -156,18 +136,19 @@ async def tiktok_auth_callback(
     )
 
 
-async def _exchange_code_for_token(code: str) -> dict:
-    """Đổi authorization code lấy access token từ TikTok."""
+async def _exchange_code_for_token(code: str, code_verifier: str) -> dict:
+    """Đổi authorization code lấy access token từ TikTok (PKCE)."""
     async with httpx.AsyncClient(timeout=15) as client:
         resp = await client.post(
             TIKTOK_TOKEN_URL,
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             data={
-                "client_key": settings.tiktok_app_key,
-                "client_secret": settings.tiktok_app_secret,
-                "code": code,
-                "grant_type": "authorization_code",
+                "app_key": settings.tiktok_app_key,
+                "app_secret": settings.tiktok_app_secret,
+                "auth_code": code,
+                "grant_type": "authorized_code",
                 "redirect_uri": REDIRECT_URI,
+                "code_verifier": code_verifier,
             },
         )
         resp.raise_for_status()

@@ -3,7 +3,7 @@
 > Note: This file is autonomously updated by the AI to preserve context across sessions. Do not delete.
 
 **Repo:** `MarzTruong/Affiliate-Marketing-Automation`
-**Last updated:** 2026-04-19 (phiên 9 — Phase 0 Foundation hoàn thành)
+**Last updated:** 2026-04-19 (phiên 10 — Partner Center app tạo thành công, clarify kiến trúc affiliate)
 
 ---
 
@@ -44,6 +44,10 @@
 ---
 
 ## Architecture Decisions
+
+- **[2026-04-19] Phân tách nguồn sản phẩm theo kênh — QUAN TRỌNG:** TikTok (Kênh 1 + 2) dùng TikTok Shop Affiliate Creator API (`/affiliate_creator/202309/products/search`) — product tag trực tiếp trong video → viewer mua trên TikTok Shop → commission. AccessTrade CHỈ dùng cho Facebook/Instagram/YouTube (link affiliate ngoài). KHÔNG dùng AccessTrade làm source cho TikTok content. `backend/tiktok_shop/product_search.py` và `order_tracking.py` đã implement đúng, chỉ chưa wire vào pipeline TikTok. Affiliate Creator APIs hoạt động qua OAuth access token của tài khoản đã đăng ký Affiliate Creator — không cần bật trong "Manage API" panel của Partner Center.
+
+- **[2026-04-19] TikTok Shop Partner Center app tạo thành công:** App "Affiliate Automation" (ID: 7629523665710335765), loại Dịch vụ tùy chỉnh, hạng mục Nhà phát triển nội bộ của người bán. Credentials đã có. 24 Seller APIs trong panel là để manage shop của seller — không liên quan đến Affiliate Creator APIs. App Key + App Secret đã có, cần thêm bước đăng ký TikTok Shop Affiliate Creator (qua app TikTok hoặc seller-vn.tiktok.com) để OAuth lấy được access token affiliate creator.
 
 - **[2026-04-19] Phase 0 Foundation complete — TikTok dual-channel:** Kênh 1 (Faceless AI) dùng Gemini TTS (voice Aoede, giọng nữ miền Nam) + Kling AI (fal.ai, 3 clips 9:16x5s) + Hook A/B (Loop 4). Kênh 2 (Real Review) dùng ElevenLabs + HeyGen. `run_production(channel_type=)` dispatch đúng pipeline. Sub-niche: Mẹ bầu tiết kiệm + Đồ chơi Montessori.
 

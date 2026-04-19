@@ -20,7 +20,7 @@ from backend.tiktok_shop.product_search import ProductResult, ProductSearchClien
 def test_connector_sign_returns_64_char_hex():
     cfg = TikTokShopConfig(app_key="ak", app_secret="secret", access_token="tok")
     conn = TikTokShopConnector(cfg)
-    sig = conn._sign({"foo": "bar", "timestamp": 1234})
+    sig = conn._sign("/some/path", {"foo": "bar", "timestamp": 1234})
     assert isinstance(sig, str)
     assert len(sig) == 64
 
@@ -30,7 +30,7 @@ def test_connector_sign_deterministic():
     cfg = TikTokShopConfig(app_key="ak", app_secret="secret", access_token="tok")
     conn = TikTokShopConnector(cfg)
     params = {"a": "1", "b": "2"}
-    assert conn._sign(params) == conn._sign(params)
+    assert conn._sign("/path", params) == conn._sign("/path", params)
 
 
 @pytest.mark.unit

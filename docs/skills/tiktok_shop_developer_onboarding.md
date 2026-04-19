@@ -1,231 +1,214 @@
 # TikTok Shop Developer — Hướng dẫn Apply (Vietnam)
 
-> **Mục đích:** Giúp owner (Non-Dev) tự tay apply TikTok Shop Developer Custom App để lấy API credentials cho Kênh 1 & Kênh 2.
-> **Thời gian dự kiến:** 2-3 tuần từ lúc nộp đến lúc được duyệt.
+> **Mục đích:** Giúp owner (Non-Dev) tự tay đăng ký TikTok Shop Partner Center để lấy API credentials.
+> **Nền tảng:** https://partner.tiktokshop.com
+> **Thời gian dự kiến:** 2-5 ngày làm việc.
 > **Chi phí:** Miễn phí.
-> **Yêu cầu trước:** CCCD (căn cước công dân) + email doanh nghiệp hoặc email cá nhân đáng tin.
+> **KHÔNG cần:** Giấy phép kinh doanh, giấy chứng nhận đăng ký công ty — nếu chọn đúng hạng mục bên dưới.
+
+> **⚠️ Lưu ý:** Partner Center là hệ thống RIÊNG — bắt buộc tạo tài khoản mới bằng email, KHÔNG đăng nhập bằng tài khoản TikTok cá nhân hay Seller Center.
 
 ---
 
 ## Checklist tổng quan
 
-- [ ] **Bước 1:** Tạo tài khoản TikTok Shop Seller (VN) — nếu chưa có
-- [ ] **Bước 2:** Tạo tài khoản TikTok for Developers
-- [ ] **Bước 3:** Verify danh tính qua CCCD
-- [ ] **Bước 4:** Tạo Custom App (Private App) cho affiliate
-- [ ] **Bước 5:** Request scopes cần thiết (Affiliate Creator + Content Posting)
-- [ ] **Bước 6:** Submit App Review
-- [ ] **Bước 7:** Nhận credentials → paste vào `/settings` của dashboard
+- [ ] **Bước 1:** Tạo tài khoản Partner Center (email + mật khẩu)
+- [ ] **Bước 2:** Nhấn "Bắt đầu" → Wizard 3 bước → Chọn đúng hạng mục
+- [ ] **Bước 3:** Điền thông tin chi tiết → Gửi → Chờ duyệt
+- [ ] **Bước 4:** Vào App & Service → Tạo Custom App
+- [ ] **Bước 5:** Apply permissions → Nhận App Key + App Secret
+- [ ] **Bước 6:** Paste credentials vào `/settings` của dashboard
 
 ---
 
-## Bước 1 — Tạo TikTok Shop Seller Vietnam
+## Bước 1 — Tạo tài khoản Partner Center
 
-1. Truy cập: https://seller-vn.tiktok.com/
-2. Nhấn **"Đăng ký ngay"** → chọn **Cá nhân** (Individual) hoặc **Doanh nghiệp** (Business).
-   - **Khuyến nghị:** Chọn **Cá nhân** cho giai đoạn MVP (đủ điều kiện affiliate, không cần giấy phép kinh doanh).
-3. Nhập:
-   - Số điện thoại VN (nhận OTP)
-   - Email (dùng cho liên hệ dev)
-   - Mật khẩu mạnh (≥ 12 ký tự)
-4. Upload CCCD:
-   - Mặt trước + mặt sau
-   - Ảnh selfie cầm CCCD (phải thấy rõ mặt + số)
-5. Chờ duyệt (thường 1-3 ngày làm việc).
+1. Truy cập: https://partner.tiktokshop.com
+2. Nhấn **"Join now"** (góc trên phải).
+3. Điền email + mật khẩu → xác nhận email (OTP).
+4. Đăng nhập → sẽ thấy trang **"Hồ sơ"**.
 
-> **Lưu ý:** Nếu bạn đã có tài khoản TikTok Shop đang hoạt động, bỏ qua bước này. Dùng thẳng tài khoản đó.
+> Trang Hồ sơ hiển thị ô "Bắt đầu hoạt động kinh doanh của bạn" ở bên phải — đây là bước tiếp theo.
 
 ---
 
-## Bước 2 — Tạo TikTok for Developers Account
+## Bước 2 — Chọn hạng mục (Wizard 3 bước)
 
-1. Truy cập: https://developers.tiktok.com/
-2. Nhấn **"Login"** → chọn **"TikTok"** (dùng tài khoản TikTok cá nhân của bạn, không phải Seller).
-3. Đồng ý ToS (Terms of Service).
-4. Điền thông tin:
-   - Full name (đúng theo CCCD)
-   - Country: **Vietnam**
-   - Developer type: **Individual** (hoặc **Business** nếu có giấy phép)
-   - Purpose: Chọn **"Affiliate marketing automation"**
+Nhấn **"Bắt đầu"** → vào wizard 3 bước: **Hạng mục & thị trường → Điền thông tin chi tiết → Xem xét & phê duyệt**
 
-> **Quan trọng:** Phần Purpose viết chi tiết bằng tiếng Anh, ví dụ:
-> *"Build automation tool for TikTok Shop affiliate creators to search products, generate content, track orders, and optimize posting schedule. Use cases: product discovery, order tracking, content posting."*
+### Bước 2a — Hạng mục & thị trường
 
----
+| Trường | Giá trị |
+|--------|---------|
+| Khu vực đăng ký | **Việt Nam** (không đổi được sau khi duyệt) |
+| Thị trường mục tiêu | **Việt Nam** |
 
-## Bước 3 — Verify Identity (KYC)
+**Hạng mục kinh doanh — chọn đúng như sau:**
 
-TikTok yêu cầu verify với creator/business được phép truy cập API:
+Dropdown "Hạng mục kinh doanh" có 4 nhóm chính:
 
-1. Trong Developer Dashboard → **Settings** → **Identity Verification**
-2. Upload CCCD mặt trước + mặt sau (ảnh JPG/PNG, rõ nét, không che góc nào)
-3. Selfie real-time (bấm chụp trong app, không upload ảnh cũ)
-4. Chờ 1-3 ngày làm việc.
+| Nhóm | Subcategory |
+|------|------------|
+| MCN/CAP | Quản lý nhà sáng tạo |
+| **Nhà phát triển ứng dụng** | Dịch vụ khách hàng, Marketing, **Nhà phát triển nội bộ của người bán**, Quản lý thương mại điện tử, Thúc đẩy bán hàng, Tài chính, Tương tác với khách hàng, Vận chuyển & Hoàn thiện |
+| TikTok Shop Partner (TSP) | Quản lý cửa hàng (cho TSP), Quản lý nội dung (cho TSP) |
+| Đối tác liên kết | Kết hợp người bán và nhà sáng tạo phân cấp |
 
-> **Nếu bị reject:** Thường do CCCD mờ hoặc selfie thiếu sáng. Chụp lại ngoài trời ban ngày, không đeo kính, không đội mũ.
+### Lựa chọn khuyến nghị:
 
----
+> **Chọn: "Nhà phát triển ứng dụng" → "Nhà phát triển nội bộ của người bán"**
 
-## Bước 4 — Tạo Custom App (Private App)
+**Lý do:**
+- "Nhà phát triển nội bộ của người bán" = developer tự build tool cho shop của chính mình → **KHÔNG yêu cầu giấy chứng nhận đăng ký công ty**.
+- Các hạng mục khác (TSP, MCN) yêu cầu tên pháp lý công ty + giấy chứng nhận sáp nhập + mã số đăng ký công ty.
+- Hạng mục này đúng với dự án: bạn là người tự build automation tool cho tài khoản của mình.
 
-**Custom App** = app chỉ dành cho chính bạn sử dụng, không public. Miễn phí, duyệt nhanh hơn Standard App.
-
-1. Dashboard → **Manage Apps** → **Create an App** → chọn **Custom App**
-2. Điền form:
-   - **App name:** `Affiliate Automation` (hoặc tên bất kỳ)
-   - **App description:** *"Personal automation for TikTok Shop affiliate — product search, content generation, order tracking, scheduled posting."*
-   - **Category:** `Productivity` hoặc `Marketing`
-   - **Website URL:** Bất kỳ (có thể dùng github repo: `https://github.com/MarzTruong/Affiliate-Marketing-Automation`)
-   - **Terms of Service URL:** Link tới README của repo
-   - **Privacy Policy URL:** Link tới README (hoặc viết 1 trang đơn giản)
-   - **Icon:** Upload ảnh 512x512 (có thể dùng icon bất kỳ — AI tạo cũng OK)
-3. Nhấn **Create**.
-
-> **Pro tip:** Viết Privacy Policy đơn giản dạng "Tool cá nhân, không thu thập data của người dùng khác, chỉ lưu local database" — 1 đoạn 300 chữ là đủ.
+**Cách chọn trong giao diện:**
+1. Nhấn vào dropdown "Hạng mục kinh doanh"
+2. Tích checkbox **"Nhà phát triển ứng dụng"**
+3. Cột bên phải xuất hiện — tích **"Nhà phát triển nội bộ của người bán"**
+4. Nhấn **Tiếp theo** (hoặc Next)
 
 ---
 
-## Bước 5 — Request Scopes (Quyền API cần thiết)
+## Bước 3 — Điền thông tin chi tiết
 
-Trong app vừa tạo → tab **Scopes** → chọn các scope sau:
+Sau khi chọn hạng mục đúng, bước 2 của wizard yêu cầu điền thông tin. Với "Nhà phát triển nội bộ của người bán", form sẽ nhẹ hơn (không cần giấy tờ công ty).
 
-### Scope bắt buộc cho dự án này
+**Thông tin thường yêu cầu:**
 
-| Scope | Dùng để | Priority |
-|-------|---------|----------|
-| `user.info.basic` | Lấy thông tin user đã login | Phải có |
-| `video.publish` | Upload video lên TikTok | Phải có |
-| `video.upload` | Upload draft | Phải có |
-| `video.list` | List video của user | Phải có |
-| `affiliate.creator.product.search` | Tìm SP affiliate | Phải có |
-| `affiliate.creator.order.list` | Track đơn hàng | Phải có |
-| `affiliate.creator.performance.list` | Xem commission + CTR | Phải có |
+| Trường | Gợi ý điền |
+|--------|-----------|
+| Tên đối tác / Tên hiển thị | Tên bạn hoặc tên tự đặt |
+| Website (nếu có) | `https://github.com/MarzTruong/Affiliate-Marketing-Automation` |
+| Giới thiệu về bản thân / doanh nghiệp | *"Cá nhân tự build automation tool để quản lý kênh TikTok affiliate cá nhân. Không phục vụ bên thứ ba."* |
+| Kinh nghiệm liên quan | Mô tả ngắn: đã dùng TikTok Shop bao lâu, có kênh TikTok không |
+| Thông tin liên hệ | Email + số điện thoại |
 
-### Scope optional (có thể thêm sau)
+Nhấn **"Gửi"** → chuyển sang Bước 3: **Xem xét & phê duyệt**.
 
-- `research.data.basic` — pull analytics chi tiết (retention@3s, impression source)
-- `user.info.profile` — nếu cần thêm info profile
+> **Thời gian chờ duyệt:** 2-5 ngày làm việc. Kiểm tra email (kể cả spam).
 
-Mỗi scope phải ghi **Justification** (lý do dùng) bằng tiếng Anh:
+---
 
-**Template:**
+## Bước 4 — Tạo App sau khi được duyệt
+
+Sau khi tài khoản được duyệt, menu trái Partner Center sẽ mở rộng thêm các mục mới.
+
+1. Tìm **"App & Service"** trong menu trái → nhấn vào.
+2. Nhấn **"Create app & service"** (hoặc "Tạo ứng dụng").
+3. Chọn loại app:
+   - **Custom App** → dùng riêng cho bạn, không public (chọn cái này cho MVP).
+   - Public App → đăng lên TikTok Shop App Store (phức tạp hơn, không cần thiết).
+4. Điền thông tin App:
+
+| Trường | Gợi ý điền |
+|--------|-----------|
+| App name | `Affiliate Automation` |
+| Category | `Marketing` hoặc `Productivity` |
+| Logo | Upload ảnh 512x512 (AI tạo OK) |
+| Target market | Việt Nam |
+| Redirect URL | `http://localhost:8000/auth/tiktok/callback` |
+| Webhook URL | Để trống hoặc `http://localhost:8000/webhooks/tiktok` |
+
+5. Nhấn **"Create App"** → copy ngay **App Key** và **App Secret** từ trang detail.
+
+---
+
+## Bước 5 — Apply API Permissions
+
+Trong trang App detail:
+
+1. Tìm tab **"Manage API"** hoặc **"API Permissions"**.
+2. Apply các permission cần thiết:
+
+| Permission | Dùng để |
+|-----------|---------|
+| `affiliate.creator.product.search` | Tìm sản phẩm affiliate |
+| `affiliate.creator.order.list` | Track đơn hàng |
+| `affiliate.creator.performance.list` | Xem hoa hồng, CTR |
+| `video.publish` | Upload video |
+| `video.upload` | Upload draft |
+
+3. Justification template (tiếng Anh):
 ```
-We use this scope to automate affiliate product search and content workflow
-for the authenticated creator only. No third-party data is accessed. All data
-is stored locally for personal analytics and AI content generation.
+Personal automation tool for my own TikTok Shop affiliate account only.
+Used to search affiliate products, track my own orders, and publish
+content. No third-party data access. All data stored locally.
 ```
 
 ---
 
-## Bước 6 — Submit App Review
+## Bước 6 — Kết nối Dashboard
 
-1. Điền đầy đủ:
-   - Data usage description (200-500 chữ, nhấn mạnh "personal use, local storage")
-   - Screenshot UI của tool (có thể dùng screenshot `/tiktok-studio` dashboard hiện tại)
-   - Demo video 1-2 phút quay màn hình workflow (OBS Studio record)
-2. Nhấn **Submit for Review**.
-3. Chờ:
-   - Lần review đầu: 7-14 ngày
-   - Nếu reject: fix theo feedback → resubmit (thường thêm 5-7 ngày)
-
-> **Tip tăng tỉ lệ duyệt:**
-> - Demo video nói tiếng Anh, rõ ràng, slow-paced
-> - Emphasize "single-user, personal automation"
-> - KHÔNG nhắc đến "sell data", "scrape", "crawl"
-
----
-
-## Bước 7 — Nhận Credentials
-
-Sau khi duyệt, trong app dashboard sẽ hiện:
-
-- **Client Key** (aka App ID)
-- **Client Secret**
-- **Redirect URI** (bạn tự set — dùng `https://localhost:3000/api/auth/tiktok/callback` cho local dev)
-
-### Nhập vào dashboard dự án
-
-1. Mở dashboard: http://localhost:3000/settings
+1. Mở: http://localhost:3000/settings
 2. Tab **TikTok Shop** → paste:
-   - Client Key
-   - Client Secret
-   - Redirect URI
-3. Nhấn **Save**.
-4. Test OAuth flow: nhấn **Connect TikTok** → login → approve scopes.
+   - App Key
+   - App Secret
+   - Redirect URI: `http://localhost:8000/auth/tiktok/callback`
+3. Nhấn **Save** → nhấn **"Connect TikTok"** → test OAuth flow.
 
-> **Lưu ý bảo mật:** Client Secret là **bí mật tuyệt đối**, KHÔNG paste lên chat/email/git. Nếu lỡ lộ → revoke trong dashboard dev và tạo mới.
+> **Bảo mật:** App Secret KHÔNG paste vào chat, email, hay git. Nếu lộ → revoke trong Partner Center và tạo key mới.
+
+---
+
+## Nếu bị yêu cầu Giấy chứng nhận đăng ký công ty
+
+> **Dấu hiệu bạn chọn sai hạng mục:** Form bước 2 hiển thị "Tên pháp lý của công ty", "Giấy chứng nhận sáp nhập", "Mã số đăng ký công ty" → đây là form của TSP hoặc MCN.
+
+**Cách fix:** Nhấn **"Quay lại"** → Bước 1 → chọn lại **"Nhà phát triển ứng dụng" → "Nhà phát triển nội bộ của người bán"**.
+
+Nếu không quay lại được (đã submit), liên hệ support qua "Trợ giúp" (góc trên phải Partner Center) để đổi hạng mục.
 
 ---
 
 ## Troubleshooting
 
-### Lỗi 1: "Your application has been rejected"
+### Không tìm thấy "App & Service" sau khi được duyệt
+Tài khoản vẫn đang trong trạng thái "Đang xem xét". Chờ thêm và kiểm tra email.
 
-**Nguyên nhân thường gặp:**
-- Privacy Policy URL 404
-- Demo video không rõ hoặc không có
-- Scopes request quá rộng (xin `user.info.profile` khi không cần)
+### OAuth callback lỗi sau khi approved
+Redirect URI trong App detail phải giống 100% với `TIKTOK_REDIRECT_URI` trong `.env` — kể cả `http` vs `https`, trailing slash.
 
-**Cách fix:** Đọc feedback trong email, chỉnh sửa rồi resubmit.
-
-### Lỗi 2: "Identity verification failed"
-
-**Nguyên nhân:** CCCD mờ, selfie sai góc, hoặc CCCD hết hạn.
-
-**Cách fix:** Chụp CCCD mới ngoài trời ban ngày, selfie theo hướng dẫn trong app.
-
-### Lỗi 3: OAuth redirect trả về error sau khi approved
-
-**Nguyên nhân:** Redirect URI không khớp giữa app dashboard và code.
-
-**Cách fix:** Đảm bảo URI giống 100% (kể cả trailing slash, http vs https).
-
-### Lỗi 4: API trả về `invalid_scope`
-
-**Nguyên nhân:** Scope bị reject nhưng code đang gọi.
-
-**Cách fix:** Check scope list trong app dashboard, re-submit scope còn thiếu.
+### Token hết hạn sau 24h
+Giới hạn Sandbox. Re-auth qua `/auth/tiktok` mỗi ngày. Production có refresh_token tự động.
 
 ---
 
 ## FAQ
 
-**Q: Có cần giấy phép kinh doanh không?**
-A: KHÔNG, cá nhân VN có CCCD là đủ cho Custom App (nhưng nếu muốn scale lên Standard App thì cần).
+**Q: Tôi có cần tài khoản TikTok Shop Seller không?**
+A: Không bắt buộc để đăng ký Partner Center. Nhưng để test affiliate API thật (track đơn, hoa hồng) thì cần là Affiliate Creator trên TikTok Shop.
 
-**Q: Tôi có thể dùng tài khoản TikTok đang dùng hằng ngày để apply không?**
-A: Được, nhưng tốt nhất tạo TikTok account riêng cho developer để tách biệt.
+**Q: "Nhà phát triển nội bộ của người bán" có thể dùng affiliate API không?**
+A: Có — bạn có thể apply permission `affiliate.creator.*` cho bất kỳ app nào, kể cả internal developer app.
 
-**Q: App Review mất bao lâu?**
-A: 7-14 ngày cho lần đầu. Nếu reject + resubmit, cộng thêm 5-7 ngày.
+**Q: Custom App vs Public App?**
+A: Custom App = dùng riêng, duyệt nhanh. Public App = lên App Store, review nghiêm. Dùng Custom App cho dự án này.
 
-**Q: Sau khi approved, credentials có hạn không?**
-A: Không, nhưng TikTok có thể revoke nếu phát hiện vi phạm ToS. Check định kỳ.
-
-**Q: Nếu tôi pause không dùng 6 tháng, app có bị disable không?**
-A: Có thể. TikTok disable inactive apps. Gọi API tối thiểu 1 lần/tháng để giữ active.
+**Q: Credentials có hạn không?**
+A: App Key/Secret không hết hạn. Access Token hết hạn 24h (sandbox). TikTok có thể revoke nếu vi phạm ToS.
 
 ---
 
 ## Next Steps sau khi có Credentials
 
-1. ✅ Dev integrate TikTok Shop Connector (`backend/tiktok_shop/connector.py`)
-2. ✅ Test product search API → lấy 10 SP mẹ & bé đầu tiên
-3. ✅ Test order tracking API với 1 đơn mẫu
-4. ✅ Tag Queue UI → publish 1 video thật → confirm đơn tracking hoạt động
-5. ✅ Bật Phase 1 Warm Up
+1. Paste App Key + App Secret → http://localhost:3000/settings
+2. Test OAuth: nhấn "Connect TikTok" → xác nhận callback
+3. Dev: wire TikTok Shop Connector với real credentials
+4. Test product search API → lấy 10 SP đầu tiên
+5. Tag Queue → publish 1 video thật → bật Phase 1
 
 ---
 
 ## References
 
-- [TikTok for Developers — Getting Started](https://developers.tiktok.com/doc/getting-started-create-an-app)
-- [Affiliate Creator API Overview](https://partner.tiktokshop.com/docv2/page/affiliate-creator-api-overview)
-- [Content Posting API](https://developers.tiktok.com/products/content-posting-api/)
-- [Vietnam Eligibility Guide](https://seller-vn.tiktok.com/university/essay?knowledge_id=104015979497218)
+- [TikTok Shop Partner Center](https://partner.tiktokshop.com)
+- [Developer Onboarding Docs](https://partner.tiktokshop.com/docv2/page/developer-onboarding)
+- [Affiliate Creator API Overview](https://partner.tiktokshop.com/docv2/page/6697960798b0a502f89e3d00)
 
 ---
 
-**Version:** 1.0
-**Ngày cập nhật:** 2026-04-18
-**Tác giả:** Brainstorm session — Kênh TikTok dual-channel design
+**Version:** 3.0
+**Ngày cập nhật:** 2026-04-19
+**Lý do cập nhật:** Fix theo giao diện thực tế (ảnh chụp màn hình từ owner) — thêm wizard 3 bước, tên hạng mục đúng theo UI tiếng Việt, cảnh báo tránh chọn TSP/MCN (yêu cầu giấy tờ công ty), khuyến nghị "Nhà phát triển nội bộ của người bán".
