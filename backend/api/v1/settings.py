@@ -133,6 +133,18 @@ CREDENTIAL_KEYS: list[dict] = [
         "label": "Bannerbear Template ID",
         "sensitive": False,
     },
+    {
+        "key": "ELEVENLABS_API_KEY",
+        "group": "elevenlabs",
+        "label": "ElevenLabs API Key",
+        "sensitive": True,
+    },
+    {
+        "key": "ELEVENLABS_VOICE_ID",
+        "group": "elevenlabs",
+        "label": "ElevenLabs Voice ID",
+        "sensitive": False,
+    },
 ]
 
 KNOWN_KEYS = {item["key"] for item in CREDENTIAL_KEYS}

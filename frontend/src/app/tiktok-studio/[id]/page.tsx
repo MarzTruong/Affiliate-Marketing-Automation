@@ -138,7 +138,8 @@ export default function TikTokProjectDetailPage() {
 
   const statusLabel = STATUS_LABELS[project.status] ?? project.status;
   const statusColor = STATUS_COLOR[project.status] ?? "bg-slate-100 text-slate-600";
-  const canGenerate = ["script_pending", "script_ready"].includes(project.status);
+  const canGenerate = ["script_pending", "script_ready", "audio_ready"].includes(project.status);
+  const channelLabel = project.channel_type === "kenh1_faceless" ? "🤖 Kênh 1 AI" : "🎥 Kênh 2 Thật";
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -166,6 +167,9 @@ export default function TikTokProjectDetailPage() {
               </span>
               <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full">
                 {ANGLE_LABELS[project.angle] ?? project.angle}
+              </span>
+              <span className="text-xs px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full font-medium">
+                {channelLabel}
               </span>
               {project.product_ref_url && (
                 <a
@@ -281,10 +285,10 @@ export default function TikTokProjectDetailPage() {
           >
             {project.audio_url && (
               <div className="space-y-2">
-                <audio controls src={project.audio_url} className="w-full h-10" />
+                <audio controls src={`http://localhost:8000${project.audio_url}`} className="w-full h-10" />
                 <div className="flex gap-2">
                   <a
-                    href={project.audio_url}
+                    href={`http://localhost:8000${project.audio_url}`}
                     download
                     className="px-3 py-1.5 text-xs bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 border border-purple-200 transition-colors"
                   >

@@ -108,6 +108,9 @@ class Settings(BaseSettings):
     heygen_avatar_id: str = ""  # Avatar ID trên HeyGen (Photo Avatar / Digital Twin)
     heygen_voice_id: str = ""  # Voice ID trên HeyGen để sync môi avatar
 
+    # Fal.ai (Kling AI video generation) — đọc từ .env
+    fal_key: str = ""
+
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"

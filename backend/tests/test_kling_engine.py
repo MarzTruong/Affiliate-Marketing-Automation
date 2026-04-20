@@ -15,7 +15,7 @@ from backend.ai_engine.kling_engine import (
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
-def _make_engine(api_key: str = "test", timeout_seconds: float = 180.0) -> KlingEngine:
+def _make_engine(api_key: str = "test", timeout_seconds: float = 600.0) -> KlingEngine:
     """Create KlingEngine bypassing __init__ (fal-client may not be installed)."""
     cfg = KlingConfig(api_key=api_key, timeout_seconds=timeout_seconds)
     engine = KlingEngine.__new__(KlingEngine)
@@ -31,7 +31,7 @@ def test_config_defaults():
     assert cfg.duration_seconds == 5
     assert cfg.aspect_ratio == "9:16"
     assert cfg.model == "fal-ai/kling-video/v2/master/image-to-video"
-    assert cfg.timeout_seconds == 180.0
+    assert cfg.timeout_seconds == 600.0
 
 
 @pytest.mark.unit

@@ -50,6 +50,11 @@ class TikTokProject(Base):
     editing_done_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     uploaded_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
+    # ── Kênh sản xuất ────────────────────────────────────────────────────
+    channel_type: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="kenh2_real_review"
+    )  # kenh1_faceless | kenh2_real_review
+
     # ── Status ────────────────────────────────────────────────────────────
     # script_pending → script_ready → audio_ready → clips_ready
     # → b_roll_pending → editing → uploaded → live

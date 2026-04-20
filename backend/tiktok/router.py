@@ -25,11 +25,25 @@ class ProjectCreate(BaseModel):
     notes: str | None = None
 
 
+class ProjectFromUrl(BaseModel):
+    url: str
+    angle: str  # pain_point | feature | social_proof
+    channel_type: str = "kenh2_real_review"  # kenh1_faceless | kenh2_real_review
+    notes: str | None = None
+
+
+class UrlPreviewOut(BaseModel):
+    product_name: str
+    price_text: str
+    success: bool
+
+
 class ProjectOut(BaseModel):
     id: str
     product_name: str
     product_ref_url: str | None
     angle: str
+    channel_type: str
     title: str
     status: str
     script_body: str | None
@@ -53,6 +67,10 @@ class ProjectOut(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class GenerateRequest(BaseModel):
+    channel_type: str | None = None  # None = dùng channel_type của project
 
 
 class StatusUpdate(BaseModel):
@@ -112,6 +130,7 @@ async def get_project(project_id: str, db: AsyncSession = Depends(get_db)):
 async def generate_project(
     project_id: str,
     background_tasks: BackgroundTasks,
+    body: GenerateRequest = GenerateRequest(),
     db: AsyncSession = Depends(get_db),
 ):
     """Trigger pipeline: script → audio → clips (chạy background).
@@ -121,14 +140,15 @@ async def generate_project(
     """
     project = await _get_or_404(db, project_id)
 
-    if project.status not in ("script_pending", "script_ready"):
+    if project.status not in ("script_pending", "script_ready", "audio_ready"):
         raise HTTPException(
             400,
-            f"Chỉ trigger được khi status là script_pending hoặc script_ready "
+            f"Chỉ trigger được khi status là script_pending, script_ready hoặc audio_ready "
             f"(hiện: {project.status})",
         )
 
-    background_tasks.add_task(_run_production_bg, project_id)
+    effective_channel = body.channel_type or project.channel_type
+    background_tasks.add_task(_run_production_bg, project_id, effective_channel)
     return _to_out(project)
 
 
@@ -168,6 +188,43 @@ async def update_performance(
     return _to_out(project)
 
 
+@router.post("/preview-url", response_model=UrlPreviewOut)
+async def preview_url(data: ProjectFromUrl):
+    """Lấy thông tin sản phẩm từ URL (best-effort) — không tạo project."""
+    result = await studio.fetch_product_from_url(data.url)
+    return result
+
+
+@router.post("/from-url", response_model=ProjectOut, status_code=201)
+async def create_from_url(
+    data: ProjectFromUrl,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    """Tạo dự án từ link TikTok Shop — tự động lấy tên SP từ URL."""
+    valid_angles = {"pain_point", "feature", "social_proof"}
+    if data.angle not in valid_angles:
+        raise HTTPException(400, f"angle không hợp lệ. Hợp lệ: {valid_angles}")
+
+    # Best-effort fetch tên sản phẩm từ URL
+    fetched = await studio.fetch_product_from_url(data.url)
+    product_name = fetched["product_name"] or "Sản phẩm TikTok Shop"
+    price_note = f" | Giá: {fetched['price_text']}" if fetched["price_text"] else ""
+    image_note = f" | IMG:{fetched['image_url']}" if fetched.get("image_url") else ""
+    merged_notes = ((data.notes or "") + price_note + image_note).strip() or None
+
+    project = await studio.create_project(
+        db,
+        product_name=product_name,
+        angle=data.angle,
+        product_ref_url=fetched.get("image_url") or data.url,  # dùng image URL cho Kling nếu có
+        notes=merged_notes,
+        channel_type=data.channel_type,
+    )
+    background_tasks.add_task(_run_production_bg, str(project.id), data.channel_type)
+    return _to_out(project)
+
+
 @router.delete("/{project_id}", status_code=204)
 async def delete_project(project_id: str, db: AsyncSession = Depends(get_db)):
     """Xoá dự án."""
@@ -196,6 +253,7 @@ def _to_out(p: TikTokProject) -> dict:
         "product_name": p.product_name,
         "product_ref_url": p.product_ref_url,
         "angle": p.angle,
+        "channel_type": p.channel_type,
         "title": p.title,
         "status": p.status,
         "script_body": p.script_body,
@@ -220,7 +278,10 @@ def _to_out(p: TikTokProject) -> dict:
     }
 
 
-async def _run_production_bg(project_id: str) -> None:
+async def _run_production_bg(
+    project_id: str,
+    channel_type: str = "kenh2_real_review",
+) -> None:
     """Background task wrapper — chạy production pipeline với DB session riêng."""
     from backend.database import get_db_context
     from backend.tiktok.production import run_production
@@ -229,7 +290,7 @@ async def _run_production_bg(project_id: str) -> None:
         try:
             project = await studio.get_project(db, uuid.UUID(project_id))
             if project:
-                await run_production(db, project)
+                await run_production(db, project, channel_type=channel_type)
         except Exception as e:
             import logging
 

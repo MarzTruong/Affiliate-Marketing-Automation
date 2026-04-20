@@ -170,17 +170,16 @@ class ElevenLabsAudioGenerator:
                 len(text),
             )
 
-            # ElevenLabs async client — gọi trực tiếp
-            audio_generator = await self._client.text_to_speech.convert(
+            # ElevenLabs SDK v1+ trả về async generator trực tiếp — không await
+            audio_bytes = b""
+            async for chunk in self._client.text_to_speech.convert(
                 voice_id=self.config.voice_id,
                 text=text,
                 model_id=self.config.model_id,
                 voice_settings=voice_settings,
                 output_format=self.config.output_format,
-            )
-
-            # Collect bytes từ async generator
-            audio_bytes = b"".join([chunk async for chunk in audio_generator])
+            ):
+                audio_bytes += chunk
 
             if not audio_bytes:
                 raise ElevenLabsError("ElevenLabs trả về audio rỗng.")

@@ -35,7 +35,7 @@ class KlingConfig:
     model: str = "fal-ai/kling-video/v2/master/image-to-video"
     duration_seconds: int = 5   # 5 or 10
     aspect_ratio: str = "9:16"  # TikTok vertical
-    timeout_seconds: float = 180.0
+    timeout_seconds: float = 600.0
 
 
 @dataclass

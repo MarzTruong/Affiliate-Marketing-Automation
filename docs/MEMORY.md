@@ -3,7 +3,7 @@
 > Note: This file is autonomously updated by the AI to preserve context across sessions. Do not delete.
 
 **Repo:** `MarzTruong/Affiliate-Marketing-Automation`
-**Last updated:** 2026-04-20 (phiên 11 — OAuth fixed, 2-kênh strategy confirmed, affiliate creator API blocked by draft app)
+**Last updated:** 2026-04-21 (phiên 12 — ElevenLabs + Fal.ai wired, channel_type column, Kling image guard)
 
 ---
 
@@ -44,6 +44,16 @@
 ---
 
 ## Architecture Decisions
+
+- **[2026-04-21] `channel_type` lưu trong TikTokProject:** Thêm cột `channel_type VARCHAR(30) DEFAULT 'kenh2_real_review'` vào bảng `tiktok_projects`. Lý do: nút "Generate" frontend gọi API không có body → `channel_type` mặc định `kenh2_real_review` → chạy HeyGen path (không có key → skip clips → đốt credit nhầm). Fix: project tự nhớ kênh từ lúc tạo → `/generate` endpoint dùng `project.channel_type` làm default. Migration: `151409122f54`.
+
+- **[2026-04-21] Kling image guard — kiểm tra kích thước trước khi gọi fal.ai:** `_resolve_kling_image()` download ảnh, đọc header JPEG/PNG/WebP, kiểm tra ≥300x300px TRƯỚC khi submit job. Nếu nhỏ hơn → skip + log warning, KHÔNG raise. TikTok Shop og:image thường chỉ 260x260px (quá nhỏ). Owner cần dùng ảnh sản phẩm chất lượng cao hơn khi test Kênh 1.
+
+- **[2026-04-21] ElevenLabs SDK v1+ async generator:** `client.text_to_speech.convert()` trả về async generator, không phải coroutine. Phải dùng `async for chunk in client.tts.convert(...)` — KHÔNG `await`. Đã fix `elevenlabs_engine.py`.
+
+- **[2026-04-21] Kling timeout 600s:** fal.ai Kling jobs mất 30-90s thực tế. Timeout mặc định tăng từ 180s → 600s để tránh TimeoutError trên jobs chậm.
+
+- **[2026-04-21] Alembic stamp workaround:** Nếu bảng đã tồn tại ngoài alembic tracking, dùng `alembic stamp <latest_revision>` trước khi `alembic upgrade head`. Tránh `DuplicateTableError`.
 
 - **[2026-04-20] Chiến lược 2 kênh đã xác nhận:** Kênh 1 "Lab Gia Dụng" = faceless automation, account marz.tiktok.affiliate01@gmail.com. Kênh 2 "Đồ Này Tui Xài" = semi-auto có xuất hiện thật, account kafekaykhe@gmail.com (đã có TikTok Shop + Partner Center). Cả 2 đều đã đăng ký TikTok Shop Affiliate Creator. CCCD chỉ đăng ký được 1 TikTok Shop → kafekaykhe là seller account, Lab Gia Dụng chỉ làm affiliate (không cần shop riêng).
 

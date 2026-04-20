@@ -189,6 +189,7 @@ export interface TikTokProject {
   product_name: string;
   product_ref_url: string | null;
   angle: TikTokAngle;
+  channel_type: string;
   title: string;
   status: TikTokStatus;
   script_body: string | null;

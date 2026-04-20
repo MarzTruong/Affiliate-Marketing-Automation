@@ -56,17 +56,53 @@ async def run_production(
 
     Trả về project đã được cập nhật đầy đủ.
     """
-    project = await _step_generate_script(db, project)
+    already_has_script = project.status not in ("script_pending",) and project.script_body
+    already_has_audio = project.audio_url is not None
+
+    if not already_has_script:
+        project = await _step_generate_script(db, project)
 
     if channel_type == "kenh1_faceless":
-        project = await _step_record_hook_variants(db, project)
-        project = await _step_generate_audio_gemini(db, project)
+        if not already_has_script:
+            project = await _step_record_hook_variants(db, project)
+        if not already_has_audio:
+            project = await _step_generate_audio_gemini(db, project)
         project = await _step_generate_kling_clips(db, project)
     else:
-        project = await _step_generate_audio(db, project)
+        if not already_has_audio:
+            project = await _step_generate_audio(db, project)
         project = await _step_generate_clips(db, project)
 
+    await _notify_telegram(project, channel_type)
     return project
+
+
+async def _notify_telegram(project: TikTokProject, channel_type: str) -> None:
+    """Gửi báo cáo hoàn thành pipeline qua Telegram."""
+    try:
+        from backend.reports.telegram_reporter import send_custom_message
+
+        kenh = "Kenh 1 Faceless AI" if channel_type == "kenh1_faceless" else "Kenh 2 Real Review"
+        audio_status = "Co" if project.audio_url else "Khong"
+        clips_status = "Co" if project.clips_ready_at else "Khong"
+
+        msg = (
+            f"Pipeline hoan thanh!\n\n"
+            f"San pham: {project.product_name}\n"
+            f"Kenh: {kenh}\n"
+            f"Goc: {project.angle}\n"
+            f"Script: OK {len(project.script_body or '')} ky tu\n"
+            f"Audio: {audio_status}\n"
+            f"Clips: {clips_status}\n"
+            f"Status: {project.status}\n\n"
+            f"Vao TikTok Studio de xem va tai assets."
+        )
+
+        await send_custom_message(msg)
+        logger.info(f"[Production:{project.id}] Telegram notify da gui")
+
+    except Exception as e:
+        logger.warning(f"[Production:{project.id}] Telegram notify that bai (non-critical): {e}")
 
 
 async def _step_generate_script(db: AsyncSession, project: TikTokProject) -> TikTokProject:
@@ -322,6 +358,64 @@ async def _step_generate_audio_gemini(
     return project
 
 
+async def _resolve_kling_image(image_url: str, product_name: str) -> str | None:
+    """Kiểm tra ảnh ≥300x300. Trả về URL nếu OK, None nếu quá nhỏ."""
+    import httpx
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(image_url, follow_redirects=True)
+            resp.raise_for_status()
+            content_type = resp.headers.get("content-type", "")
+            if "image" not in content_type:
+                logger.warning(f"[Kling] URL không phải ảnh: {content_type}")
+                return None
+
+            # Đọc header ảnh để lấy kích thước (không cần Pillow)
+            data = resp.content
+            width, height = _get_image_dimensions(data)
+            if width and height:
+                if width < 300 or height < 300:
+                    logger.warning(
+                        f"[Kling] Ảnh quá nhỏ: {width}x{height}px (cần ≥300x300)"
+                    )
+                    return None
+                logger.info(f"[Kling] Ảnh OK: {width}x{height}px")
+            return image_url
+    except Exception as e:
+        logger.warning(f"[Kling] Không kiểm tra được ảnh: {e} — tiếp tục thử")
+        return image_url  # fallback: thử gửi lên Kling, để Kling tự báo lỗi
+
+
+def _get_image_dimensions(data: bytes) -> tuple[int | None, int | None]:
+    """Đọc kích thước ảnh JPEG/PNG từ header bytes — không cần Pillow."""
+    if data[:2] == b"\xff\xd8":  # JPEG
+        import struct
+        i = 2
+        while i < len(data):
+            if data[i] != 0xff:
+                break
+            marker = data[i + 1]
+            if marker in (0xC0, 0xC1, 0xC2):  # SOF markers
+                h = struct.unpack(">H", data[i + 5:i + 7])[0]
+                w = struct.unpack(">H", data[i + 7:i + 9])[0]
+                return w, h
+            length = struct.unpack(">H", data[i + 2:i + 4])[0]
+            i += 2 + length
+    elif data[:8] == b"\x89PNG\r\n\x1a\n":  # PNG
+        import struct
+        w = struct.unpack(">I", data[16:20])[0]
+        h = struct.unpack(">I", data[20:24])[0]
+        return w, h
+    elif data[:4] == b"RIFF" and data[8:12] == b"WEBP":  # WebP
+        if data[12:16] == b"VP8 ":
+            import struct
+            w = struct.unpack("<H", data[26:28])[0] & 0x3FFF
+            h = struct.unpack("<H", data[28:30])[0] & 0x3FFF
+            return w, h
+    return None, None
+
+
 async def _step_generate_kling_clips(
     db: AsyncSession, project: TikTokProject
 ) -> TikTokProject:
@@ -345,6 +439,15 @@ async def _step_generate_kling_clips(
         )
         return project
 
+    # Kiểm tra kích thước ảnh trước khi gọi Kling (tránh lãng phí credit)
+    image_url = await _resolve_kling_image(project.product_ref_url, project.product_name)
+    if not image_url:
+        logger.warning(
+            f"[Production:{project.id}] Không tìm được ảnh đủ kích thước (≥300x300) "
+            f"— bỏ qua Kling clips. Cập nhật product_ref_url thủ công để thử lại."
+        )
+        return project
+
     cfg = KlingConfig(api_key=fal_key)
     engine = KlingEngine(cfg)
 
@@ -357,12 +460,17 @@ async def _step_generate_kling_clips(
     clip_urls: list[str] = []
     for prompt in prompts:
         try:
-            result = await engine.generate(
-                image_url=project.product_ref_url, prompt=prompt
-            )
+            result = await engine.generate(image_url=image_url, prompt=prompt)
             clip_urls.append(result.video_url)
             logger.info(f"[Production:{project.id}] Kling clip: {result.video_url}")
         except Exception as e:
+            err_str = str(e)
+            if "300x300" in err_str or "image" in err_str.lower() and "small" in err_str.lower():
+                logger.error(
+                    f"[Production:{project.id}] Kling từ chối ảnh quá nhỏ: {e} "
+                    f"— dừng Kling, không retry."
+                )
+                break  # dừng loop, không raise, giữ nguyên clips đã có
             logger.error(f"[Production:{project.id}] Kling clip failed: {e}", exc_info=True)
             raise
 
