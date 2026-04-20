@@ -1,6 +1,6 @@
 # TODO — Affiliate Marketing Automation
 
-> Cập nhật lần cuối: 18/04/2026 (phiên 9 — Phase 0 smoke test + ProductScoringEngine)
+> Cập nhật lần cuối: 21/04/2026 (phiên 12 — ElevenLabs + Fal.ai wired, channel_type, Kling image guard)
 
 ---
 
@@ -95,9 +95,12 @@
 
 ### Ưu tiên cao
 - [x] **Frontend TikTok Studio** — `sidebar.tsx` (2 sections mới), `/tiktok-studio` (Kanban board), `/tiktok-studio/new` (3-step wizard), `/tiktok-studio/[id]` (4 tabs: Kịch bản, Assets, Checklist, Timeline)
-- [ ] **ElevenLabs setup thật** — clone giọng bạn (upload 1-2 phút audio sạch) → Voice ID → điền Settings
-- [ ] **HeyGen setup thật** — tạo Photo Avatar / Digital Twin → Avatar ID + Voice ID → điền Settings
-- [ ] **Test end-to-end** — chạy pipeline với `tiktok_script` → nhận Telegram thông báo link MP3 + MP4 clips
+- [x] **ElevenLabs setup thật** — API key + Voice ID đã điền, audio pipeline chạy được (giọng mặc định)
+- [ ] **ElevenLabs clone giọng** — upload 1-2 phút audio sạch giọng chủ kênh → lấy Voice ID mới → điền Settings
+- [x] **Fal.ai (Kling AI) setup** — API key đã điền, pipeline Kênh 1 đã wire
+- [ ] **Ảnh sản phẩm cho Kling** — TikTok og:image chỉ 260x260 (quá nhỏ). Cần ảnh ≥300x300px để test clips
+- [ ] **HeyGen setup thật** — tạo Photo Avatar / Digital Twin → Avatar ID + Voice ID → điền Settings (Kênh 2)
+- [x] **Test end-to-end Kênh 2** — script Claude + ElevenLabs audio + Telegram báo cáo ✅
 - [ ] **Facebook Publisher** — chờ thiết bị được tin tưởng → tạo Meta Developer App → Page Token → test đăng bài thật
 - [ ] **TikTok video upload** — tạo slide MP4 từ ảnh sản phẩm → upload vào `upload_url` → post thật (hoặc edit CapCut + upload web UI)
 
