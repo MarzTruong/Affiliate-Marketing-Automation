@@ -97,6 +97,10 @@ async def test_kenh1_pipeline_uses_gemini_tts(db, kenh1_project):
             "backend.tiktok.production._step_generate_script",
             new=AsyncMock(return_value=kenh1_project),
         ),
+        patch(
+            "backend.tiktok.production._step_compose_mp4",
+            new=AsyncMock(side_effect=lambda db, p: p),
+        ),
     ):
         result = await run_production(db, kenh1_project, channel_type="kenh1_faceless")
 
@@ -130,6 +134,10 @@ async def test_kenh1_pipeline_calls_kling_three_times(db, kenh1_project):
             "backend.tiktok.production._step_generate_script",
             new=AsyncMock(return_value=kenh1_project),
         ),
+        patch(
+            "backend.tiktok.production._step_compose_mp4",
+            new=AsyncMock(side_effect=lambda db, p: p),
+        ),
     ):
         await run_production(db, kenh1_project, channel_type="kenh1_faceless")
 
@@ -162,6 +170,10 @@ async def test_kenh1_records_three_hook_variants(db, kenh1_project):
         patch(
             "backend.tiktok.production._step_generate_script",
             new=AsyncMock(return_value=kenh1_project),
+        ),
+        patch(
+            "backend.tiktok.production._step_compose_mp4",
+            new=AsyncMock(side_effect=lambda db, p: p),
         ),
     ):
         await run_production(db, kenh1_project, channel_type="kenh1_faceless")
@@ -200,6 +212,10 @@ async def test_kenh1_hook_variants_include_primary_pattern(db, kenh1_project):
         patch(
             "backend.tiktok.production._step_generate_script",
             new=AsyncMock(return_value=kenh1_project),
+        ),
+        patch(
+            "backend.tiktok.production._step_compose_mp4",
+            new=AsyncMock(side_effect=lambda db, p: p),
         ),
     ):
         await run_production(db, kenh1_project, channel_type="kenh1_faceless")
@@ -270,6 +286,10 @@ async def test_kenh1_skips_hook_variants_when_no_content_id(db, kenh1_project):
             "backend.tiktok.production._step_generate_script",
             new=AsyncMock(return_value=kenh1_project),
         ),
+        patch(
+            "backend.tiktok.production._step_compose_mp4",
+            new=AsyncMock(side_effect=lambda db, p: p),
+        ),
     ):
         result = await run_production(db, kenh1_project, channel_type="kenh1_faceless")
 
@@ -310,6 +330,10 @@ async def test_kenh1_skips_kling_when_no_product_ref_url(db, kenh1_project):
         patch(
             "backend.tiktok.production._step_generate_script",
             new=AsyncMock(return_value=kenh1_project),
+        ),
+        patch(
+            "backend.tiktok.production._step_compose_mp4",
+            new=AsyncMock(side_effect=lambda db, p: p),
         ),
     ):
         result = await run_production(db, kenh1_project, channel_type="kenh1_faceless")

@@ -75,6 +75,11 @@ app.add_middleware(
 _AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static/audio", StaticFiles(directory=str(_AUDIO_DIR)), name="audio")
 
+# Serve composed video files tại /static/video/{filename}.mp4
+_VIDEO_DIR = Path(__file__).parent / "static" / "video"
+_VIDEO_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/static/video", StaticFiles(directory=str(_VIDEO_DIR)), name="video")
+
 app.include_router(api_v1_router, prefix="/api/v1")
 app.include_router(tag_queue_router)
 app.include_router(tiktok_shop_products_router)

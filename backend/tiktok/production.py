@@ -68,6 +68,7 @@ async def run_production(
         if not already_has_audio:
             project = await _step_generate_audio_gemini(db, project)
         project = await _step_generate_kling_clips(db, project)
+        project = await _step_compose_mp4(db, project)
     else:
         if not already_has_audio:
             project = await _step_generate_audio(db, project)
@@ -359,7 +360,15 @@ async def _step_generate_audio_gemini(
 
 
 async def _resolve_kling_image(image_url: str, product_name: str) -> str | None:
-    """Kiểm tra ảnh ≥300x300. Trả về URL nếu OK, None nếu quá nhỏ."""
+    """Chuẩn bị URL ảnh đủ ≥300x300 cho Kling.
+
+    Flow:
+    1. Download ảnh
+    2. Kiểm tra kích thước
+    3. Nếu ≥300 → trả URL gốc (fal.ai tự download từ CDN)
+    4. Nếu <300 → upscale bằng Pillow LANCZOS lên 512x512 → upload lên fal.ai CDN
+    5. Nếu không đọc được kích thước → trả URL gốc, để fal.ai tự reject
+    """
     import httpx
 
     try:
@@ -371,20 +380,80 @@ async def _resolve_kling_image(image_url: str, product_name: str) -> str | None:
                 logger.warning(f"[Kling] URL không phải ảnh: {content_type}")
                 return None
 
-            # Đọc header ảnh để lấy kích thước (không cần Pillow)
             data = resp.content
             width, height = _get_image_dimensions(data)
+
+            if width and height and (width < 300 or height < 300):
+                logger.info(
+                    f"[Kling] Ảnh {width}x{height}px nhỏ hơn 300px — tự upscale lên 512x512"
+                )
+                upscaled_url = await _upscale_and_upload(data, image_url, product_name)
+                if upscaled_url:
+                    return upscaled_url
+                logger.warning(
+                    f"[Kling] Upscale thất bại — trả URL gốc ({width}x{height}px), fal.ai có thể reject"
+                )
+                return image_url
+
             if width and height:
-                if width < 300 or height < 300:
-                    logger.warning(
-                        f"[Kling] Ảnh quá nhỏ: {width}x{height}px (cần ≥300x300)"
-                    )
-                    return None
-                logger.info(f"[Kling] Ảnh OK: {width}x{height}px")
+                logger.info(f"[Kling] Ảnh OK: {width}x{height}px — dùng URL gốc")
+            else:
+                logger.info(f"[Kling] Không đọc được kích thước — dùng URL gốc")
             return image_url
+
     except Exception as e:
         logger.warning(f"[Kling] Không kiểm tra được ảnh: {e} — tiếp tục thử")
         return image_url  # fallback: thử gửi lên Kling, để Kling tự báo lỗi
+
+
+async def _upscale_and_upload(
+    image_data: bytes, original_url: str, product_name: str
+) -> str | None:
+    """Upscale ảnh nhỏ lên ≥512x512 bằng Pillow LANCZOS → upload lên fal.ai CDN.
+
+    Trả về URL public từ fal.ai (dùng được cho Kling) hoặc None nếu fail.
+    """
+    try:
+        from io import BytesIO
+
+        import fal_client
+        from PIL import Image
+
+        img = Image.open(BytesIO(image_data))
+        if img.mode not in ("RGB", "RGBA"):
+            img = img.convert("RGB")
+
+        original_size = img.size
+        # Upscale sao cho cạnh nhỏ nhất ≥ 512px, giữ aspect ratio
+        min_side = min(img.size)
+        if min_side < 512:
+            scale = 512 / min_side
+            new_w = int(img.width * scale)
+            new_h = int(img.height * scale)
+            img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+        buf = BytesIO()
+        img.save(buf, format="JPEG", quality=90)
+        buf.seek(0)
+
+        # fal_client.upload_async là I/O blocking — chạy trong thread
+        import asyncio
+        uploaded_url = await asyncio.to_thread(
+            fal_client.upload, buf.getvalue(), "image/jpeg"
+        )
+
+        logger.info(
+            f"[Kling] Upscale {original_size[0]}x{original_size[1]} → "
+            f"{img.size[0]}x{img.size[1]}px → fal.ai CDN: {uploaded_url}"
+        )
+        return uploaded_url
+
+    except ImportError as e:
+        logger.error(f"[Kling] Thiếu Pillow hoặc fal_client: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"[Kling] Upscale/upload thất bại: {e}", exc_info=True)
+        return None
 
 
 def _get_image_dimensions(data: bytes) -> tuple[int | None, int | None]:
@@ -483,5 +552,83 @@ async def _step_generate_kling_clips(
         project.updated_at = datetime.utcnow()
         await db.commit()
         await db.refresh(project)
+
+    return project
+
+
+async def _step_compose_mp4(
+    db: AsyncSession, project: TikTokProject
+) -> TikTokProject:
+    """Bước 4 (Kênh 1): Dựng MP4 cuối từ Kling clips + Gemini TTS audio.
+
+    Plan D' Hybrid: output /static/video/tiktok_xxx.mp4 sẵn sàng để owner download + upload lên TikTok.
+    """
+    from backend.video.composer import ComposeRequest, VideoComposerError, compose_tiktok_video
+
+    logger.info(f"[Production:{project.id}] Bước 4 (Kênh 1) — Compose MP4")
+
+    # Thu thập clip URLs (Kling clips lưu tạm vào heygen_hook_url + heygen_cta_url)
+    clip_urls: list[str] = []
+    if project.heygen_hook_url:
+        clip_urls.append(project.heygen_hook_url)
+    if project.heygen_cta_url:
+        clip_urls.append(project.heygen_cta_url)
+
+    if not clip_urls:
+        logger.warning(f"[Production:{project.id}] Không có clips — bỏ qua compose MP4")
+        return project
+
+    if not project.audio_url:
+        logger.warning(f"[Production:{project.id}] Không có audio — bỏ qua compose MP4")
+        return project
+
+    # Lấy hook text từ dòng đầu tiên của script
+    hook_text = ""
+    if project.script_body:
+        lines = [l.strip() for l in project.script_body.split("\n") if l.strip()]
+        if lines:
+            # Lấy tối đa 60 ký tự cho overlay
+            hook_text = lines[0][:60]
+
+    req = ComposeRequest(
+        clip_urls=clip_urls,
+        audio_url=project.audio_url,
+        hook_text=hook_text,
+        product_name=project.product_name,
+    )
+
+    try:
+        result = await compose_tiktok_video(req)
+        project.final_video_url = result.video_url
+        project.ready_to_post_at = datetime.utcnow()
+        project.status = "ready_to_post"
+        project.updated_at = datetime.utcnow()
+        await db.commit()
+        await db.refresh(project)
+
+        logger.info(
+            f"[Production:{project.id}] MP4 sẵn sàng — {result.video_url} "
+            f"({result.duration_s:.1f}s, {result.file_size_bytes // 1024}KB)"
+        )
+
+        # Notify owner qua Telegram (Plan D' Hybrid)
+        try:
+            from backend.reports.telegram_reporter import send_tiktok_ready_to_post
+
+            caption_text = project.script_body or project.title or project.product_name
+            await send_tiktok_ready_to_post(
+                project_id=str(project.id),
+                product_name=project.product_name,
+                video_path=result.video_path,
+                caption_text=caption_text,
+                affiliate_url=project.product_ref_url,
+                duration_s=result.duration_s,
+            )
+        except Exception as notify_err:
+            logger.warning(f"[Production:{project.id}] Telegram notify thất bại (non-fatal): {notify_err}")
+
+    except VideoComposerError as e:
+        logger.error(f"[Production:{project.id}] Compose MP4 thất bại: {e}", exc_info=True)
+        raise
 
     return project

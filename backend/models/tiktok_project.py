@@ -60,6 +60,10 @@ class TikTokProject(Base):
     # → b_roll_pending → editing → uploaded → live
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="script_pending")
 
+    # ── Video cuối (Plan D' Hybrid) ──────────────────────────────────────
+    final_video_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    ready_to_post_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
     # ── Sau khi upload ───────────────────────────────────────────────────
     tiktok_video_id: Mapped[str | None] = mapped_column(String(200), nullable=True)
     tiktok_video_url: Mapped[str | None] = mapped_column(String(500), nullable=True)

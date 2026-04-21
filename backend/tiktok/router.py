@@ -1,9 +1,10 @@
 """TikTok Studio API Router — prefix /api/v1/tiktok-studio."""
 
+import json
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -237,16 +238,73 @@ async def create_from_url(
     return _to_out(project)
 
 
-@router.post("/test-tts", response_model=TestTTSResponse)
-async def test_tts(body: TestTTSRequest):
+def _parse_tts_body(raw_body: bytes) -> str:
+    """Parse request body — chấp nhận cả JSON {"text": "..."} lẫn raw text.
+
+    UX thân thiện cho user non-dev: có thể paste text trực tiếp vào Swagger
+    không cần bọc JSON. Nếu body bắt đầu bằng '{' thì thử JSON trước,
+    fallback về raw text nếu parse fail.
+    """
+    if not raw_body:
+        return ""
+    body_str = raw_body.decode("utf-8", errors="replace").strip()
+    if not body_str:
+        return ""
+    if body_str.startswith("{"):
+        try:
+            data = json.loads(body_str)
+            if isinstance(data, dict) and "text" in data:
+                return str(data["text"]).strip()
+        except json.JSONDecodeError:
+            pass
+    return body_str
+
+
+@router.post(
+    "/test-tts",
+    response_model=TestTTSResponse,
+    openapi_extra={
+        "requestBody": {
+            "required": True,
+            "description": (
+                "Gõ text tiếng Việt cần đọc vào đây. Chấp nhận 2 kiểu:\n"
+                "- Plain text: `Xin chào, đây là giọng clone.` (dễ nhất)\n"
+                '- JSON: `{"text": "Xin chào, đây là giọng clone."}`'
+            ),
+            "content": {
+                "text/plain": {
+                    "schema": {"type": "string"},
+                    "example": "Xin chào, đây là bài test giọng đọc tiếng Việt.",
+                },
+                "application/json": {
+                    "schema": {"$ref": "#/components/schemas/TestTTSRequest"},
+                    "example": {"text": "Xin chào, đây là bài test giọng đọc tiếng Việt."},
+                },
+            },
+        }
+    },
+)
+async def test_tts(request: Request):
     """Test ElevenLabs TTS trực tiếp với text tùy ý — không cần project.
 
     Dùng để kiểm tra giọng + model trước khi generate video thật.
+
+    **UX note:** Có thể paste **text thuần** hoặc **JSON** đều chạy được.
+    Nếu thấy lỗi "Body rỗng" → xóa example mặc định và gõ lại.
     """
     from backend.ai_engine.elevenlabs_engine import (
         ElevenLabsError,
         create_elevenlabs_engine,
     )
+
+    raw_body = await request.body()
+    text = _parse_tts_body(raw_body)
+
+    if not text:
+        raise HTTPException(
+            400,
+            "Body rỗng. Gõ text tiếng Việt cần đọc (có thể paste thẳng, không cần bọc JSON).",
+        )
 
     engine = create_elevenlabs_engine()
     await engine.initialize()
@@ -258,7 +316,7 @@ async def test_tts(body: TestTTSRequest):
         )
 
     try:
-        result = await engine.generate_audio(text=body.text, filename_prefix="test_tts")
+        result = await engine.generate_audio(text=text, filename_prefix="test_tts")
     except ElevenLabsError as e:
         raise HTTPException(400, str(e)) from e
 

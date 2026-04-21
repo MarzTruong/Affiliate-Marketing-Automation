@@ -457,6 +457,88 @@ async def send_tiktok_draft_alert(
     await _send(text)
 
 
+async def _send_video(video_bytes: bytes, filename: str, caption: str = "") -> bool:
+    """Gửi file MP4 tới Telegram channel qua sendVideo API."""
+    if not settings.telegram_bot_token or not settings.telegram_channel_id:
+        logger.warning("Telegram chưa cấu hình — bỏ qua gửi video")
+        return False
+
+    url = f"{TELEGRAM_API}/bot{settings.telegram_bot_token}/sendVideo"
+    try:
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            resp = await client.post(
+                url,
+                data={
+                    "chat_id": settings.telegram_channel_id,
+                    "caption": caption[:1024],  # Telegram caption limit
+                    "parse_mode": "HTML",
+                    "supports_streaming": "true",
+                },
+                files={"video": (filename, video_bytes, "video/mp4")},
+            )
+            if resp.status_code != 200:
+                logger.error(f"Telegram sendVideo lỗi {resp.status_code}: {resp.text[:200]}")
+                return False
+        return True
+    except Exception as e:
+        logger.error(f"Gửi Telegram video thất bại: {e}")
+        return False
+
+
+async def send_tiktok_ready_to_post(
+    project_id: str,
+    product_name: str,
+    video_path: str,
+    caption_text: str,
+    affiliate_url: str | None = None,
+    duration_s: float = 0.0,
+) -> None:
+    """Gửi MP4 + caption qua Telegram khi video Kênh 1 sẵn sàng đăng.
+
+    Owner nhận video trực tiếp trong Telegram, download và upload lên TikTok (~1 phút).
+    """
+    from pathlib import Path
+
+    video_file = Path(video_path)
+    if not video_file.exists():
+        logger.error(f"[TikTok Ready] File không tồn tại: {video_path}")
+        await _send(
+            f"⚠️ <b>Video lỗi</b>\n"
+            f"Project: <code>{project_id}</code>\n"
+            f"File không tồn tại: <code>{video_path}</code>"
+        )
+        return
+
+    video_bytes = video_file.read_bytes()
+    size_mb = len(video_bytes) / (1024 * 1024)
+
+    # Build caption
+    caption_lines = [
+        f"✅ <b>Video sẵn sàng đăng TikTok!</b>",
+        f"📦 <b>{product_name}</b>",
+        f"⏱ {duration_s:.1f}s | 📁 {size_mb:.1f}MB",
+        "",
+        "📋 <b>Caption TikTok:</b>",
+        caption_text[:400],
+    ]
+    if affiliate_url:
+        caption_lines += ["", f'🔗 <b>Link affiliate:</b> <a href="{affiliate_url}">Nhấn vào đây</a>']
+    caption_lines += ["", "👉 <i>Tải video → upload lên TikTok → dán caption → đăng công khai</i>"]
+
+    caption = "\n".join(caption_lines)
+    filename = f"tiktok_{product_name[:20].replace(' ', '_').lower()}_{project_id[:8]}.mp4"
+
+    ok = await _send_video(video_bytes, filename, caption)
+    if not ok:
+        # Fallback: gửi text thông báo nếu upload video thất bại
+        await _send(
+            f"✅ <b>Video sẵn sàng đăng TikTok!</b>\n"
+            f"📦 {product_name}\n"
+            f"⚠️ Không gửi được file qua Telegram.\n"
+            f"📂 Lấy file tại: <code>{video_path}</code>"
+        )
+
+
 async def send_custom_message(message: str) -> bool:
     """Gửi message tuỳ chỉnh — dùng từ CBD Agent."""
     return await _send(message)
