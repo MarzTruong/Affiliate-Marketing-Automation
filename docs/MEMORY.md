@@ -3,7 +3,7 @@
 > Note: This file is autonomously updated by the AI to preserve context across sessions. Do not delete.
 
 **Repo:** `MarzTruong/Affiliate-Marketing-Automation`
-**Last updated:** 2026-04-21 (phiên 13 — ElevenLabs eleven_v3 fix, test-tts endpoint, Docker orphan containers)
+**Last updated:** 2026-04-22 (phiên 14 — Plan D' Hybrid hoàn tất, TikTok dev app setup, GitHub Pages verification)
 
 ---
 
@@ -56,6 +56,14 @@
 - **[2026-04-21] ElevenLabs SDK v1+ async generator:** `client.text_to_speech.convert()` trả về async generator, không phải coroutine. Phải dùng `async for chunk in client.tts.convert(...)` — KHÔNG `await`. Đã fix `elevenlabs_engine.py`.
 
 - **[2026-04-21] Kling timeout 600s:** fal.ai Kling jobs mất 30-90s thực tế. Timeout mặc định tăng từ 180s → 600s để tránh TimeoutError trên jobs chậm.
+
+- **[2026-04-22] TikTok URL verification — URL prefix method:** Dùng "URL prefix" (không phải "Domain" vì `github.io` không cho thêm DNS TXT record). Nhập base URL có trailing slash: `https://marztruong.github.io/Affiliate-Marketing-Automation/`. TikTok tạo file `.txt` mới mỗi lần bắt đầu verification → đặt file vào `docs/` → push GitHub → chờ 2-3 phút → Verify. Verify 1 lần cover toàn bộ sub-URLs (terms, privacy, web).
+
+- **[2026-04-22] Plan D' Hybrid hoàn tất (S1–S3):** ffmpeg composer (`backend/video/composer.py`) dùng `imageio-ffmpeg` bundled binary. Pipeline Kênh 1: Kling clips → compose MP4 (1080×1920, H.264) → Telegram gửi file video cho owner → owner upload thủ công (~1 phút). `final_video_url` + `ready_to_post_at` trong `tiktok_projects`. `/static/video/` served qua FastAPI StaticFiles. 236 tests pass.
+
+- **[2026-04-22] Kling image auto-upscale:** TikTok og:image thường 260×260px (nhỏ hơn yêu cầu 300px của Kling). `_upscale_and_upload()` dùng Pillow LANCZOS resize lên 512px minimum side → upload lên fal.ai CDN qua `fal_client.upload()` → trả URL public. Nếu upscale fail → fallback dùng URL gốc.
+
+- **[2026-04-22] test-tts endpoint nhận raw text body:** Endpoint `POST /api/v1/tiktok-studio/test-tts` đổi từ Pydantic model sang `request: Request` + `await request.body()`. Hàm `_parse_tts_body()` nhận cả JSON `{"text":"..."}` lẫn plain text thuần. UX-friendly cho owner non-dev dùng Swagger.
 
 - **[2026-04-21] Alembic stamp workaround:** Nếu bảng đã tồn tại ngoài alembic tracking, dùng `alembic stamp <latest_revision>` trước khi `alembic upgrade head`. Tránh `DuplicateTableError`.
 

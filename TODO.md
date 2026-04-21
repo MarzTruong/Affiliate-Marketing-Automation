@@ -1,6 +1,6 @@
 # TODO — Affiliate Marketing Automation
 
-> Cập nhật lần cuối: 21/04/2026 (phiên 13 — ElevenLabs model fix eleven_v3, test-tts endpoint, fix Docker orphan containers)
+> Cập nhật lần cuối: 22/04/2026 (phiên 14 — Plan D' Hybrid S1–S3 hoàn tất, TikTok dev app setup guide)
 
 ---
 
@@ -100,11 +100,15 @@
 - [ ] **ElevenLabs test-tts** — test endpoint `POST /api/v1/tiktok-studio/test-tts` với `{"text": "..."}` để verify giọng tiếng Việt
 - [ ] **ElevenLabs clone giọng** — upload 1-2 phút audio sạch giọng chủ kênh → lấy Voice ID mới → điền Settings
 - [x] **Fal.ai (Kling AI) setup** — API key đã điền, pipeline Kênh 1 đã wire
-- [ ] **Ảnh sản phẩm cho Kling** — TikTok og:image chỉ 260x260 (quá nhỏ). Cần ảnh ≥300x300px để test clips
-- [ ] **HeyGen setup thật** — tạo Photo Avatar / Digital Twin → Avatar ID + Voice ID → điền Settings (Kênh 2)
-- [x] **Test end-to-end Kênh 2** — script Claude + ElevenLabs audio + Telegram báo cáo ✅
+- [x] **Ảnh sản phẩm cho Kling** — Auto-upscale Pillow LANCZOS + fal_client.upload() nếu ảnh <300px ✅
+- [x] **test-tts nhận raw text** — endpoint nhận cả JSON lẫn plain text body ✅
+- [x] **Plan D' Hybrid S1** — `backend/video/composer.py` ffmpeg pipeline 9:16 MP4 ✅
+- [x] **Plan D' Hybrid S2** — `_step_compose_mp4` wire vào Kênh 1 pipeline + `/static/video/` StaticFiles ✅
+- [x] **Plan D' Hybrid S3** — Telegram `send_tiktok_ready_to_post()` gửi MP4 + caption cho owner ✅
+- [ ] **Plan D' S4** — Frontend Kanban thêm cột "Sẵn sàng đăng" + nút Download MP4 + Copy caption
+- [ ] **HeyGen removal** — xóa HeyGen engine khỏi project (không dùng cho Kênh 2 nữa)
+- [ ] **TikTok dev app — submit review** — upload demo video (~2-3 phút screen record) → Submit for review
 - [ ] **Facebook Publisher** — chờ thiết bị được tin tưởng → tạo Meta Developer App → Page Token → test đăng bài thật
-- [ ] **TikTok video upload** — tạo slide MP4 từ ảnh sản phẩm → upload vào `upload_url` → post thật (hoặc edit CapCut + upload web UI)
 
 ### Ưu tiên trung bình
 - [ ] **Multi-account support** — nhiều Facebook Page, nhiều WordPress site (phức tạp: DB migration + UI + publisher routing)
