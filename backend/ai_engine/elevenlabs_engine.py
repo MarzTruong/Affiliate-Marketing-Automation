@@ -58,8 +58,8 @@ class ElevenLabsConfig:
     api_key: str = ""
     voice_id: str = ""  # Voice ID sau khi clone giọng trên ElevenLabs
 
-    # Model — eleven_multilingual_v2 hỗ trợ tiếng Việt tốt nhất
-    model_id: str = "eleven_multilingual_v2"
+    # Model — eleven_v3 là model mới nhất, tốt nhất cho tiếng Việt
+    model_id: str = "eleven_v3"
 
     # Voice settings
     stability: float = 0.5  # 0.0–1.0: thấp = đa dạng, cao = ổn định
@@ -169,6 +169,8 @@ class ElevenLabsAudioGenerator:
                 self.config.model_id,
                 len(text),
             )
+            # Log 150 ký tự đầu để debug text extraction
+            logger.info("[ElevenLabsEngine] Text preview: %r", text[:150])
 
             # ElevenLabs SDK v1+ trả về async generator trực tiếp — không await
             audio_bytes = b""
@@ -293,13 +295,16 @@ def extract_voice_text(script_body: str) -> str:
             voice_lines.append(cleaned)
 
     if not voice_lines:
-        # Fallback: trả về toàn bộ body nếu không parse được bảng
         logger.warning(
-            "[ElevenLabsEngine] Không parse được VOICE table — dùng toàn bộ script body."
+            "[ElevenLabsEngine] Không parse được VOICE table — fallback toàn bộ script body. "
+            "Preview: %r", script_body[:200]
         )
         return script_body.strip()
 
-    return " ".join(voice_lines)
+    result = " ".join(voice_lines)
+    logger.info("[ElevenLabsEngine] extract_voice_text — %d dòng, %d ký tự. Preview: %r",
+                len(voice_lines), len(result), result[:150])
+    return result
 
 
 # ── Factory ───────────────────────────────────────────────────────────────────
@@ -312,5 +317,6 @@ def create_elevenlabs_engine() -> ElevenLabsAudioGenerator:
     config = ElevenLabsConfig(
         api_key=settings.elevenlabs_api_key,
         voice_id=settings.elevenlabs_voice_id,
+        model_id=settings.elevenlabs_model_id or "eleven_v3",
     )
     return ElevenLabsAudioGenerator(config=config)

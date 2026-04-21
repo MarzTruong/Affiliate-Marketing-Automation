@@ -145,6 +145,12 @@ CREDENTIAL_KEYS: list[dict] = [
         "label": "ElevenLabs Voice ID",
         "sensitive": False,
     },
+    {
+        "key": "ELEVENLABS_MODEL_ID",
+        "group": "elevenlabs",
+        "label": "ElevenLabs Model ID",
+        "sensitive": False,
+    },
 ]
 
 KNOWN_KEYS = {item["key"] for item in CREDENTIAL_KEYS}

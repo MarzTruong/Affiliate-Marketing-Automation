@@ -86,6 +86,18 @@ class PerformanceUpdate(BaseModel):
     tiktok_video_id: str | None = None
 
 
+class TestTTSRequest(BaseModel):
+    text: str = "Xin chào, đây là bài test giọng đọc tiếng Việt."
+
+
+class TestTTSResponse(BaseModel):
+    audio_url: str
+    voice_id: str
+    model_id: str
+    char_count: int
+    duration_s: float
+
+
 # ── Endpoints ──────────────────────────────────────────────────────────────
 
 
@@ -223,6 +235,40 @@ async def create_from_url(
     )
     background_tasks.add_task(_run_production_bg, str(project.id), data.channel_type)
     return _to_out(project)
+
+
+@router.post("/test-tts", response_model=TestTTSResponse)
+async def test_tts(body: TestTTSRequest):
+    """Test ElevenLabs TTS trực tiếp với text tùy ý — không cần project.
+
+    Dùng để kiểm tra giọng + model trước khi generate video thật.
+    """
+    from backend.ai_engine.elevenlabs_engine import (
+        ElevenLabsError,
+        create_elevenlabs_engine,
+    )
+
+    engine = create_elevenlabs_engine()
+    await engine.initialize()
+
+    if not engine.is_available():
+        raise HTTPException(
+            503,
+            "ElevenLabs chưa cấu hình. Vào Settings → ElevenLabs → điền API Key và Voice ID.",
+        )
+
+    try:
+        result = await engine.generate_audio(text=body.text, filename_prefix="test_tts")
+    except ElevenLabsError as e:
+        raise HTTPException(400, str(e)) from e
+
+    return TestTTSResponse(
+        audio_url=result.audio_url,
+        voice_id=result.voice_id,
+        model_id=engine.config.model_id,
+        char_count=result.char_count,
+        duration_s=result.duration_s,
+    )
 
 
 @router.delete("/{project_id}", status_code=204)

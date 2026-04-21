@@ -4,7 +4,7 @@ Dùng mock để không gọi API thật — test logic, error handling, và voi
 """
 
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -133,7 +133,7 @@ async def test_generate_audio_success(engine_valid, tmp_path):
     async def fake_audio_generator():
         yield fake_audio_bytes
 
-    mock_tts = AsyncMock()
+    mock_tts = MagicMock()
     mock_tts.convert.return_value = fake_audio_generator()
 
     mock_client = MagicMock()
@@ -173,9 +173,9 @@ async def test_generate_audio_truncates_long_text(engine_valid, tmp_path):
     async def fake_audio_gen():
         yield b"fake_mp3"
 
-    mock_tts = AsyncMock()
+    mock_tts = MagicMock()
 
-    async def capture_convert(**kwargs):
+    def capture_convert(**kwargs):
         received_texts.append(kwargs.get("text", ""))
         return fake_audio_gen()
 
@@ -204,7 +204,7 @@ async def test_generate_audio_rate_limit_error(engine_valid):
         raise Exception("429 rate limit exceeded quota")
         yield b""  # noqa: unreachable — needed for async generator
 
-    mock_tts = AsyncMock()
+    mock_tts = MagicMock()
     mock_tts.convert.return_value = fake_audio_gen()
     engine_valid._client.text_to_speech = mock_tts
 
@@ -223,7 +223,7 @@ async def test_generate_audio_auth_error(engine_valid):
         raise Exception("401 unauthorized invalid api key")
         yield b""  # noqa: unreachable
 
-    mock_tts = AsyncMock()
+    mock_tts = MagicMock()
     mock_tts.convert.return_value = fake_audio_gen()
     engine_valid._client.text_to_speech = mock_tts
 
@@ -307,5 +307,6 @@ def test_create_elevenlabs_engine_returns_engine():
     ):
         mock_settings.elevenlabs_api_key = "test_key"
         mock_settings.elevenlabs_voice_id = "test_voice"
+        mock_settings.elevenlabs_model_id = "eleven_v3"
         engine = create_elevenlabs_engine()
     assert isinstance(engine, ElevenLabsAudioGenerator)

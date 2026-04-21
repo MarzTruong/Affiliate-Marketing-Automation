@@ -30,6 +30,7 @@ PLATFORM_SETTING_KEYS = {
     "BANNERBEAR_DEFAULT_TEMPLATE_ID",
     "ELEVENLABS_API_KEY",
     "ELEVENLABS_VOICE_ID",
+    "ELEVENLABS_MODEL_ID",
     "HEYGEN_API_KEY",
     "HEYGEN_AVATAR_ID",
     "HEYGEN_VOICE_ID",
@@ -101,7 +102,8 @@ class Settings(BaseSettings):
 
     # ElevenLabs
     elevenlabs_api_key: str = ""
-    elevenlabs_voice_id: str = ""  # Voice ID sau khi clone giọng trên ElevenLabs
+    elevenlabs_voice_id: str = ""
+    elevenlabs_model_id: str = "eleven_v3"  # Eleven V3 — model mới nhất, tốt nhất cho tiếng Việt
 
     # HeyGen
     heygen_api_key: str = ""
