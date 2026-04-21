@@ -1,6 +1,6 @@
 # TODO — Affiliate Marketing Automation
 
-> Cập nhật lần cuối: 21/04/2026 (phiên 12 — ElevenLabs + Fal.ai wired, channel_type, Kling image guard)
+> Cập nhật lần cuối: 21/04/2026 (phiên 13 — ElevenLabs model fix eleven_v3, test-tts endpoint, fix Docker orphan containers)
 
 ---
 
@@ -96,6 +96,8 @@
 ### Ưu tiên cao
 - [x] **Frontend TikTok Studio** — `sidebar.tsx` (2 sections mới), `/tiktok-studio` (Kanban board), `/tiktok-studio/new` (3-step wizard), `/tiktok-studio/[id]` (4 tabs: Kịch bản, Assets, Checklist, Timeline)
 - [x] **ElevenLabs setup thật** — API key + Voice ID đã điền, audio pipeline chạy được (giọng mặc định)
+- [x] **ElevenLabs model fix** — đổi sang `eleven_v3` (model mới nhất), configurable từ Settings UI, test-tts endpoint
+- [ ] **ElevenLabs test-tts** — test endpoint `POST /api/v1/tiktok-studio/test-tts` với `{"text": "..."}` để verify giọng tiếng Việt
 - [ ] **ElevenLabs clone giọng** — upload 1-2 phút audio sạch giọng chủ kênh → lấy Voice ID mới → điền Settings
 - [x] **Fal.ai (Kling AI) setup** — API key đã điền, pipeline Kênh 1 đã wire
 - [ ] **Ảnh sản phẩm cho Kling** — TikTok og:image chỉ 260x260 (quá nhỏ). Cần ảnh ≥300x300px để test clips

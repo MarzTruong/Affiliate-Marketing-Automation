@@ -3,7 +3,7 @@
 > Note: This file is autonomously updated by the AI to preserve context across sessions. Do not delete.
 
 **Repo:** `MarzTruong/Affiliate-Marketing-Automation`
-**Last updated:** 2026-04-21 (phiên 12 — ElevenLabs + Fal.ai wired, channel_type column, Kling image guard)
+**Last updated:** 2026-04-21 (phiên 13 — ElevenLabs eleven_v3 fix, test-tts endpoint, Docker orphan containers)
 
 ---
 
@@ -44,6 +44,10 @@
 ---
 
 ## Architecture Decisions
+
+- **[2026-04-21] Docker orphan containers chặn dev server:** Khi chạy `docker-compose up -d postgres redis`, Docker cũng khởi lại các orphan containers cũ (`affiliate_frontend`, `affiliate_nginx`, `affiliate_worker`, `affiliate_backend`) chiếm port 3000 và 80. Fix: `docker stop affiliate_frontend affiliate_nginx affiliate_worker affiliate_backend` trước khi chạy `npm run dev`. Chỉ cần postgres + redis từ Docker.
+
+- **[2026-04-21] ElevenLabs model phải là `eleven_v3` + đọc từ settings:** Model cũ `eleven_multilingual_v2` hardcoded gây audio tiếng Việt bị lỗi. Fix: đổi default sang `eleven_v3`, thêm `ELEVENLABS_MODEL_ID` vào `PLATFORM_SETTING_KEYS` và Settings class, `create_elevenlabs_engine()` đọc từ `settings.elevenlabs_model_id`. Test qua `POST /api/v1/tiktok-studio/test-tts` với body `{"text": "..."}`.
 
 - **[2026-04-21] `channel_type` lưu trong TikTokProject:** Thêm cột `channel_type VARCHAR(30) DEFAULT 'kenh2_real_review'` vào bảng `tiktok_projects`. Lý do: nút "Generate" frontend gọi API không có body → `channel_type` mặc định `kenh2_real_review` → chạy HeyGen path (không có key → skip clips → đốt credit nhầm). Fix: project tự nhớ kênh từ lúc tạo → `/generate` endpoint dùng `project.channel_type` làm default. Migration: `151409122f54`.
 
