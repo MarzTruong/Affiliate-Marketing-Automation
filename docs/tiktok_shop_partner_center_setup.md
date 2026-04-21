@@ -1,4 +1,28 @@
-# TikTok Shop Developer — Hướng dẫn Apply (Vietnam)
+# TikTok Shop Partner Center — Setup Guide
+> Hướng dẫn đăng ký **partner.tiktokshop.com** để lấy credentials cho Affiliate & Shop API.
+> Guide còn lại: [TikTok Content Posting API Setup](tiktok_content_posting_api_setup.md)
+
+---
+
+## Phân biệt 2 platform TikTok
+
+> **Quan trọng:** Đây là 2 hệ thống hoàn toàn riêng biệt — token, credentials, OAuth flow đều KHÔNG dùng chung được.
+
+| | TikTok for Developers | TikTok Shop Partner Center |
+|---|---|---|
+| **URL** | developers.tiktok.com | partner.tiktokshop.com |
+| **Mục đích trong dự án** | Upload/đăng video lên TikTok | Lấy sản phẩm affiliate, track đơn & hoa hồng |
+| **API endpoint** | `open.tiktokapis.com/v2` | `open-api.tiktokglobalshop.com` |
+| **Đăng nhập bằng** | Tài khoản TikTok cá nhân | Email mới (tạo riêng) |
+| **Loại credentials** | Client Key + Client Secret | App Key + App Secret |
+| **Settings key trong DB** | `tiktok_client_key` / `tiktok_client_secret` | `tiktok_shop_app_key` / `tiktok_shop_app_secret` |
+| **Xác thực người dùng** | OAuth 2.0 (user cấp quyền) | App Key tĩnh (không cần user login) |
+| **Thời gian duyệt app** | 3–7 ngày làm việc | 2–5 ngày làm việc |
+| **Trạng thái hiện tại** | ✅ App tạo xong, chờ upload demo video → submit | ⏳ Chưa thực hiện |
+
+---
+
+## Thông tin chung
 
 > **Mục đích:** Giúp owner (Non-Dev) tự tay đăng ký TikTok Shop Partner Center để lấy API credentials.
 > **Nền tảng:** https://partner.tiktokshop.com

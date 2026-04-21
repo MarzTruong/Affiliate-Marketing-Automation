@@ -1,5 +1,24 @@
-# TikTok Developer App Setup Guide
-> Hướng dẫn hoàn tất setup app tại developers.tiktok.com cho dự án Affiliate Automation
+# TikTok for Developers — Setup Guide (Content Posting API)
+> Hướng dẫn hoàn tất setup app tại **developers.tiktok.com** để upload video lên TikTok tự động.
+> Guide còn lại: [TikTok Shop Partner Center Setup](tiktok_shop_partner_center_setup.md)
+
+---
+
+## Phân biệt 2 platform TikTok
+
+> **Quan trọng:** Đây là 2 hệ thống hoàn toàn riêng biệt — token, credentials, OAuth flow đều KHÔNG dùng chung được.
+
+| | TikTok for Developers | TikTok Shop Partner Center |
+|---|---|---|
+| **URL** | developers.tiktok.com | partner.tiktokshop.com |
+| **Mục đích trong dự án** | Upload/đăng video lên TikTok | Lấy sản phẩm affiliate, track đơn & hoa hồng |
+| **API endpoint** | `open.tiktokapis.com/v2` | `open-api.tiktokglobalshop.com` |
+| **Đăng nhập bằng** | Tài khoản TikTok cá nhân | Email mới (tạo riêng) |
+| **Loại credentials** | Client Key + Client Secret | App Key + App Secret |
+| **Settings key trong DB** | `tiktok_client_key` / `tiktok_client_secret` | `tiktok_shop_app_key` / `tiktok_shop_app_secret` |
+| **Xác thực người dùng** | OAuth 2.0 (user cấp quyền) | App Key tĩnh (không cần user login) |
+| **Thời gian duyệt app** | 3–7 ngày làm việc | 2–5 ngày làm việc |
+| **Trạng thái hiện tại** | ✅ App tạo xong, chờ upload demo video → submit | ⏳ Chưa thực hiện |
 
 ---
 
