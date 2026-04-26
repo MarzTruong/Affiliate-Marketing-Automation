@@ -13,7 +13,7 @@ from backend.affiliate.publishers.telegram import TelegramPublisher
 from backend.affiliate.publishers.wordpress import WordPressPublisher
 from backend.models.content import ContentPiece
 from backend.models.publication import Publication
-from backend.tiktok.publisher import TikTokPublisher
+from backend.tiktok.kenh1_publisher import TikTokPublisher
 
 logger = logging.getLogger(__name__)
 

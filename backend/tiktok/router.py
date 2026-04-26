@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.database import get_db
 from backend.models.tiktok_project import TikTokProject
-from backend.tiktok import studio
+from backend.tiktok import kenh2_studio as studio
 
 router = APIRouter()
 

@@ -35,7 +35,7 @@ _FAKE_KLING_RESULT = KlingResult(
 @pytest_asyncio.fixture
 async def kenh1_project(db):
     """A TikTokProject with content_id and script_body set (required for full Kênh 1 run)."""
-    from backend.tiktok.studio import create_project
+    from backend.tiktok.kenh2_studio import create_project
 
     project = await create_project(
         db,

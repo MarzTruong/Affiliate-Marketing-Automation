@@ -107,7 +107,10 @@
       "WebFetch(domain:elfsight.com)",
       "WebFetch(domain:developers.apideck.com)",
       "WebFetch(domain:blog.constacloud.com)",
-      "WebFetch(domain:partner.us.tiktokshop.com)"
+      "WebFetch(domain:partner.us.tiktokshop.com)",
+      "Bash(mkdir -p docs/operations docs/content docs/setup)",
+      "Bash(git mv *)",
+      "Bash(git commit -m ' *)"
     ]
   },
   "hooks": {
