@@ -80,6 +80,11 @@ _VIDEO_DIR = Path(__file__).parent / "static" / "video"
 _VIDEO_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static/video", StaticFiles(directory=str(_VIDEO_DIR)), name="video")
 
+# Serve TikTok domain verification files tại /tiktok/{filename}.txt
+_ROOT_STATIC_DIR = Path(__file__).parent / "static" / "root"
+_ROOT_STATIC_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/tiktok", StaticFiles(directory=str(_ROOT_STATIC_DIR)), name="tiktok_verify")
+
 app.include_router(api_v1_router, prefix="/api/v1")
 app.include_router(tag_queue_router)
 app.include_router(tiktok_shop_products_router)
