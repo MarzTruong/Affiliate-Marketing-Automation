@@ -1,17 +1,4 @@
 {
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".venv/Scripts/python.exe scripts/check_fail_loud.py"
-          }
-        ]
-      }
-    ]
-  },
   "permissions": {
     "allow": [
       "Bash(npm --version)",
@@ -38,8 +25,8 @@
       "Bash(docker ps:*)",
       "Bash(curl -s -o /dev/null -w \"Frontend: %{http_code}\" http://localhost:3000)",
       "Bash(curl -s -X POST http://localhost:8000/api/v1/campaigns -H \"Content-Type: application/json\" -d '{\"\"name\"\": \"\"Shopee Thoi Trang Q2 2026\"\", \"\"platform\"\": \"\"shopee\"\", \"\"target_category\"\": \"\"thoi_trang\"\"}')",
-      "Bash(.venv/Scripts/python.exe -c \"from backend.connectors import get_connector; print\\(''Connectors OK:'', [p for p in [''shopee'',''lazada'',''tiktok_shop'',''shopback'',''accesstrade'']]\\)\")",
-      "Bash(.venv/Scripts/python.exe -c \"from backend.publisher import get_publisher, publish_content; print\\(''Publisher OK''\\)\")",
+      "Bash(.venv/Scripts/python.exe -c \"from backend.affiliate.connectors import get_connector; print\\(''Connectors OK:'', [p for p in [''shopee'',''shopback'',''accesstrade'']]\\)\")",
+      "Bash(.venv/Scripts/python.exe -c \"from backend.affiliate.publishers.posting_service import get_publisher, publish_content; print\\(''Publisher OK''\\)\")",
       "Bash(.venv/Scripts/python.exe -c \"from backend.api.v1 import router; print\\(''API routes:'', [r.path for r in router.routes][:15]\\)\")",
       "Bash(.venv/Scripts/python.exe -c \"from backend.api.v1 import router; print\\(''All routes:'', [r.path for r in router.routes]\\)\")",
       "Bash(npx next:*)",
@@ -110,7 +97,30 @@
       "Bash(npm run:*)",
       "Bash(taskkill:*)",
       "Bash(git -C \"E:/.claude/Affiliate Marketing Automation\" remote -v)",
-      "Bash(docker-compose up *)"
+      "Bash(docker-compose up *)",
+      "WebFetch(domain:developers.tiktok.com)",
+      "Bash(\"E:\\\\.claude\\\\Affiliate Marketing Automation\\\\.venv\\\\Scripts\\\\python.exe\" -c \"from backend.models.content import Content; print\\(Content.__tablename__\\)\")",
+      "Bash(\"E:\\\\.claude\\\\Affiliate Marketing Automation\\\\.venv\\\\Scripts\\\\python.exe\" -c \"from backend.models.content import ContentPiece; print\\(ContentPiece.__tablename__\\)\")",
+      "Bash('E:\\\\.claude\\\\Affiliate Marketing Automation\\\\.venv\\\\Scripts\\\\python.exe' -c ' *)",
+      "WebSearch",
+      "WebFetch(domain:partner.tiktokshop.com)",
+      "WebFetch(domain:elfsight.com)",
+      "WebFetch(domain:developers.apideck.com)",
+      "WebFetch(domain:blog.constacloud.com)",
+      "WebFetch(domain:partner.us.tiktokshop.com)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".venv/Scripts/python.exe scripts/check_fail_loud.py"
+          }
+        ]
+      }
     ]
   }
 }
