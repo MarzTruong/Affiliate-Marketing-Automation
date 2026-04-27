@@ -1,6 +1,6 @@
 # TODO — Affiliate Marketing Automation
 
-> Cập nhật lần cuối: 22/04/2026 (phiên 14 — Plan D' Hybrid S1–S3 hoàn tất, TikTok dev app setup guide)
+> Cập nhật lần cuối: 27/04/2026 (phiên 15 — CLAUDE.md v2, repo audit & restructure, HMAC bug fix, 2-channel code split)
 
 ---
 
@@ -125,6 +125,18 @@
 ---
 
 ## Lịch sử hoàn thành (mới → cũ)
+
+### Phiên 15 (27/04/2026) — CLAUDE.md v2 + Repo Audit & Restructure
+- [x] **CLAUDE.md v2** — nâng cấp lên Multi-Agent Orchestration Constitution: Hub-and-Spoke routing, model-switching guardrails, StatusLine, Secrets scanning, Escalation playbook (PR #2)
+- [x] **[CRITICAL] Xóa HMAC bug** — `backend/affiliate/connectors/tiktok_shop.py` ký sai spec (có `access_token` trong signing string), silent exception swallowing, HTTP client leak → đã xóa, dùng `backend/tiktok_shop/connector.py` đúng spec
+- [x] **Xóa dead shims** — `backend/connectors/` và `backend/publisher/` (chỉ là forwarder, không logic)
+- [x] **Tổ chức lại docs/** — `docs/operations/` (SOP), `docs/content/` (content strategy), `docs/setup/` (platform guides)
+- [x] **TikTok verification files** — chuyển `.txt` → `backend/static/root/` + StaticFiles mount
+- [x] **HTML files** — chuyển `docs/*.html` → `frontend/public/`
+- [x] **Đổi tên file theo kênh** — `publisher.py` → `kenh1_publisher.py`, `studio.py` → `kenh2_studio.py`
+- [x] **Tách production.py** — 634 dòng → `kenh1_production.py` (Kling+Gemini) + `kenh2_production.py` (ElevenLabs+HeyGen) + thin dispatcher
+- [x] **Xóa `rules/zh/`** — bản dịch tiếng Trung không dùng (user-scope, tiết kiệm ~3KB/session)
+- [x] **236 tests xanh** — toàn bộ test pass sau restructure (PR #3)
 
 ### Phiên 8 (17/04/2026) — Frontend TikTok Studio
 - [x] **TikTokProject types** — thêm `TikTokProject`, `TikTokAngle`, `TikTokStatus` vào `frontend/src/lib/types.ts`
