@@ -15,7 +15,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from backend.models.tiktok_project import TikTokProject
-from backend.tiktok import studio
+from backend.tiktok import kenh2_studio as studio
 from backend.tiktok.production import _ANGLE_HINTS
 
 # ── Model tests ───────────────────────────────────────────────────────────────

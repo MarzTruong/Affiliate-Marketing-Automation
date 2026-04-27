@@ -35,7 +35,7 @@ _FAKE_KLING_RESULT = KlingResult(
 @pytest_asyncio.fixture
 async def kenh1_project(db):
     """A TikTokProject with content_id and script_body set (required for full Kênh 1 run)."""
-    from backend.tiktok.studio import create_project
+    from backend.tiktok.kenh2_studio import create_project
 
     project = await create_project(
         db,
@@ -81,11 +81,11 @@ async def test_kenh1_pipeline_uses_gemini_tts(db, kenh1_project):
 
     with (
         patch(
-            "backend.tiktok.production.GeminiTTSEngine",
+            "backend.tiktok.kenh1_production.GeminiTTSEngine",
             return_value=tts_instance,
         ),
         patch(
-            "backend.tiktok.production.KlingEngine",
+            "backend.tiktok.kenh1_production.KlingEngine",
             return_value=kling_instance,
         ),
         patch(
@@ -98,7 +98,7 @@ async def test_kenh1_pipeline_uses_gemini_tts(db, kenh1_project):
             new=AsyncMock(return_value=kenh1_project),
         ),
         patch(
-            "backend.tiktok.production._step_compose_mp4",
+            "backend.tiktok.kenh1_production._step_compose_mp4",
             new=AsyncMock(side_effect=lambda db, p: p),
         ),
     ):
@@ -118,11 +118,11 @@ async def test_kenh1_pipeline_calls_kling_three_times(db, kenh1_project):
 
     with (
         patch(
-            "backend.tiktok.production.GeminiTTSEngine",
+            "backend.tiktok.kenh1_production.GeminiTTSEngine",
             return_value=tts_instance,
         ),
         patch(
-            "backend.tiktok.production.KlingEngine",
+            "backend.tiktok.kenh1_production.KlingEngine",
             return_value=kling_instance,
         ),
         patch(
@@ -135,7 +135,7 @@ async def test_kenh1_pipeline_calls_kling_three_times(db, kenh1_project):
             new=AsyncMock(return_value=kenh1_project),
         ),
         patch(
-            "backend.tiktok.production._step_compose_mp4",
+            "backend.tiktok.kenh1_production._step_compose_mp4",
             new=AsyncMock(side_effect=lambda db, p: p),
         ),
     ):
@@ -155,11 +155,11 @@ async def test_kenh1_records_three_hook_variants(db, kenh1_project):
 
     with (
         patch(
-            "backend.tiktok.production.GeminiTTSEngine",
+            "backend.tiktok.kenh1_production.GeminiTTSEngine",
             return_value=tts_instance,
         ),
         patch(
-            "backend.tiktok.production.KlingEngine",
+            "backend.tiktok.kenh1_production.KlingEngine",
             return_value=kling_instance,
         ),
         patch(
@@ -172,7 +172,7 @@ async def test_kenh1_records_three_hook_variants(db, kenh1_project):
             new=AsyncMock(return_value=kenh1_project),
         ),
         patch(
-            "backend.tiktok.production._step_compose_mp4",
+            "backend.tiktok.kenh1_production._step_compose_mp4",
             new=AsyncMock(side_effect=lambda db, p: p),
         ),
     ):
@@ -197,11 +197,11 @@ async def test_kenh1_hook_variants_include_primary_pattern(db, kenh1_project):
 
     with (
         patch(
-            "backend.tiktok.production.GeminiTTSEngine",
+            "backend.tiktok.kenh1_production.GeminiTTSEngine",
             return_value=tts_instance,
         ),
         patch(
-            "backend.tiktok.production.KlingEngine",
+            "backend.tiktok.kenh1_production.KlingEngine",
             return_value=kling_instance,
         ),
         patch(
@@ -214,7 +214,7 @@ async def test_kenh1_hook_variants_include_primary_pattern(db, kenh1_project):
             new=AsyncMock(return_value=kenh1_project),
         ),
         patch(
-            "backend.tiktok.production._step_compose_mp4",
+            "backend.tiktok.kenh1_production._step_compose_mp4",
             new=AsyncMock(side_effect=lambda db, p: p),
         ),
     ):
@@ -241,11 +241,11 @@ async def test_kenh2_pipeline_unchanged(db, kenh1_project):
             new=AsyncMock(return_value=kenh1_project),
         ) as mock_script,
         patch(
-            "backend.tiktok.production._step_generate_audio",
+            "backend.tiktok.kenh2_production._step_generate_audio",
             new=AsyncMock(return_value=kenh1_project),
         ) as mock_audio,
         patch(
-            "backend.tiktok.production._step_generate_clips",
+            "backend.tiktok.kenh2_production._step_generate_clips",
             new=AsyncMock(return_value=kenh1_project),
         ) as mock_clips,
     ):
@@ -270,11 +270,11 @@ async def test_kenh1_skips_hook_variants_when_no_content_id(db, kenh1_project):
 
     with (
         patch(
-            "backend.tiktok.production.GeminiTTSEngine",
+            "backend.tiktok.kenh1_production.GeminiTTSEngine",
             return_value=tts_instance,
         ),
         patch(
-            "backend.tiktok.production.KlingEngine",
+            "backend.tiktok.kenh1_production.KlingEngine",
             return_value=kling_instance,
         ),
         patch(
@@ -287,7 +287,7 @@ async def test_kenh1_skips_hook_variants_when_no_content_id(db, kenh1_project):
             new=AsyncMock(return_value=kenh1_project),
         ),
         patch(
-            "backend.tiktok.production._step_compose_mp4",
+            "backend.tiktok.kenh1_production._step_compose_mp4",
             new=AsyncMock(side_effect=lambda db, p: p),
         ),
     ):
@@ -315,11 +315,11 @@ async def test_kenh1_skips_kling_when_no_product_ref_url(db, kenh1_project):
 
     with (
         patch(
-            "backend.tiktok.production.GeminiTTSEngine",
+            "backend.tiktok.kenh1_production.GeminiTTSEngine",
             return_value=tts_instance,
         ),
         patch(
-            "backend.tiktok.production.KlingEngine",
+            "backend.tiktok.kenh1_production.KlingEngine",
             return_value=kling_instance,
         ),
         patch(
@@ -332,7 +332,7 @@ async def test_kenh1_skips_kling_when_no_product_ref_url(db, kenh1_project):
             new=AsyncMock(return_value=kenh1_project),
         ),
         patch(
-            "backend.tiktok.production._step_compose_mp4",
+            "backend.tiktok.kenh1_production._step_compose_mp4",
             new=AsyncMock(side_effect=lambda db, p: p),
         ),
     ):

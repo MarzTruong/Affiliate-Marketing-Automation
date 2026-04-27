@@ -185,7 +185,7 @@ Place under the correct section: `Quirks & Custom Rules`, `Resolved Edge Cases`,
 
 ### 6.3 Skill Files (Meta Prompting)
 
-- MAY generate `.md` skills in `docs/skills/` for recurring tasks.
+- MAY generate `.md` skills in `docs/skills/` for recurring tasks. (SOPs → `docs/operations/`, content strategy → `docs/content/`, platform guides → `docs/setup/`)
 - Format: name, trigger, version, steps, checklist (Vietnamese).
 - Notify owner after creation. No duplicates.
 
@@ -301,4 +301,10 @@ If Superpowers (planner) and Everything Claude Code (executor) produce conflicti
 
 ---
 
-*Last updated: 2026-04-26 — v2 (Hub-and-Spoke routing, model-switching guardrails, StatusLine + token protection, secrets scanning, escalation playbook). Project-specific overrides preserved: Windows `.venv` paths in §7, `system_settings` DB table, `cost_tracker.py` limits, `docs/skills/` location.*
+**2-Channel Architecture:**
+- **Kênh 1** "Lab Gia Dụng" (faceless): `kenh1_production.py` (Kling+Gemini TTS), `kenh1_publisher.py`
+- **Kênh 2** "Đồ Này Tui Xài" (semi-auto): `kenh2_production.py` (ElevenLabs+HeyGen), `kenh2_studio.py`
+- Dispatcher: `production.py` → reads `TikTokProject.channel_type` → routes to correct pipeline
+- TikTok Shop connector: `backend/tiktok_shop/connector.py` (correct HMAC spec)
+
+*Last updated: 2026-04-27 — v2.1 (repo restructure: dead shims removed, buggy HMAC connector deleted, docs reorganized, 2-channel code split, audio/video gitignore). Windows `.venv` paths in §7, `system_settings` DB table, `cost_tracker.py` limits.*
