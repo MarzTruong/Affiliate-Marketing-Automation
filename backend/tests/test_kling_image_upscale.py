@@ -95,7 +95,7 @@ async def test_resolve_kling_image_small_triggers_upscale():
     mock_resp.raise_for_status = lambda: None
 
     with patch("httpx.AsyncClient") as mock_client, \
-         patch("backend.tiktok.production._upscale_and_upload", AsyncMock(return_value="https://fal.ai/cdn/upscaled.jpg")) as mock_up:
+         patch("backend.tiktok.kenh1_production._upscale_and_upload", AsyncMock(return_value="https://fal.ai/cdn/upscaled.jpg")) as mock_up:
         mock_client.return_value.__aenter__.return_value.get = AsyncMock(return_value=mock_resp)
         url = await _resolve_kling_image("https://tiktok.com/tiny.jpg", "Test Product")
 
@@ -114,7 +114,7 @@ async def test_resolve_kling_image_upscale_fail_returns_original():
     mock_resp.raise_for_status = lambda: None
 
     with patch("httpx.AsyncClient") as mock_client, \
-         patch("backend.tiktok.production._upscale_and_upload", AsyncMock(return_value=None)):
+         patch("backend.tiktok.kenh1_production._upscale_and_upload", AsyncMock(return_value=None)):
         mock_client.return_value.__aenter__.return_value.get = AsyncMock(return_value=mock_resp)
         url = await _resolve_kling_image("https://tiktok.com/tiny.jpg", "Test")
 
